@@ -24,17 +24,12 @@ const ts = (name: string) => `background:${colorOf(name)};color:${teamText(name)
     </thead>
     <tbody>
       {
-        rows.map((r) => {
-          const neg = r.points < 0 ? ' neg' : ''
-          return (
+        rows.map((r) => (
             <tr>
               <td class="rank">{r.rank}</td>
               <td class="team-col" style={ts(r.team)}>{r.team}</td>
               <td>{r.name}</td>
-              <td class="num col-pts">
-                <span class={`pts-val${neg}`}>{formatScore(r.points)}</span>
-                <span class="pts-label">pts</span>
-              </td>
+              <td class="num">{formatScore(r.points)}</td>
               <td class="num raw">{formatScore(r.rawPoints)}</td>
               <td class="num">{r.penalty ? r.penalty : ''}</td>
               <td class="num">{r.games}</td>
@@ -49,7 +44,7 @@ const ts = (name: string) => `background:${colorOf(name)};color:${teamText(name)
               <td class="num">{r.maxScore ? formatScore(r.maxScore) : '-'}</td>
             </tr>
           )
-        })
+        )
       }
     </tbody>
   </table>
