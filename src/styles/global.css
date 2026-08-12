@@ -88,6 +88,7 @@ table { border-collapse: collapse; width: 100%; font-size: 14px; white-space: no
 th, td { padding: 6px 10px; text-align: center; border-bottom: 1px solid var(--line); }
 thead th { background: var(--accent-soft); font-weight: 700; font-size: 13px; }
 tbody tr:hover { background: #fafafa; }
+tr[data-href] { cursor: pointer; }
 td.rank { width: 50px; }
 .col-rank-t { font-weight: 700; font-size: 16px; }
 td.rank-safe { background: #eaf0f8; color: var(--text); }

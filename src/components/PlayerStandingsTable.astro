@@ -29,7 +29,7 @@ const pct = (n: number | null) => (n == null || n === 0 ? '' : formatPct(n))
     <tbody>
       {
         rows.map((r) => (
-          <tr>
+          <tr data-href={`/archive#player-${encodeURIComponent(r.name)}`}>
             <td class="rank col-rank-p">{r.rank}</td>
             <td class="team-col" style={ts(r.team)}>{r.team}</td>
             <td>{r.name}</td>
@@ -52,3 +52,10 @@ const pct = (n: number | null) => (n == null || n === 0 ? '' : formatPct(n))
     </tbody>
   </table>
 </div>
+<script>
+  document.querySelectorAll('tr[data-href]').forEach((row) => {
+    row.addEventListener('click', () => {
+      window.location.href = row.dataset.href
+    })
+  })
+</script>
