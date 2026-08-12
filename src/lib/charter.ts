@@ -16,7 +16,7 @@ export function splitCharter(raw: string): CharterBlock[] {
     } else if (cur) {
       if (line.trim()) cur.content.push(line)
     } else if (line.trim()) {
-      if (!blocks.length) blocks.push({ id: '0', heading: '引言', content: [] })
+      if (!blocks.length) blocks.push({ id: '0', heading: '章程', content: [] })
       blocks[0].content.push(line)
     }
   }

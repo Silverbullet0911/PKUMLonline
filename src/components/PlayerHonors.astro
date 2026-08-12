@@ -5,6 +5,6 @@ interface Props {
 }
 
 const { personalHonors = [], teamHonors = [] } = Astro.props
+const all = [...teamHonors, ...personalHonors]
 ---
-{teamHonors.length > 0 && <span class="honors">队伍赏：{teamHonors.join('、')}</span>}
-{personalHonors.length > 0 && <span class="honors">个人赏：{personalHonors.join('、')}</span>}
+{all.length > 0 && <span class="honors">{all.join('、')}</span>}

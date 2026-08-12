@@ -118,6 +118,7 @@ td.num { font-variant-numeric: tabular-nums; }
   border-radius: 999px;
   font-size: 13px;
 }
+.player-chip:hover { text-decoration: none; background: var(--line); }
 .captain-tag { font-size: 11px; color: var(--muted); margin-left: 6px; }
 
 .news-list { list-style: none; padding: 0; }

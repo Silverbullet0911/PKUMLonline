@@ -1,6 +1,5 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro'
-import PlayerHonors from '../components/PlayerHonors.astro'
 import { teams, roster, players } from '../lib/data'
 
 const playersByName = new Map(players.players.map((p) => [p.name, p]))
@@ -20,13 +19,11 @@ const alumni = players.players.filter((p) => !current.has(p.name))
           <p>
             {
               r?.roster.map((name) => {
-                const p = playersByName.get(name)
                 return (
-                  <span class="player-chip">
+                  <a class="player-chip" href={`/archive#player-${encodeURIComponent(name)}`}>
                     {name}
                     {name === r.captain && <span class="captain-tag">队长</span>}
-                    {p && <PlayerHonors personalHonors={p.personalHonors} teamHonors={p.teamHonors} />}
-                  </span>
+                  </a>
                 )
               })
             }
@@ -44,14 +41,13 @@ const alumni = players.players.filter((p) => !current.has(p.name))
       <div class="table-wrap">
         <table>
           <thead>
-            <tr><th>选手名</th><th>荣誉</th></tr>
+            <tr><th>选手名</th></tr>
           </thead>
           <tbody>
             {
               alumni.map((p) => (
                 <tr>
                   <td><a href={`/archive#player-${encodeURIComponent(p.name)}`}>{p.name}</a></td>
-                  <td><PlayerHonors personalHonors={p.personalHonors} teamHonors={p.teamHonors} /></td>
                 </tr>
               ))
             }

@@ -3,7 +3,7 @@ import { splitCharter } from './charter'
 
 const sample = [
   'PKU M.LEAGUE 章程',
-  '引言文字。',
+  '章程文字。',
   '第1条 总则',
   '1. 本章程适用于……',
   '2. 另一句。',
@@ -14,11 +14,11 @@ const sample = [
 ].join('\n')
 
 describe('splitCharter', () => {
-  it('拆分为引言 + 各条', () => {
+  it('拆分为章程 + 各条', () => {
     const blocks = splitCharter(sample)
     expect(blocks[0].id).toBe('0')
-    expect(blocks[0].heading).toBe('引言')
-    expect(blocks[0].content).toContain('引言文字。')
+    expect(blocks[0].heading).toBe('章程')
+    expect(blocks[0].content).toContain('章程文字。')
     expect(blocks.map(b => b.id)).toEqual(['0', '1', '2', '3'])
     expect(blocks[1].heading).toBe('第1条 总则')
   })

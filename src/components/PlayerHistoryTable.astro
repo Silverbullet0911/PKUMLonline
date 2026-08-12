@@ -21,7 +21,7 @@ const fmtPct = (n: number | null) => (n == null ? '-' : `${n.toFixed(2)}%`)
     </thead>
     <tbody>
       {
-        player.history.map((h) => (
+        [...player.history].reverse().map((h) => (
           <tr>
             <td class="num">{h.year}</td>
             <td class="team-col" style={h.team ? `background:${colorOf(h.team)}` : ''}>{h.team ?? '-'}</td>
