@@ -99,7 +99,7 @@ tr.sep td { border-top: 2px solid #cc0000; }
 .col-pts-p { width: 13%; }
 .col-diff { width: 4%; }
 .col-avg { width: 4.5%; }
-.col-rank-p { width: 50px; font-weight: 400; }
+.col-rank-p { width: 50px; font-weight: 400; font-size: 14px; }
 .neg { color: #cc0000; }
 .pts-val { font-size: 16px; font-weight: 700; }
 .pts-val.neg { color: #cc0000; }
@@ -143,7 +143,7 @@ td.raw { font-style: italic; }
   text-decoration: none;
 }
 td.num { font-variant-numeric: tabular-nums; }
-.as-of { text-align: right; color: var(--muted); font-size: 12px; margin-top: -8px; }
+.as-of { text-align: right; color: var(--text); font-weight: 700; font-size: 15px; margin-top: -6px; }
 .advance-note { color: var(--muted); font-size: 13px; margin-top: -6px; }
 
 .honors { color: var(--muted); font-size: 12px; margin-left: 8px; }
