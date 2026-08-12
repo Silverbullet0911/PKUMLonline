@@ -28,7 +28,7 @@ import { computeTeamBoard, computePlayerBoard } from '../lib/standings'
             teams={teams.teams}
             totalGames={stage.totalGames}
           />
-          <p class="as-of">{standings.asOf}</p>
+          <p class="as-of as-of-team">{standings.asOf}</p>
           <h3>个人榜</h3>
           <PlayerStandingsTable rows={playerRows} teams={teams.teams} />
           <p class="as-of">{standings.asOf}</p>

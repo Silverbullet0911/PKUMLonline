@@ -144,6 +144,7 @@ td.raw { font-style: italic; }
 }
 td.num { font-variant-numeric: tabular-nums; }
 .as-of { text-align: right; color: var(--text); font-weight: 700; font-size: 15px; margin-top: -6px; }
+.as-of-team { max-width: 720px; margin: -6px auto 0; }
 .advance-note { color: var(--muted); font-size: 13px; margin-top: -6px; }
 
 .honors { color: var(--muted); font-size: 12px; margin-left: 8px; }

@@ -12,6 +12,10 @@ interface Props {
 const { rows, teams } = Astro.props
 const colorOf = (name: string) => teams.find((t) => t.name === name)?.color ?? '#9ca3af'
 const ts = (name: string) => `background:${colorOf(name)};color:${teamText(name)}`
+
+const num = (n: number | null) => (n == null || n === 0 ? '' : formatScore(n))
+const win = (n: number) => (n === 0 ? '' : String(n))
+const pct = (n: number | null) => (n == null || n === 0 ? '' : formatPct(n))
 ---
 <div class="table-wrap">
   <table>
@@ -24,29 +28,26 @@ const ts = (name: string) => `background:${colorOf(name)};color:${teamText(name)
     </thead>
     <tbody>
       {
-        rows.map((r) => {
-          const ptsNeg = r.points < 0 ? ' neg' : ''
-          return (
-            <tr>
-              <td class="rank col-rank-p">{r.rank}</td>
-              <td class="team-col" style={ts(r.team)}>{r.team}</td>
-              <td>{r.name}</td>
-              <td class="num col-pts-p"><span class={ptsNeg ? 'neg' : ''}>{formatScore(r.points)}</span></td>
-              <td class="num raw">{formatScore(r.rawPoints)}</td>
-              <td class="num">{r.penalty ? r.penalty : ''}</td>
-              <td class="num">{r.games}</td>
-              <td class="num col-avg">{r.avgRank == null ? '-' : r.avgRank.toFixed(2)}</td>
-              <td class="num col-w">{r.wins['1']}</td>
-              <td class="num col-w">{r.wins['2']}</td>
-              <td class="num col-w">{r.wins['3']}</td>
-              <td class="num col-w">{r.wins['4']}</td>
-              <td class="num">{formatPct(r.winRate)}</td>
-              <td class="num">{formatPct(r.pairRate)}</td>
-              <td class="num">{formatPct(r.avoidRate)}</td>
-              <td class="num">{r.maxScore ? formatScore(r.maxScore) : '-'}</td>
-            </tr>
-          )
-        })
+        rows.map((r) => (
+          <tr>
+            <td class="rank col-rank-p">{r.rank}</td>
+            <td class="team-col" style={ts(r.team)}>{r.team}</td>
+            <td>{r.name}</td>
+            <td class="num col-pts-p">{r.points < 0 ? <span class="neg">{formatScore(r.points)}</span> : num(r.points)}</td>
+            <td class="num raw">{num(r.rawPoints)}</td>
+            <td class="num">{r.penalty ? r.penalty : ''}</td>
+            <td class="num">{win(r.games)}</td>
+            <td class="num col-avg">{r.avgRank == null ? '' : r.avgRank.toFixed(2)}</td>
+            <td class="num col-w">{win(r.wins['1'])}</td>
+            <td class="num col-w">{win(r.wins['2'])}</td>
+            <td class="num col-w">{win(r.wins['3'])}</td>
+            <td class="num col-w">{win(r.wins['4'])}</td>
+            <td class="num">{pct(r.winRate)}</td>
+            <td class="num">{pct(r.pairRate)}</td>
+            <td class="num">{pct(r.avoidRate)}</td>
+            <td class="num">{r.maxScore ? formatScore(r.maxScore) : ''}</td>
+          </tr>
+        ))
       }
     </tbody>
   </table>
