@@ -1,0 +1,31 @@
+---
+import { teams, teamText } from '../lib/data'
+import type { Game } from '../lib/types'
+
+interface Props {
+  games: Game[]
+}
+
+const { games } = Astro.props
+const colorOf = (name: string) => teams.teams.find((t) => t.name === name)?.color ?? '#9ca3af'
+const ts = (name: string) => `background:${colorOf(name)};color:${teamText(name)}`
+---
+<div class="future-games">
+  {
+    games.map((g) => (
+      <div class="future-game">
+        <p class="future-meta">{g.stage}{g.round ? ` ${g.round}` : ''} · {g.date}</p>
+        <div class="future-seats">
+          {
+            g.seats.map((s) => (
+              <div class="future-seat" style={ts(s.team)}>
+                <span class="fs-seat">{s.seat}</span>
+                <span class="fs-team">{s.team}</span>
+              </div>
+            ))
+          }
+        </div>
+      </div>
+    ))
+  }
+</div>

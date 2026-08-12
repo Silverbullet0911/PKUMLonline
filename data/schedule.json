@@ -4,12 +4,37 @@
     {
       "stage": "决赛",
       "date": "2026-05-22",
-      "round": "第2半庄",
-      "players": [
+      "round": "第18半庄",
+      "status": "finished",
+      "seats": [
         { "seat": "东", "team": "火山", "name": "桃之11", "rank": 3, "points": 23900 },
         { "seat": "南", "team": "樱花", "name": "Spectator", "rank": 4, "points": 17500 },
         { "seat": "西", "team": "海盗", "name": "Art3mis", "rank": 1, "points": 34100 },
         { "seat": "北", "team": "格斗", "name": "前原Nagi", "rank": 2, "points": 24500 }
+      ]
+    },
+    {
+      "stage": "常规赛",
+      "date": "2026-09-01",
+      "round": "第1半庄",
+      "status": "upcoming",
+      "seats": [
+        { "seat": "东", "team": "凤凰" },
+        { "seat": "南", "team": "樱花" },
+        { "seat": "西", "team": "火山" },
+        { "seat": "北", "team": "雷电" }
+      ]
+    },
+    {
+      "stage": "常规赛",
+      "date": "2026-09-01",
+      "round": "第2半庄",
+      "status": "upcoming",
+      "seats": [
+        { "seat": "东", "team": "火山" },
+        { "seat": "南", "team": "凤凰" },
+        { "seat": "西", "team": "雷电" },
+        { "seat": "北", "team": "樱花" }
       ]
     }
   ]

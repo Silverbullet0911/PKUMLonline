@@ -72,11 +72,20 @@ export interface NewsItem {
   body: string
 }
 
+export interface GameSeat {
+  seat: string
+  team: string
+  name?: string
+  rank?: number
+  points?: number
+}
+
 export interface Game {
   stage: string
   date: string
   round?: string
-  players: { seat: string; team: string; name: string; rank: number; points: number }[]
+  status: 'finished' | 'upcoming'
+  seats: GameSeat[]
   replayUrl?: string
   videoUrl?: string
 }

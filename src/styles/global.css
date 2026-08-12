@@ -272,3 +272,31 @@ html { scroll-padding-top: 45vh; }
 @media (max-width: 720px) {
   .game-players { grid-template-columns: repeat(2, 1fr); }
 }
+
+.future-games {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  margin-bottom: 16px;
+}
+.future-meta { font-size: 13px; color: var(--muted); margin: 0 0 8px; text-align: center; }
+.future-seats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+.future-seat {
+  aspect-ratio: 1.618 / 1;
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  font-weight: 700;
+}
+.fs-seat { font-size: 13px; opacity: .85; }
+.fs-team { font-size: 18px; }
+@media (max-width: 720px) {
+  .future-games { grid-template-columns: 1fr; }
+}

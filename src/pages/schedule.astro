@@ -1,29 +1,44 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro'
+import FutureGames from '../components/FutureGames.astro'
 import { schedule, teams, teamText } from '../lib/data'
 import { formatScore } from '../lib/standings'
 
 const colorOf = (name: string) => teams.teams.find((t) => t.name === name)?.color ?? '#9ca3af'
 const ts = (name: string) => `background:${colorOf(name)};color:${teamText(name)}`
+
+const upcoming = schedule.games.filter((g) => g.status === 'upcoming')
+const finished = schedule.games.filter((g) => g.status === 'finished')
 ---
 <BaseLayout title="赛程与结果">
   <h1>赛程与结果</h1>
+
+  <h2>未来赛程</h2>
   {
-    schedule.games.length === 0 ? (
-      <p class="empty">本赛季赛程尚未公布。赛程与比赛数将在第一场比赛开始前由赛事组公布。</p>
+    upcoming.length === 0 ? (
+      <p class="empty">暂无未来赛程。</p>
     ) : (
-      schedule.games.map((g) => (
+      <FutureGames games={upcoming} />
+    )
+  }
+
+  <h2>已结束对局</h2>
+  {
+    finished.length === 0 ? (
+      <p class="empty">暂无已结束对局。</p>
+    ) : (
+      finished.map((g) => (
         <section class="game-card">
           <h2>{g.stage}{g.round ? ` ${g.round}` : ''} · {g.date}</h2>
           <div class="game-players">
             {
-              g.players.map((p) => (
-                <div class="game-player" style={ts(p.team)}>
-                  <span class="gp-team">{p.team}</span>
-                  <span class="gp-seat">{p.seat}</span>
-                  <span class="gp-name">{p.name}</span>
-                  <span class="gp-pts">{formatScore(p.points)}</span>
-                  <span class="gp-rank">{p.rank}位</span>
+              g.seats.map((s) => (
+                <div class="game-player" style={ts(s.team)}>
+                  <span class="gp-team">{s.team}</span>
+                  <span class="gp-seat">{s.seat}</span>
+                  <span class="gp-name">{s.name}</span>
+                  <span class="gp-pts">{formatScore(s.points ?? 0)}</span>
+                  <span class="gp-rank">{s.rank}位</span>
                 </div>
               ))
             }
