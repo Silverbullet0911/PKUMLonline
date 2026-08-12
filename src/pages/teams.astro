@@ -1,0 +1,63 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro'
+import PlayerHonors from '../components/PlayerHonors.astro'
+import { teams, roster, players } from '../lib/data'
+
+const playersByName = new Map(players.players.map((p) => [p.name, p]))
+const current = new Set(roster.teams.flatMap((t) => t.roster))
+const alumni = players.players.filter((p) => !current.has(p.name))
+---
+<BaseLayout title="队伍与选手">
+  <h1>队伍与选手</h1>
+
+  <h2>当前赛季（{roster.season}）队伍</h2>
+  {
+    teams.teams.map((t) => {
+      const r = roster.teams.find((rt) => rt.name === t.name)
+      return (
+        <section class="team-card">
+          <h2><span class="team-dot" style={`background:${t.color}`}></span>{t.name}</h2>
+          <p>
+            {
+              r?.roster.map((name) => {
+                const p = playersByName.get(name)
+                return (
+                  <span class="player-chip">
+                    {name}
+                    {name === r.captain && <span class="captain-tag">队长</span>}
+                    {p && <PlayerHonors personalHonors={p.personalHonors} teamHonors={p.teamHonors} />}
+                  </span>
+                )
+              })
+            }
+          </p>
+        </section>
+      )
+    })
+  }
+
+  <h2>往届选手</h2>
+  {
+    alumni.length === 0 ? (
+      <p class="empty">暂无往届选手数据。</p>
+    ) : (
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>选手名</th><th>荣誉</th></tr>
+          </thead>
+          <tbody>
+            {
+              alumni.map((p) => (
+                <tr>
+                  <td><a href={`/archive#player-${encodeURIComponent(p.name)}`}>{p.name}</a></td>
+                  <td><PlayerHonors personalHonors={p.personalHonors} teamHonors={p.teamHonors} /></td>
+                </tr>
+              ))
+            }
+          </tbody>
+        </table>
+      </div>
+    )
+  }
+</BaseLayout>

@@ -1,0 +1,16 @@
+---
+import type { CharterBlock } from '../lib/charter'
+
+interface Props {
+  blocks: CharterBlock[]
+}
+
+const { blocks } = Astro.props
+---
+<nav class="charter-nav">
+  {
+    blocks.map((b) => (
+      <a href={b.id === '0' ? '#preamble' : `#article-${b.id}`}>{b.heading}</a>
+    ))
+  }
+</nav>

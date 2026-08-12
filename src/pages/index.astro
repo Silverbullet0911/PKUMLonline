@@ -1,6 +1,53 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro'
+import TeamStandingsTable from '../components/TeamStandingsTable.astro'
+import { season, standings, news, schedule, teams } from '../lib/data'
+import { computeTeamBoard } from '../lib/standings'
+
+const regularStage = season.stages.find((s) => s.name === '常规赛')
+const regular = standings.stages.find((s) => s.name === '常规赛')
+const teamRows = computeTeamBoard(regular?.teamBoard ?? [], regularStage?.promoteRank ?? 6)
+const latestNews = news.items.slice(0, 5)
 ---
 <BaseLayout title="首页">
-  <h1>建设中…</h1>
+  <section class="intro">
+    <h1>PKU M.LEAGUE</h1>
+    <p>北京大学校内立直麻将团体赛官方网站 —— 赛程、积分、排名、规则与赛季档案一览。</p>
+  </section>
+
+  <h2>当前赛季（{season.season}）队伍榜</h2>
+  {
+    season.hasStarted && teamRows.length > 0 ? (
+      <TeamStandingsTable
+        stage="常规赛"
+        rows={teamRows}
+        teams={teams.teams}
+        totalGames={regularStage?.totalGames ?? 24}
+      />
+    ) : (
+      <p class="empty">本赛季尚未开始，排名将在第一场比赛后更新。</p>
+    )
+  }
+
+  <h2>最近赛程</h2>
+  {
+    schedule.games.length > 0 ? (
+      <ul class="news-list">
+        {schedule.games.map((g) => <li><time>{g.date}</time>{g.stage} · {g.players.length} 名选手</li>)}
+      </ul>
+    ) : (
+      <p class="empty">赛程尚未公布。</p>
+    )
+  }
+
+  <h2>最新公告</h2>
+  {
+    latestNews.length > 0 ? (
+      <ul class="news-list">
+        {latestNews.map((n) => <li><time>{n.date}</time>{n.title}</li>)}
+      </ul>
+    ) : (
+      <p class="empty">暂无公告。</p>
+    )
+  }
 </BaseLayout>

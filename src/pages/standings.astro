@@ -1,0 +1,49 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro'
+import StageTabs from '../components/StageTabs.astro'
+import TeamStandingsTable from '../components/TeamStandingsTable.astro'
+import PlayerStandingsTable from '../components/PlayerStandingsTable.astro'
+import { season, standings, teams } from '../lib/data'
+import { computeTeamBoard, computePlayerBoard } from '../lib/standings'
+---
+<BaseLayout title="积分排名">
+  <h1>积分排名</h1>
+  {!season.hasStarted && <p class="empty">本赛季尚未开始，排名数据将在第一场比赛后公布。</p>}
+
+  <StageTabs stages={season.stages} />
+
+  {
+    season.stages.map((stage, i) => {
+      const data = standings.stages.find((s) => s.name === stage.name)
+      const teamRows = computeTeamBoard(data?.teamBoard ?? [], stage.promoteRank)
+      const playerRows = computePlayerBoard(data?.playerBoard ?? [])
+      return (
+        <section id={`stage-${i}`} class:list={['stage-panel', { active: i === 0 }]}>
+          <h2>{stage.name}</h2>
+          {stage.advanceLabel && <p class="advance-note">{stage.advanceLabel}</p>}
+          <h3>队伍榜</h3>
+          <TeamStandingsTable
+            stage={stage.name}
+            rows={teamRows}
+            teams={teams.teams}
+            totalGames={stage.totalGames}
+          />
+          <h3>个人榜</h3>
+          <PlayerStandingsTable rows={playerRows} teams={teams.teams} />
+          <p class="as-of">{standings.asOf}</p>
+        </section>
+      )
+    })
+  }
+
+  <script>
+    document.querySelectorAll('.stage-tab').forEach((tab) => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.stage-tab').forEach((t) => t.classList.remove('active'))
+        document.querySelectorAll('.stage-panel').forEach((p) => p.classList.remove('active'))
+        tab.classList.add('active')
+        document.getElementById(tab.dataset.target ?? '')?.classList.add('active')
+      })
+    })
+  </script>
+</BaseLayout>

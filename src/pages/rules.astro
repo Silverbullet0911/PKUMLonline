@@ -1,0 +1,24 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro'
+import CharterNav from '../components/CharterNav.astro'
+import charterRaw from '../../PKUML章程.txt?raw'
+import { splitCharter } from '../lib/charter'
+
+const blocks = splitCharter(charterRaw)
+---
+<BaseLayout title="规则与章程">
+  <h1>规则与章程</h1>
+  <div class="charter-layout">
+    <CharterNav blocks={blocks} />
+    <div>
+      {
+        blocks.map((b) => (
+          <section class="charter-block" id={b.id === '0' ? 'preamble' : `article-${b.id}`}>
+            <h2>{b.heading}</h2>
+            {b.content.map((line) => <p>{line}</p>)}
+          </section>
+        ))
+      }
+    </div>
+  </div>
+</BaseLayout>

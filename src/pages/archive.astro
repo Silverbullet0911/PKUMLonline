@@ -1,0 +1,50 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro'
+import PlayerHonors from '../components/PlayerHonors.astro'
+import PlayerHistoryTable from '../components/PlayerHistoryTable.astro'
+import { archive, players, teams } from '../lib/data'
+
+const colorOf = (name: string) => teams.teams.find((t) => t.name === name)?.color ?? '#9ca3af'
+---
+<BaseLayout title="赛季档案">
+  <h1>赛季档案</h1>
+
+  {
+    archive.seasons.map((s) => (
+      <section class="team-card">
+        <h2>{s.year}赛季</h2>
+        <p>冠军队伍：<strong>{s.champion}</strong>（共 {s.finalRank.length} 队）</p>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>最终名次</th><th>队伍</th></tr>
+            </thead>
+            <tbody>
+              {
+                s.finalRank.map((t, i) => (
+                  <tr>
+                    <td class="rank">{i + 1}</td>
+                    <td class="team-col" style={`background:${colorOf(t)}`}>{t}</td>
+                  </tr>
+                ))
+              }
+            </tbody>
+          </table>
+        </div>
+      </section>
+    ))
+  }
+
+  <h2>历届选手成绩</h2>
+  {
+    players.players.map((p) => (
+      <article class="player-card" id={`player-${p.name}`}>
+        <h3>
+          {p.name}
+          <PlayerHonors personalHonors={p.personalHonors} teamHonors={p.teamHonors} />
+        </h3>
+        <PlayerHistoryTable player={p} teams={teams.teams} />
+      </article>
+    ))
+  }
+</BaseLayout>
