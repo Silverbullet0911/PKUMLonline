@@ -4,7 +4,9 @@ import { teams, roster, players } from '../lib/data'
 
 const playersByName = new Map(players.players.map((p) => [p.name, p]))
 const current = new Set(roster.teams.flatMap((t) => t.roster))
-const alumni = players.players.filter((p) => !current.has(p.name))
+const alumni = players.players
+  .filter((p) => !current.has(p.name))
+  .sort((a, b) => a.name.localeCompare(b.name, 'zh'))
 
 const formatName = (name: string) =>
   /^[一-鿿]{2}$/.test(name) ? name[0] + ' ' + name[1] : name
@@ -43,7 +45,7 @@ const formatName = (name: string) =>
     ) : (
       <div class="alumni-grid">
         {alumni.map((p) => (
-          <a href={`/archive#player-${encodeURIComponent(p.name)}`}>{p.name}</a>
+          <a class="alumni-chip" href={`/archive#player-${encodeURIComponent(p.name)}`}>{p.name}</a>
         ))}
       </div>
     )

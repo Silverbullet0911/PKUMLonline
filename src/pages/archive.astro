@@ -3,12 +3,14 @@ import BaseLayout from '../layouts/BaseLayout.astro'
 import PlayerHonors from '../components/PlayerHonors.astro'
 import PlayerHistoryTable from '../components/PlayerHistoryTable.astro'
 import { players, teams } from '../lib/data'
+
+const sorted = [...players.players].sort((a, b) => a.name.localeCompare(b.name, 'zh'))
 ---
 <BaseLayout title="选手档案">
   <h1>选手档案</h1>
 
   {
-    players.players.map((p) => (
+    sorted.map((p) => (
       <article class="player-card" id={`player-${p.name}`}>
         <h3>
           {p.name}
