@@ -1,0 +1,48 @@
+---
+import '../styles/global.css'
+
+interface Props {
+  title: string
+}
+
+const { title } = Astro.props
+
+const nav = [
+  { href: '/', label: '首页' },
+  { href: '/schedule', label: '赛程与结果' },
+  { href: '/standings', label: '积分排名' },
+  { href: '/teams', label: '队伍与选手' },
+  { href: '/rules', label: '规则与章程' },
+  { href: '/archive', label: '赛季档案' },
+]
+const path = Astro.url.pathname
+---
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title} | PKU M.LEAGUE</title>
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="site-title" href="/">PKU M.LEAGUE</a>
+      <nav class="site-nav">
+        {
+          nav.map((item) => {
+            const active = item.href === '/' ? path === '/' : path.startsWith(item.href)
+            return (
+              <a class:list={['nav-link', { active }]} href={item.href}>
+                {item.label}
+              </a>
+            )
+          })
+        }
+      </nav>
+    </header>
+    <main class="site-main">
+      <slot />
+    </main>
+    <footer class="site-footer">PKU M.LEAGUE 官方网站 · 数据仅供选手内部参考</footer>
+  </body>
+</html>
