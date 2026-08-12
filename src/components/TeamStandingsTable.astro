@@ -15,9 +15,24 @@ const { stage, rows, teams, totalGames } = Astro.props
 const colorOf = (name: string) => teams.find((t) => t.name === name)?.color ?? '#9ca3af'
 const ts = (name: string) => `background:${colorOf(name)};color:${teamText(name)}`
 const fmt = (n: number | null) => (n == null ? '-' : String(n))
-const fmtSigned = (n: number | null) =>
-  n == null ? '-' : n > 0 ? `+${n}` : String(n)
 const sum = (w: Wins) => w['1'] + w['2'] + w['3'] + w['4']
+
+const promoteRank = stage === '常规赛' ? 6 : stage === '半决赛' ? 4 : 0
+
+function rankClass(rank: number): string {
+  const c = ['rank']
+  if (stage === '常规赛') {
+    if (rank <= 4) c.push('rank-safe')
+    else if (rank <= 6) c.push('rank-bubble')
+    else c.push('rank-out')
+  } else if (stage === '半决赛') {
+    if (rank <= 4) c.push('rank-safe')
+    else c.push('rank-out')
+  } else if (stage === '决赛') {
+    if (rank === 1) c.push('rank-bubble')
+  }
+  return c.join(' ')
+}
 
 const HEADERS: Record<string, string[]> = {
   常规赛: ['顺位', '队伍', '积分', '素点', '差', '晋级线差', '比赛数', '1位', '2位', '3位', '4位'],
@@ -30,28 +45,40 @@ const header = HEADERS[stage] ?? HEADERS['常规赛']
   <table>
     <thead>
       <tr>
-        {header.map((h) => <th>{h}</th>)}
+        {header.map((h, i) => <th class:list={{ 'col-w': i >= header.length - 4 }}>{h}</th>)}
       </tr>
     </thead>
     <tbody>
       {
-        rows.map((r) => (
-          <tr>
-            <td class="rank">{r.rank}</td>
-            <td class="team-col" style={ts(r.team)}>{r.team}</td>
-            <td class="num">{formatScore(r.points)}</td>
-            {stage !== '常规赛' && <td class="num">{formatScore(r.stagePoints)}</td>}
-            {stage !== '常规赛' && <td class="num">{formatScore(r.carry)}</td>}
-            <td class="num">{formatScore(r.stageRaw)}</td>
-            <td class="num">{fmt(r.diff)}</td>
-            {stage === '决赛' ? <td class="num">{fmtSigned(r.firstDiff)}</td> : <td class="num">{fmtSigned(r.advDiff)}</td>}
-            <td class="num">{sum(r.wins)}/{totalGames}</td>
-            <td class="num">{r.wins['1']}</td>
-            <td class="num">{r.wins['2']}</td>
-            <td class="num">{r.wins['3']}</td>
-            <td class="num">{r.wins['4']}</td>
-          </tr>
-        ))
+        rows.map((r) => {
+          const neg = r.points < 0 ? ' neg' : ''
+          const isSep = promoteRank > 0 && r.rank === promoteRank + 1
+          return (
+            <tr class:list={{ 'sep': isSep }}>
+              <td class={rankClass(r.rank)}>{r.rank}</td>
+              <td class="team-col" style={ts(r.team)}>{r.team}</td>
+              <td class="num col-pts">
+                <span class={`pts-val${neg}`}>{formatScore(r.points)}</span>
+                <span class="pts-label">pts</span>
+              </td>
+              {stage !== '常规赛' && <td class="num">{formatScore(r.stagePoints)}</td>}
+              {stage !== '常规赛' && <td class="num">{formatScore(r.carry)}</td>}
+              <td class="num raw">{formatScore(r.stageRaw)}</td>
+              <td class="num">{fmt(r.diff)}</td>
+              {stage === '决赛'
+                ? <td class="num">{fmt(r.firstDiff)}</td>
+                : <td class="num">{fmt(r.advDiff)}</td>}
+              <td class="num col-games">
+                <span class="games-num">{sum(r.wins)}</span>
+                <span class="games-total">/{totalGames}</span>
+              </td>
+              <td class="num col-w">{r.wins['1']}</td>
+              <td class="num col-w">{r.wins['2']}</td>
+              <td class="num col-w">{r.wins['3']}</td>
+              <td class="num col-w">{r.wins['4']}</td>
+            </tr>
+          )
+        })
       }
     </tbody>
   </table>

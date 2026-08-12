@@ -84,11 +84,28 @@ h3 { font-size: 15px; font-weight: 700; margin: 20px 0 8px; }
   margin-bottom: 16px;
 }
 table { border-collapse: collapse; width: 100%; font-size: 14px; white-space: nowrap; }
-th, td { padding: 8px 12px; text-align: center; border-bottom: 1px solid var(--line); }
-thead th { background: var(--accent-soft); font-weight: 700; }
+th, td { padding: 6px 10px; text-align: center; border-bottom: 1px solid var(--line); }
+thead th { background: var(--accent-soft); font-weight: 700; font-size: 13px; }
 tbody tr:hover { background: #fafafa; }
-td.rank { font-weight: 700; }
+td.rank { font-weight: 700; font-size: 16px; width: 7%; }
+td.rank-safe { background: #eaf0f8; color: var(--text); }
+td.rank-bubble { background: #fff3e6; color: var(--text); }
+td.rank-out { background: #fff; color: #cc0000; }
 td.team-col { font-weight: 700; }
+tr.sep td { border-top: 2px solid #cc0000; }
+
+.col-pts { position: relative; width: 9%; }
+.pts-val { font-size: 16px; font-weight: 700; }
+.pts-val.neg { color: #cc0000; }
+.pts-label { position: absolute; bottom: 1px; right: 3px; font-size: 9px; color: var(--muted); font-weight: 400; line-height: 1; }
+
+td.raw { font-style: italic; }
+
+.col-games { width: 6%; }
+.games-num { font-weight: 700; }
+.games-total { font-size: 9px; color: var(--muted); vertical-align: super; }
+
+.col-w { width: 3.5%; }
 .alumni-grid {
   display: grid;
   grid-template-columns: repeat(8, 1fr);
