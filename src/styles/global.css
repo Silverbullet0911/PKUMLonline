@@ -6,6 +6,7 @@
   --line: #e8e8e8;
   --accent: #1a1a1a;
   --accent-soft: #f5f5f5;
+  --green: #116423;
   --radius: 8px;
   --shadow: 0 1px 3px rgba(0, 0, 0, .06);
 }
@@ -26,24 +27,23 @@ a:hover { text-decoration: underline; }
   top: 0;
   z-index: 10;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  flex-wrap: wrap;
-  padding: 10px 24px;
+  gap: 10px;
+  padding: 16px 24px 12px;
   background: #fff;
   border-bottom: 1px solid var(--line);
 }
 .site-brand {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   text-decoration: none;
 }
 .site-brand:hover { text-decoration: none; }
-.site-logo { height: 48px; width: auto; }
-.site-title { font-size: 18px; font-weight: 700; color: var(--text); letter-spacing: 1px; }
-.site-nav { display: flex; gap: 0; flex-wrap: wrap; }
+.site-logo { height: 56px; width: auto; }
+.site-title { font-size: 20px; font-weight: 800; color: var(--text); letter-spacing: 2px; }
+.site-nav { display: flex; gap: 2px; flex-wrap: wrap; justify-content: center; }
 .nav-link {
   padding: 6px 14px;
   border-radius: 6px;
@@ -51,7 +51,8 @@ a:hover { text-decoration: underline; }
   font-size: 14px;
 }
 .nav-link:hover { background: var(--accent-soft); text-decoration: none; color: var(--text); }
-.nav-link.active { color: var(--text); }
+.nav-link.active { background: var(--green); color: #fff; }
+.nav-link.active:hover { background: var(--green); color: #fff; }
 
 .site-main { max-width: 1080px; margin: 0 auto; padding: 32px 16px 48px; }
 .site-footer {
@@ -64,7 +65,7 @@ a:hover { text-decoration: underline; }
   border-top: 1px solid var(--line);
 }
 h1 { font-size: 24px; font-weight: 700; margin: 8px 0 20px; }
-h2 { font-size: 18px; font-weight: 700; margin: 32px 0 12px; }
+h2 { font-size: 18px; font-weight: 700; margin: 32px 0 12px; border-left: 4px solid var(--green); padding-left: 10px; }
 h3 { font-size: 15px; font-weight: 700; margin: 20px 0 8px; }
 .empty {
   color: var(--muted);
@@ -134,7 +135,7 @@ td.num { font-variant-numeric: tabular-nums; }
   font-size: 14px;
   color: var(--muted);
 }
-.stage-tab.active { background: var(--text); border-color: var(--text); color: #fff; }
+.stage-tab.active { background: var(--green); border-color: var(--green); color: #fff; }
 .stage-panel { display: none; }
 .stage-panel.active { display: block; }
 
@@ -216,3 +217,4 @@ td.num { font-variant-numeric: tabular-nums; }
 }
 .player-card h3 { margin: 0 0 8px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .final-rank { padding-left: 20px; margin: 8px 0; }
+.news-meta { color: var(--muted); font-size: 13px; margin: 4px 0 8px; }

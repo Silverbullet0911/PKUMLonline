@@ -15,9 +15,9 @@ const latestNews = news.items.slice(0, 5)
     <p>北京大学校内立直麻将团体赛官方网站 —— 赛程、积分、排名、规则与赛季档案一览。</p>
   </section>
 
-  <h2>当前赛季（{season.season}）队伍榜</h2>
+  <h2>{season.season}赛季 常规赛队伍榜</h2>
   {
-    season.hasStarted && teamRows.length > 0 ? (
+    teamRows.length > 0 ? (
       <TeamStandingsTable
         stage="常规赛"
         rows={teamRows}
@@ -25,7 +25,7 @@ const latestNews = news.items.slice(0, 5)
         totalGames={regularStage?.totalGames ?? 24}
       />
     ) : (
-      <p class="empty">本赛季尚未开始，排名将在第一场比赛后更新。</p>
+      <p class="empty">暂无数据。</p>
     )
   }
 
@@ -36,7 +36,7 @@ const latestNews = news.items.slice(0, 5)
         {schedule.games.map((g) => <li><time>{g.date}</time>{g.stage} · {g.players.length} 名选手</li>)}
       </ul>
     ) : (
-      <p class="empty">赛程尚未公布。</p>
+      <p class="empty">赛程数据暂缺。</p>
     )
   }
 
@@ -44,7 +44,7 @@ const latestNews = news.items.slice(0, 5)
   {
     latestNews.length > 0 ? (
       <ul class="news-list">
-        {latestNews.map((n) => <li><time>{n.date}</time>{n.title}</li>)}
+        {latestNews.map((n) => <li><time>{n.date}</time><a href="/news">{n.title}</a></li>)}
       </ul>
     ) : (
       <p class="empty">暂无公告。</p>
