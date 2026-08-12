@@ -369,13 +369,13 @@
      "team": "格斗",
      "name": "前原Nagi",
      "points": 529.9,
-     "rawPoints": 0,
-     "penalty": 0,
+     "rawPoints": 234.9,
+     "penalty": -20,
      "wins": {
-      "1": 0,
-      "2": 0,
-      "3": 0,
-      "4": 0
+      "1": 7,
+      "2": 6,
+      "3": 1,
+      "4": 1
      },
      "maxScore": 94000
     },

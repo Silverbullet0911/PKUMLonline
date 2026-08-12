@@ -36,7 +36,7 @@ const base = import.meta.env.BASE_URL
             <td>{r.name}</td>
             <td class="num col-pts-p">{r.points < 0 ? <span class="neg">{formatScore(r.points)}</span> : num(r.points)}</td>
             <td class="num raw">{num(r.rawPoints)}</td>
-            <td class="num">{r.penalty ? r.penalty : ''}</td>
+            <td class="num">{r.penalty ? <span class="penalty">{r.penalty}</span> : ''}</td>
             <td class="num">{win(r.games)}</td>
             <td class="num col-avg">{r.avgRank == null ? '' : r.avgRank.toFixed(2)}</td>
             <td class="num col-w">{win(r.wins['1'])}</td>

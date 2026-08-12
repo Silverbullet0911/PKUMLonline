@@ -105,6 +105,7 @@ tr.sep td { border-top: 2px solid #cc0000; }
 .neg { color: #cc0000; }
 .pts-val { font-size: 16px; font-weight: 700; }
 .pts-val.neg { color: #cc0000; }
+.penalty { color: #cc0000; font-weight: 700; }
 .pts-label { position: absolute; bottom: 2px; right: 4px; font-size: 10px; color: var(--text); font-weight: 700; line-height: 1; }
 
 td.raw { font-style: italic; }
