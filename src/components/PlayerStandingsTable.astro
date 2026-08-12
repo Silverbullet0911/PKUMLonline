@@ -17,7 +17,7 @@ const ts = (name: string) => `background:${colorOf(name)};color:${teamText(name)
   <table>
     <thead>
       <tr>
-        <th>顺位</th><th>所属</th><th>选手名</th><th>积分</th><th>素点</th><th>判罚</th>
+        <th>顺位</th><th class="col-team-p">所属</th><th>选手名</th><th>积分</th><th>素点</th><th>判罚</th>
         <th>比赛数</th><th class="col-avg">平均顺位</th><th class="col-w">1位</th><th class="col-w">2位</th><th class="col-w">3位</th><th class="col-w">4位</th>
         <th>一位率</th><th>连对率</th><th>避四率</th><th>最高分</th>
       </tr>
@@ -29,7 +29,7 @@ const ts = (name: string) => `background:${colorOf(name)};color:${teamText(name)
           return (
             <tr>
               <td class="rank col-rank-p">{r.rank}</td>
-              <td class="team-col" style={ts(r.team)}>{r.team}</td>
+              <td class="team-col col-team-p" style={ts(r.team)}>{r.team}</td>
               <td>{r.name}</td>
               <td class="num col-pts-p"><span class={ptsNeg ? 'neg' : ''}>{formatScore(r.points)}</span></td>
               <td class="num raw">{formatScore(r.rawPoints)}</td>

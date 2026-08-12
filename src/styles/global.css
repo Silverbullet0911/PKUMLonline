@@ -99,7 +99,8 @@ tr.sep td { border-top: 2px solid #cc0000; }
 .col-pts-p { width: 13%; }
 .col-diff { width: 4%; }
 .col-avg { width: 4.5%; }
-.col-rank-p { width: 2.2em; font-weight: 400; }
+.col-rank-p { width: 7%; font-weight: 400; }
+.col-team-p { width: 11%; }
 .neg { color: #cc0000; }
 .pts-val { font-size: 16px; font-weight: 700; }
 .pts-val.neg { color: #cc0000; }
