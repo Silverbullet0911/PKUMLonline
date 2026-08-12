@@ -36,8 +36,8 @@ function rankClass(rank: number): string {
 
 const HEADERS: Record<string, string[]> = {
   常规赛: ['顺位', '队伍', '积分', '素点', '差', '晋级线差', '比赛数', '1位', '2位', '3位', '4位'],
-  半决赛: ['顺位', '队伍', '积分', '半决赛积分', '持越', '半决赛素点', '差', '晋级线差', '比赛数', '1位', '2位', '3位', '4位'],
-  决赛: ['顺位', '队伍', '积分', '决赛积分', '持越', '决赛素点', '差', '一位差', '比赛数', '1位', '2位', '3位', '4位'],
+  半决赛: ['顺位', '队伍', '积分', '半决赛积分', '持越', '差', '晋级线差', '比赛数', '1位', '2位', '3位', '4位'],
+  决赛: ['顺位', '队伍', '积分', '决赛积分', '持越', '差', '一位差', '比赛数', '1位', '2位', '3位', '4位'],
 }
 const header = HEADERS[stage] ?? HEADERS['常规赛']
 ---
@@ -45,7 +45,7 @@ const header = HEADERS[stage] ?? HEADERS['常规赛']
   <table>
     <thead>
       <tr>
-        {header.map((h, i) => <th class:list={{ 'col-w': i >= header.length - 4 }}>{h}</th>)}
+        {header.map((h, i) => <th class:list={{ 'col-w': i >= header.length - 4, 'col-diff': h === '差' || h === '晋级线差' || h === '一位差' }}>{h}</th>)}
       </tr>
     </thead>
     <tbody>
@@ -63,11 +63,11 @@ const header = HEADERS[stage] ?? HEADERS['常规赛']
               </td>
               {stage !== '常规赛' && <td class="num">{formatScore(r.stagePoints)}</td>}
               {stage !== '常规赛' && <td class="num">{formatScore(r.carry)}</td>}
-              <td class="num raw">{formatScore(r.stageRaw)}</td>
-              <td class="num">{fmt(r.diff)}</td>
+              {stage === '常规赛' && <td class="num raw">{formatScore(r.stageRaw)}</td>}
+              <td class="num col-diff">{fmt(r.diff)}</td>
               {stage === '决赛'
-                ? <td class="num">{fmt(r.firstDiff)}</td>
-                : <td class="num">{fmt(r.advDiff)}</td>}
+                ? <td class="num col-diff">{fmt(r.firstDiff)}</td>
+                : <td class="num col-diff">{fmt(r.advDiff)}</td>}
               <td class="num col-games">
                 <span class="games-num">{sum(r.wins)}</span>
                 <span class="games-total">/{totalGames}</span>

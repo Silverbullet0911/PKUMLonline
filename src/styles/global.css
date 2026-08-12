@@ -83,7 +83,7 @@ h3 { font-size: 15px; font-weight: 700; margin: 20px 0 8px; }
   box-shadow: var(--shadow);
   margin-bottom: 16px;
 }
-.team-table { max-width: 720px; margin: 0 auto 16px; }
+.team-table { max-width: 860px; margin: 0 auto 16px; }
 table { border-collapse: collapse; width: 100%; font-size: 14px; white-space: nowrap; }
 th, td { padding: 6px 10px; text-align: center; border-bottom: 1px solid var(--line); }
 thead th { background: var(--accent-soft); font-weight: 700; font-size: 13px; }
@@ -95,7 +95,12 @@ td.rank-out { background: #fff; color: #cc0000; }
 td.team-col { font-weight: 700; }
 tr.sep td { border-top: 2px solid #cc0000; }
 
-.col-pts { position: relative; width: 11%; }
+.col-pts { position: relative; width: 16%; }
+.col-pts-p { width: 13%; }
+.col-diff { width: 4%; }
+.col-avg { width: 4.5%; }
+.col-rank-p { width: 2.2em; font-weight: 400; }
+.neg { color: #cc0000; }
 .pts-val { font-size: 16px; font-weight: 700; }
 .pts-val.neg { color: #cc0000; }
 .pts-label { position: absolute; bottom: 1px; right: 3px; font-size: 9px; color: var(--muted); font-weight: 400; line-height: 1; }
@@ -225,7 +230,7 @@ td.num { font-variant-numeric: tabular-nums; }
   .charter-nav { position: static; }
 }
 
-html { scroll-padding-top: 45vh; scroll-behavior: smooth; }
+html { scroll-padding-top: 45vh; }
 .player-card {
   background: var(--card);
   border: 1px solid var(--line);
