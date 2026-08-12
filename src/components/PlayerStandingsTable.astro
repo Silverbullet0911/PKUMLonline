@@ -1,5 +1,6 @@
 ---
 import { formatPct, formatScore } from '../lib/standings'
+import { teamText } from '../lib/data'
 import type { ComputedPlayerRow } from '../lib/standings'
 import type { TeamInfo } from '../lib/types'
 
@@ -10,6 +11,7 @@ interface Props {
 
 const { rows, teams } = Astro.props
 const colorOf = (name: string) => teams.find((t) => t.name === name)?.color ?? '#9ca3af'
+const ts = (name: string) => `background:${colorOf(name)};color:${teamText(name)}`
 ---
 <div class="table-wrap">
   <table>
@@ -25,7 +27,7 @@ const colorOf = (name: string) => teams.find((t) => t.name === name)?.color ?? '
         rows.map((r) => (
           <tr>
             <td class="rank">{r.rank}</td>
-            <td class="team-col" style={`background:${colorOf(r.team)}`}>{r.team}</td>
+            <td class="team-col" style={ts(r.team)}>{r.team}</td>
             <td>{r.name}</td>
             <td class="num">{formatScore(r.points)}</td>
             <td class="num">{formatScore(r.rawPoints)}</td>

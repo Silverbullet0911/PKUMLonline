@@ -1,9 +1,10 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro'
-import { schedule, teams } from '../lib/data'
+import { schedule, teams, teamText } from '../lib/data'
 import { formatScore } from '../lib/standings'
 
 const colorOf = (name: string) => teams.teams.find((t) => t.name === name)?.color ?? '#9ca3af'
+const ts = (name: string) => `background:${colorOf(name)};color:${teamText(name)}`
 ---
 <BaseLayout title="赛程与结果">
   <h1>赛程与结果</h1>
@@ -24,7 +25,7 @@ const colorOf = (name: string) => teams.teams.find((t) => t.name === name)?.colo
                   g.players.map((p) => (
                     <tr>
                       <td class="num">{p.rank}</td>
-                      <td class="team-col" style={`background:${colorOf(p.team)}`}>{p.team}</td>
+                      <td class="team-col" style={ts(p.team)}>{p.team}</td>
                       <td>{p.name}</td>
                       <td class="num">{formatScore(p.points)}</td>
                     </tr>

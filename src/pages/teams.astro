@@ -38,21 +38,10 @@ const alumni = players.players.filter((p) => !current.has(p.name))
     alumni.length === 0 ? (
       <p class="empty">暂无往届选手数据。</p>
     ) : (
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr><th>选手名</th></tr>
-          </thead>
-          <tbody>
-            {
-              alumni.map((p) => (
-                <tr>
-                  <td><a href={`/archive#player-${encodeURIComponent(p.name)}`}>{p.name}</a></td>
-                </tr>
-              ))
-            }
-          </tbody>
-        </table>
+      <div class="alumni-grid">
+        {alumni.map((p) => (
+          <a href={`/archive#player-${encodeURIComponent(p.name)}`}>{p.name}</a>
+        ))}
       </div>
     )
   }

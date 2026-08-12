@@ -80,7 +80,18 @@ th, td { padding: 8px 12px; text-align: center; border-bottom: 1px solid var(--l
 thead th { background: var(--accent-soft); font-weight: 700; }
 tbody tr:hover { background: #fafbfc; }
 td.rank { font-weight: 700; }
-td.team-col { color: #fff; font-weight: 700; text-shadow: 0 0 2px rgba(0, 0, 0, .4); }
+td.team-col { font-weight: 700; }
+.alumni-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  gap: 6px 12px;
+  padding: 16px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  margin-bottom: 16px;
+}
+.alumni-grid a { text-align: center; padding: 4px 0; }
 td.num { font-variant-numeric: tabular-nums; }
 .as-of { text-align: right; color: var(--muted); font-size: 12px; margin-top: -8px; }
 .advance-note { color: var(--muted); font-size: 13px; margin-top: -6px; }

@@ -1,5 +1,6 @@
 ---
 import { formatScore } from '../lib/standings'
+import { teamText } from '../lib/data'
 import type { PlayerRecord, TeamInfo } from '../lib/types'
 
 interface Props {
@@ -9,6 +10,7 @@ interface Props {
 
 const { player, teams } = Astro.props
 const colorOf = (name: string) => teams.find((t) => t.name === name)?.color ?? '#9ca3af'
+const ts = (name: string) => `background:${colorOf(name)};color:${teamText(name)}`
 const fmtPct = (n: number | null) => (n == null ? '-' : `${n.toFixed(2)}%`)
 ---
 <div class="table-wrap">
@@ -24,7 +26,7 @@ const fmtPct = (n: number | null) => (n == null ? '-' : `${n.toFixed(2)}%`)
         [...player.history].reverse().map((h) => (
           <tr>
             <td class="num">{h.year}</td>
-            <td class="team-col" style={h.team ? `background:${colorOf(h.team)}` : ''}>{h.team ?? '-'}</td>
+            <td class="team-col" style={h.team ? ts(h.team) : ''}>{h.team ?? '-'}</td>
             <td class="num">{formatScore(h.regularPoints)}</td>
             <td class="num">{formatScore(h.semifinalPoints)}</td>
             <td class="num">{formatScore(h.finalPoints)}</td>

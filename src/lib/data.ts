@@ -17,3 +17,8 @@ export const standings = standingsRaw as { season: string; asOf: string; stages:
 export const schedule = scheduleRaw as { season: string; games: Game[] }
 export const news = newsRaw as { items: NewsItem[] }
 export const archive = archiveRaw as { seasons: { year: string; finalRank: string[]; champion: string }[] }
+
+const LIGHT_TEAMS = new Set(['樱花', '雷电', '赤坂', 'AB'])
+export function teamText(name: string): string {
+  return LIGHT_TEAMS.has(name) ? '#1f2328' : '#fff'
+}

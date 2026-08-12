@@ -1,5 +1,6 @@
 ---
 import { formatScore } from '../lib/standings'
+import { teamText } from '../lib/data'
 import type { ComputedTeamRow } from '../lib/standings'
 import type { TeamInfo, Wins } from '../lib/types'
 
@@ -12,6 +13,7 @@ interface Props {
 
 const { stage, rows, teams, totalGames } = Astro.props
 const colorOf = (name: string) => teams.find((t) => t.name === name)?.color ?? '#9ca3af'
+const ts = (name: string) => `background:${colorOf(name)};color:${teamText(name)}`
 const fmt = (n: number | null) => (n == null ? '-' : String(n))
 const fmtSigned = (n: number | null) =>
   n == null ? '-' : n > 0 ? `+${n}` : String(n)
@@ -36,7 +38,7 @@ const header = HEADERS[stage] ?? HEADERS['常规赛']
         rows.map((r) => (
           <tr>
             <td class="rank">{r.rank}</td>
-            <td class="team-col" style={`background:${colorOf(r.team)}`}>{r.team}</td>
+            <td class="team-col" style={ts(r.team)}>{r.team}</td>
             <td class="num">{formatScore(r.points)}</td>
             {stage !== '常规赛' && <td class="num">{formatScore(r.stagePoints)}</td>}
             {stage !== '常规赛' && <td class="num">{formatScore(r.carry)}</td>}
