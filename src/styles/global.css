@@ -88,7 +88,7 @@ table { border-collapse: collapse; width: 100%; font-size: 14px; white-space: no
 th, td { padding: 6px 10px; text-align: center; border-bottom: 1px solid var(--line); }
 thead th { background: var(--accent-soft); font-weight: 700; font-size: 13px; }
 tbody tr:hover { background: #fafafa; }
-td.rank { font-weight: 700; font-size: 16px; width: 7%; }
+td.rank { font-weight: 700; font-size: 16px; width: 50px; }
 td.rank-safe { background: #eaf0f8; color: var(--text); }
 td.rank-bubble { background: #fff3e6; color: var(--text); }
 td.rank-out { background: #fff; color: #cc0000; }
@@ -99,8 +99,7 @@ tr.sep td { border-top: 2px solid #cc0000; }
 .col-pts-p { width: 13%; }
 .col-diff { width: 4%; }
 .col-avg { width: 4.5%; }
-.col-rank-p { width: 7%; font-weight: 400; }
-.col-team-p { width: 11%; }
+.col-rank-p { width: 50px; font-weight: 400; }
 .neg { color: #cc0000; }
 .pts-val { font-size: 16px; font-weight: 700; }
 .pts-val.neg { color: #cc0000; }
