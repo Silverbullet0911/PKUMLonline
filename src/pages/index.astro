@@ -4,9 +4,9 @@ import TeamStandingsTable from '../components/TeamStandingsTable.astro'
 import { season, standings, news, schedule, teams } from '../lib/data'
 import { computeTeamBoard } from '../lib/standings'
 
-const regularStage = season.stages.find((s) => s.name === '常规赛')
-const regular = standings.stages.find((s) => s.name === '常规赛')
-const teamRows = computeTeamBoard(regular?.teamBoard ?? [], regularStage?.promoteRank ?? 6)
+const finalStage = season.stages.find((s) => s.name === '决赛')
+const final = standings.stages.find((s) => s.name === '决赛')
+const teamRows = computeTeamBoard(final?.teamBoard ?? [], finalStage?.promoteRank ?? 0)
 const latestNews = news.items.slice(0, 5)
 ---
 <BaseLayout title="首页">
@@ -15,14 +15,14 @@ const latestNews = news.items.slice(0, 5)
     <p>北京大学校内立直麻将团体赛官方网站 —— 赛程、积分、排名、规则与赛季档案一览。</p>
   </section>
 
-  <h2>{season.season}赛季 常规赛队伍榜</h2>
+  <h2>{season.season}赛季 决赛队伍榜</h2>
   {
     teamRows.length > 0 ? (
       <TeamStandingsTable
-        stage="常规赛"
+        stage="决赛"
         rows={teamRows}
         teams={teams.teams}
-        totalGames={regularStage?.totalGames ?? 24}
+        totalGames={finalStage?.totalGames ?? 2}
       />
     ) : (
       <p class="empty">暂无数据。</p>
