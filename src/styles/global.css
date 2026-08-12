@@ -97,8 +97,8 @@ td.rank-out { background: #fff; color: #cc0000; }
 td.team-col { font-weight: 700; }
 tr.sep td { border-top: 2px solid #cc0000; }
 
-.col-pts { position: relative; width: 16%; background: #ffe9d6; }
-.col-pts-p { width: 13%; background: #ffe9d6; }
+.col-pts { position: relative; width: 16%; background: #fff5ec; }
+.col-pts-p { width: 13%; background: #fff5ec; }
 .col-diff { width: 4%; }
 .col-avg { width: 4.5%; }
 .col-rank-p { font-weight: 400; font-size: 14px; font-variant-numeric: tabular-nums; }
@@ -262,9 +262,9 @@ html { scroll-padding-top: 45vh; }
   font-weight: 700;
 }
 .gp-seat { font-size: 12px; opacity: .85; }
-.gp-name { font-size: 16px; }
-.gp-rank { font-size: 22px; }
-.gp-pts { font-size: 14px; }
+.gp-name { font-size: 22px; }
+.gp-pts { font-size: 22px; }
+.gp-rank { font-size: 14px; opacity: .9; }
 @media (max-width: 720px) {
   .game-players { grid-template-columns: repeat(2, 1fr); }
 }

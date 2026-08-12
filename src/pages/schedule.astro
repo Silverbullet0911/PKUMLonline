@@ -21,8 +21,8 @@ const ts = (name: string) => `background:${colorOf(name)};color:${teamText(name)
                 <div class="game-player" style={ts(p.team)}>
                   <span class="gp-seat">{p.seat}</span>
                   <span class="gp-name">{p.name}</span>
-                  <span class="gp-rank">{p.rank}位</span>
                   <span class="gp-pts">{formatScore(p.points)}</span>
+                  <span class="gp-rank">{p.rank}位</span>
                 </div>
               ))
             }
