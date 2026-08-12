@@ -75,7 +75,8 @@ export interface NewsItem {
 export interface Game {
   stage: string
   date: string
-  players: { team: string; name: string; rank: number; points: number }[]
+  round?: string
+  players: { seat: string; team: string; name: string; rank: number; points: number }[]
   replayUrl?: string
   videoUrl?: string
 }

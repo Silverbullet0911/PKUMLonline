@@ -14,25 +14,18 @@ const ts = (name: string) => `background:${colorOf(name)};color:${teamText(name)
     ) : (
       schedule.games.map((g) => (
         <section class="game-card">
-          <h2>{g.stage} · {g.date}</h2>
-          <div class="table-wrap">
-            <table>
-              <thead>
-                <tr><th>顺位</th><th>队伍</th><th>选手</th><th>得分</th></tr>
-              </thead>
-              <tbody>
-                {
-                  g.players.map((p) => (
-                    <tr>
-                      <td class="num">{p.rank}</td>
-                      <td class="team-col" style={ts(p.team)}>{p.team}</td>
-                      <td>{p.name}</td>
-                      <td class="num">{formatScore(p.points)}</td>
-                    </tr>
-                  ))
-                }
-              </tbody>
-            </table>
+          <h2>{g.stage}{g.round ? ` ${g.round}` : ''} · {g.date}</h2>
+          <div class="game-players">
+            {
+              g.players.map((p) => (
+                <div class="game-player" style={ts(p.team)}>
+                  <span class="gp-seat">{p.seat}</span>
+                  <span class="gp-name">{p.name}</span>
+                  <span class="gp-rank">{p.rank}位</span>
+                  <span class="gp-pts">{formatScore(p.points)}</span>
+                </div>
+              ))
+            }
           </div>
           <p>
             {g.replayUrl && <a href={g.replayUrl} target="_blank" rel="noopener">牌谱</a>}
