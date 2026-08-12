@@ -21,7 +21,7 @@ const sum = (w: Wins) => w['1'] + w['2'] + w['3'] + w['4']
 const promoteRank = stage === '常规赛' ? 6 : stage === '半决赛' ? 4 : 0
 
 function rankClass(rank: number): string {
-  const c = ['rank']
+  const c = ['rank', 'col-rank-t']
   if (stage === '常规赛') {
     if (rank <= 4) c.push('rank-safe')
     else if (rank <= 6) c.push('rank-bubble')
