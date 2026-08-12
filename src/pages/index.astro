@@ -8,6 +8,7 @@ const finalStage = season.stages.find((s) => s.name === '决赛')
 const final = standings.stages.find((s) => s.name === '决赛')
 const teamRows = computeTeamBoard(final?.teamBoard ?? [], finalStage?.promoteRank ?? 0)
 const latestNews = news.items.slice(0, 5)
+const base = import.meta.env.BASE_URL
 ---
 <BaseLayout title="首页">
   <section class="intro">
@@ -44,7 +45,7 @@ const latestNews = news.items.slice(0, 5)
   {
     latestNews.length > 0 ? (
       <ul class="news-list">
-        {latestNews.map((n) => <li><time>{n.date}</time><a href="/news">{n.title}</a></li>)}
+        {latestNews.map((n) => <li><time>{n.date}</time><a href={`${base}news`}>{n.title}</a></li>)}
       </ul>
     ) : (
       <p class="empty">暂无公告。</p>

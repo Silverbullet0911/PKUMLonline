@@ -11,6 +11,8 @@ const alumni = players.players
 const formatName = (name: string) =>
   /^[一-鿿]{2}$/.test(name) ? name[0] + ' ' + name[1] : name
 
+const base = import.meta.env.BASE_URL
+
 const lastTeamColor = (p: { history: { team: string | null }[] }) => {
   const last = p.history[p.history.length - 1]
   if (!last?.team) return null
@@ -31,7 +33,7 @@ const lastTeamColor = (p: { history: { team: string | null }[] }) => {
             {
               r?.roster.map((name) => {
                 return (
-                  <a class="player-chip" href={`/archive#player-${encodeURIComponent(name)}`} style={`--tc:${t.color}`}>
+                  <a class="player-chip" href={`${base}archive#player-${encodeURIComponent(name)}`} style={`--tc:${t.color}`}>
                     <span class="player-name">{formatName(name)}</span>
                     {name === r.captain && <span class="captain-tag">队长</span>}
                   </a>
@@ -51,7 +53,7 @@ const lastTeamColor = (p: { history: { team: string | null }[] }) => {
     ) : (
       <div class="alumni-grid">
         {alumni.map((p) => (
-          <a class="alumni-chip" href={`/archive#player-${encodeURIComponent(p.name)}`} style={lastTeamColor(p) ? `--tc:${lastTeamColor(p)}` : ''}>{p.name}</a>
+          <a class="alumni-chip" href={`${base}archive#player-${encodeURIComponent(p.name)}`} style={lastTeamColor(p) ? `--tc:${lastTeamColor(p)}` : ''}>{p.name}</a>
         ))}
       </div>
     )

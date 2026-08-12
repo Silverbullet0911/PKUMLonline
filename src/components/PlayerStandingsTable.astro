@@ -16,6 +16,7 @@ const ts = (name: string) => `background:${colorOf(name)};color:${teamText(name)
 const num = (n: number | null) => (n == null || n === 0 ? '' : formatScore(n))
 const win = (n: number) => (n === 0 ? '' : String(n))
 const pct = (n: number | null) => (n == null || n === 0 ? '' : formatPct(n))
+const base = import.meta.env.BASE_URL
 ---
 <div class="table-wrap">
   <table>
@@ -29,7 +30,7 @@ const pct = (n: number | null) => (n == null || n === 0 ? '' : formatPct(n))
     <tbody>
       {
         rows.map((r) => (
-          <tr data-href={`/archive#player-${encodeURIComponent(r.name)}`}>
+          <tr data-href={`${base}archive#player-${encodeURIComponent(r.name)}`}>
             <td class="rank col-rank-p">{r.rank}</td>
             <td class="team-col" style={ts(r.team)}>{r.team}</td>
             <td>{r.name}</td>

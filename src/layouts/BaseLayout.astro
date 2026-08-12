@@ -7,6 +7,8 @@ interface Props {
 
 const { title } = Astro.props
 
+const base = import.meta.env.BASE_URL
+
 const nav = [
   { href: '/', label: '首页' },
   { href: '/news', label: '公告' },
@@ -16,7 +18,11 @@ const nav = [
   { href: '/rules', label: '赛事章程' },
   { href: '/archive', label: '选手档案' },
 ]
-const path = Astro.url.pathname
+
+const pathname = Astro.url.pathname
+const route = base !== '/' && pathname.startsWith(base)
+  ? pathname.slice(base.length - 1)
+  : pathname
 ---
 <!doctype html>
 <html lang="zh-CN">
@@ -27,16 +33,17 @@ const path = Astro.url.pathname
   </head>
   <body>
     <header class="site-header">
-      <a class="site-brand" href="/">
-        <img class="site-logo" src="/PLG标志平面.png" alt="PLG" />
+      <a class="site-brand" href={base}>
+        <img class="site-logo" src={`${base}PLG标志平面.png`} alt="PLG" />
         <span class="site-title">PKU M.LEAGUE</span>
       </a>
       <nav class="site-nav">
         {
           nav.map((item) => {
-            const active = item.href === '/' ? path === '/' : path.startsWith(item.href)
+            const active = item.href === '/' ? route === '/' : route.startsWith(item.href)
+            const href = item.href === '/' ? base : `${base}${item.href.slice(1)}`
             return (
-              <a class:list={['nav-link', { active }]} href={item.href}>
+              <a class:list={['nav-link', { active }]} href={href}>
                 {item.label}
               </a>
             )
