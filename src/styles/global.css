@@ -104,6 +104,7 @@ td.team-col { font-weight: 700; }
   box-shadow: var(--shadow);
   transition: box-shadow 0.15s;
   text-align: center;
+  aspect-ratio: 1.618 / 1;
 }
 .alumni-chip:hover {
   box-shadow: 0 2px 8px rgba(0, 0, 0, .15);
