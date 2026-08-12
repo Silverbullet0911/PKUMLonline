@@ -16,7 +16,7 @@ const alumni = players.players.filter((p) => !current.has(p.name))
       return (
         <section class="team-card">
           <h2><span class="team-dot" style={`background:${t.color}`}></span>{t.name}</h2>
-          <p>
+          <div class="player-grid">
             {
               r?.roster.map((name) => {
                 return (
@@ -27,7 +27,7 @@ const alumni = players.players.filter((p) => !current.has(p.name))
                 )
               })
             }
-          </p>
+          </div>
         </section>
       )
     })

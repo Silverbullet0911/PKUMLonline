@@ -121,15 +121,30 @@ td.num { font-variant-numeric: tabular-nums; }
 }
 .team-card h2 { border: none; padding: 0; margin: 0 0 8px; display: flex; align-items: center; gap: 10px; }
 .team-dot { width: 14px; height: 14px; border-radius: 4px; display: inline-block; }
-.player-chip {
-  display: inline-block;
-  margin: 4px 8px 4px 0;
-  padding: 4px 10px;
-  background: var(--accent-soft);
-  border-radius: 999px;
-  font-size: 13px;
+.player-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-top: 10px;
 }
-.player-chip:hover { text-decoration: none; background: var(--line); }
+.player-chip {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 14px;
+  background: var(--card);
+  border-radius: 10px;
+  font-family: "SimHei", "黑体", "PingFang SC", "Microsoft YaHei", sans-serif;
+  font-size: 15px;
+  color: var(--text);
+  text-decoration: none;
+  box-shadow: var(--shadow);
+  transition: box-shadow 0.15s;
+}
+.player-chip:hover {
+  box-shadow: 0 2px 12px rgba(0, 0, 0, .18);
+  text-decoration: none;
+}
 .captain-tag { font-size: 11px; color: var(--muted); margin-left: 6px; }
 
 .news-list { list-style: none; padding: 0; }
@@ -163,6 +178,7 @@ td.num { font-variant-numeric: tabular-nums; }
 }
 
 .player-card {
+  scroll-margin-top: 64px;
   background: var(--card);
   border: 1px solid var(--line);
   border-radius: var(--radius);
