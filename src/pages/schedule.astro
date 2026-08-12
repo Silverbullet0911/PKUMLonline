@@ -19,6 +19,7 @@ const ts = (name: string) => `background:${colorOf(name)};color:${teamText(name)
             {
               g.players.map((p) => (
                 <div class="game-player" style={ts(p.team)}>
+                  <span class="gp-team">{p.team}</span>
                   <span class="gp-seat">{p.seat}</span>
                   <span class="gp-name">{p.name}</span>
                   <span class="gp-pts">{formatScore(p.points)}</span>

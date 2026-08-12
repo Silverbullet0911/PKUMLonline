@@ -84,6 +84,7 @@ h3 { font-size: 15px; font-weight: 700; margin: 20px 0 8px; }
   margin-bottom: 16px;
 }
 .team-table { max-width: 720px; margin: 0 auto 16px; }
+.player-table { max-width: 1000px; margin: 0 auto 16px; }
 table { border-collapse: collapse; width: 100%; font-size: 14px; white-space: nowrap; }
 th, td { padding: 6px 10px; text-align: center; border-bottom: 1px solid var(--line); }
 thead th { background: var(--accent-soft); font-weight: 700; font-size: 13px; }
@@ -98,7 +99,7 @@ td.team-col { font-weight: 700; }
 tr.sep td { border-top: 2px solid #cc0000; }
 
 .col-pts { position: relative; width: 16%; background: #fff5ec; }
-.col-pts-p { width: 13%; background: #fff5ec; }
+.col-pts-p { width: 8.7%; background: #fff5ec; }
 .col-diff { width: 4%; }
 .col-avg { width: 4.5%; }
 .col-rank-p { font-weight: 400; font-size: 14px; font-variant-numeric: tabular-nums; }
@@ -148,6 +149,7 @@ td.raw { font-style: italic; }
 td.num { font-variant-numeric: tabular-nums; }
 .as-of { text-align: right; color: var(--text); font-weight: 700; font-size: 15px; margin-top: -6px; }
 .as-of-team { max-width: 720px; margin: -6px auto 0; }
+.as-of-player { max-width: 1000px; margin: -6px auto 0; }
 .advance-note { color: var(--muted); font-size: 13px; margin-top: -6px; }
 
 .honors { color: var(--muted); font-size: 12px; margin-left: 8px; }
@@ -253,6 +255,7 @@ html { scroll-padding-top: 45vh; }
   margin-bottom: 12px;
 }
 .game-player {
+  position: relative;
   border-radius: 10px;
   padding: 18px 10px;
   display: flex;
@@ -261,6 +264,7 @@ html { scroll-padding-top: 45vh; }
   gap: 4px;
   font-weight: 700;
 }
+.gp-team { position: absolute; top: 8px; left: 10px; font-size: 16px; opacity: .9; }
 .gp-seat { font-size: 12px; opacity: .85; }
 .gp-name { font-size: 22px; }
 .gp-pts { font-size: 22px; }
