@@ -1,0 +1,58 @@
+{
+ "season": "26-27",
+ "status": "赛季未开始，仅续约选手确认；待指名选手补齐中",
+ "source": "PL指名.xlsx（队伍代表色见 teams.json）+ 用户补充（野兽队长 yfy、AB队长微汐）",
+ "teams": [
+  {
+   "name": "海盗",
+   "captain": "Art3mis",
+   "roster": ["Art3mis", "同同", "弦宝可爱捏"]
+  },
+  {
+   "name": "格斗",
+   "captain": "忆水",
+   "roster": ["忆水", "小鹿", "Rexxx"]
+  },
+  {
+   "name": "樱花",
+   "captain": "炸洋芋",
+   "roster": ["炸洋芋", "zombie", "Spectator"]
+  },
+  {
+   "name": "火山",
+   "captain": "桃之11",
+   "roster": ["桃之11", "小朱", "喜之郎果冻"]
+  },
+  {
+   "name": "野兽",
+   "captain": "yfy",
+   "roster": ["yfy"]
+  },
+  {
+   "name": "地球",
+   "captain": "Hachimi",
+   "roster": ["Hachimi", "94TR"]
+  },
+  {
+   "name": "凤凰",
+   "captain": "玖夜",
+   "roster": ["玖夜", "立直里三", "bbbbhxb"]
+  },
+  {
+   "name": "雷电",
+   "captain": "Bywj",
+   "roster": ["Bywj"]
+  },
+  {
+   "name": "赤坂",
+   "captain": "元",
+   "roster": ["元", "乐楽樂", "saki", "abandoned"]
+  },
+  {
+   "name": "AB",
+   "captain": "微汐",
+   "roster": ["微汐"]
+  }
+ ],
+ "pendingNominations": ["muse", "曰像男子", "虹雀"]
+}

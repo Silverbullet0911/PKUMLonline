@@ -1,0 +1,1605 @@
+{
+ "players": [
+  {
+   "name": "94TR",
+   "personalHonors": [],
+   "teamHonors": [],
+   "history": [
+    {
+     "year": "25-26",
+     "team": "地球",
+     "regularPoints": -89.3,
+     "semifinalPoints": -99.0,
+     "finalPoints": null,
+     "regularMaxScore": 35500.0,
+     "regularAvoidRate": 70.0,
+     "teamRank": 6
+    }
+   ]
+  },
+  {
+   "name": "AKI粉丝",
+   "personalHonors": [],
+   "teamHonors": [],
+   "history": [
+    {
+     "year": "25-26",
+     "team": "野兽",
+     "regularPoints": 78.6,
+     "semifinalPoints": 13.4,
+     "finalPoints": null,
+     "regularMaxScore": 57600.0,
+     "regularAvoidRate": 73.33,
+     "teamRank": 5
+    }
+   ]
+  },
+  {
+   "name": "Art3mis",
+   "personalHonors": [],
+   "teamHonors": [
+    "25-26赛季冠军"
+   ],
+   "history": [
+    {
+     "year": "23-24",
+     "team": "海盗",
+     "regularPoints": -79.7,
+     "semifinalPoints": 26.1,
+     "finalPoints": -50.8,
+     "regularMaxScore": 45600.0,
+     "regularAvoidRate": 68.75,
+     "teamRank": 3
+    },
+    {
+     "year": "24-25",
+     "team": "海盗",
+     "regularPoints": -109.3,
+     "semifinalPoints": null,
+     "finalPoints": null,
+     "regularMaxScore": 27700.0,
+     "regularAvoidRate": 60.0,
+     "teamRank": 7
+    },
+    {
+     "year": "25-26",
+     "team": "海盗",
+     "regularPoints": -160.2,
+     "semifinalPoints": 15.5,
+     "finalPoints": 206.6,
+     "regularMaxScore": 45400.0,
+     "regularAvoidRate": 70.0,
+     "teamRank": 1
+    }
+   ]
+  },
+  {
+   "name": "Blackie",
+   "personalHonors": [],
+   "teamHonors": [],
+   "history": [
+    {
+     "year": "24-25",
+     "team": "海盗",
+     "regularPoints": 33.9,
+     "semifinalPoints": null,
+     "finalPoints": null,
+     "regularMaxScore": 68900.0,
+     "regularAvoidRate": 75.0,
+     "teamRank": 7
+    }
+   ]
+  },
+  {
+   "name": "Bywj",
+   "personalHonors": [],
+   "teamHonors": [],
+   "history": [
+    {
+     "year": "23-24",
+     "team": "雷电",
+     "regularPoints": -256.0,
+     "semifinalPoints": null,
+     "finalPoints": null,
+     "regularMaxScore": 33400.0,
+     "regularAvoidRate": 58.33,
+     "teamRank": 7
+    },
+    {
+     "year": "24-25",
+     "team": "雷电",
+     "regularPoints": -31.8,
+     "semifinalPoints": 103.9,
+     "finalPoints": null,
+     "regularMaxScore": 39400.0,
+     "regularAvoidRate": 80.0,
+     "teamRank": 5
+    },
+    {
+     "year": "25-26",
+     "team": "雷电",
+     "regularPoints": -198.5,
+     "semifinalPoints": null,
+     "finalPoints": null,
+     "regularMaxScore": 35400.0,
+     "regularAvoidRate": 50.0,
+     "teamRank": 8
+    }
+   ]
+  },
+  {
+   "name": "Day29",
+   "personalHonors": [],
+   "teamHonors": [],
+   "history": [
+    {
+     "year": "23-24",
+     "team": "樱花",
+     "regularPoints": -50.9,
+     "semifinalPoints": -77.5,
+     "finalPoints": -55.6,
+     "regularMaxScore": 25600.0,
+     "regularAvoidRate": 66.67,
+     "teamRank": 2
+    }
+   ]
+  },
+  {
+   "name": "Hachimi",
+   "personalHonors": [],
+   "teamHonors": [],
+   "history": [
+    {
+     "year": "25-26",
+     "team": "地球",
+     "regularPoints": -103.5,
+     "semifinalPoints": 73.4,
+     "finalPoints": null,
+     "regularMaxScore": 36000.0,
+     "regularAvoidRate": 66.67,
+     "teamRank": 6
+    }
+   ]
+  },
+  {
+   "name": "Iserlohn",
+   "personalHonors": [
+    "25-26赛季避四赏"
+   ],
+   "teamHonors": [],
+   "history": [
+    {
+     "year": "24-25",
+     "team": "雷电",
+     "regularPoints": 206.4,
+     "semifinalPoints": 49.6,
+     "finalPoints": null,
+     "regularMaxScore": 54700.0,
+     "regularAvoidRate": 100.0,
+     "teamRank": 5
+    },
+    {
+     "year": "25-26",
+     "team": "雷电",
+     "regularPoints": 96.3,
+     "semifinalPoints": null,
+     "finalPoints": null,
+     "regularMaxScore": 48700.0,
+     "regularAvoidRate": 100.0,
+     "teamRank": 8
+    }
+   ]
+  },
+  {
+   "name": "LettuceIce",
+   "personalHonors": [],
+   "teamHonors": [],
+   "history": [
+    {
+     "year": "23-24",
+     "team": "AB",
+     "regularPoints": 0.8,
+     "semifinalPoints": -99.8,
+     "finalPoints": null,
+     "regularMaxScore": 44900.0,
+     "regularAvoidRate": 85.71,
+     "teamRank": 5
+    }
+   ]
+  },
+  {
+   "name": "Nabeko",
+   "personalHonors": [],
+   "teamHonors": [],
+   "history": [
+    {
+     "year": "23-24",
+     "team": "火山",
+     "regularPoints": -218.7,
+     "semifinalPoints": null,
+     "finalPoints": null,
+     "regularMaxScore": 39500.0,
+     "regularAvoidRate": 72.73,
+     "teamRank": 8
+    }
+   ]
+  },
+  {
+   "name": "Perpetual-",
+   "personalHonors": [],
+   "teamHonors": [],
+   "history": [
+    {
+     "year": "23-24",
+     "team": "赤坂",
+     "regularPoints": 89.7,
+     "semifinalPoints": null,
+     "finalPoints": null,
+     "regularMaxScore": 41400.0,
+     "regularAvoidRate": 80.0,
+     "teamRank": 6
+    }
+   ]
+  },
+  {
+   "name": "Rexxx",
+   "personalHonors": [],
+   "teamHonors": [
+    "23-24赛季冠军"
+   ],
+   "history": [
+    {
+     "year": "23-24",
+     "team": "格斗",
+     "regularPoints": -87.9,
+     "semifinalPoints": 83.1,
+     "finalPoints": 64.0,
+     "regularMaxScore": 32200.0,
+     "regularAvoidRate": 60.0,
+     "teamRank": 1
+    },
+    {
+     "year": "24-25",
+     "team": "格斗",
+     "regularPoints": 269.0,
+     "semifinalPoints": -67.0,
+     "finalPoints": 17.3,
+     "regularMaxScore": 47600.0,
+     "regularAvoidRate": 100.0,
+     "teamRank": 3
+    },
+    {
+     "year": "25-26",
+     "team": "格斗",
+     "regularPoints": -297.2,
+     "semifinalPoints": 127.8,
+     "finalPoints": -194.0,
+     "regularMaxScore": 45800.0,
+     "regularAvoidRate": 45.45,
+     "teamRank": 2
+    }
+   ]
+  },
+  {
+   "name": "Spectator",
+   "personalHonors": [],
+   "teamHonors": [],
+   "history": [
+    {
+     "year": "24-25",
+     "team": "樱花",
+     "regularPoints": -64.2,
+     "semifinalPoints": 96.3,
+     "finalPoints": 4.8,
+     "regularMaxScore": 48500.0,
+     "regularAvoidRate": 50.0,
+     "teamRank": 2
+    },
+    {
+     "year": "25-26",
+     "team": "樱花",
+     "regularPoints": 412.1,
+     "semifinalPoints": 98.0,
+     "finalPoints": -83.4,
+     "regularMaxScore": 54400.0,
+     "regularAvoidRate": 87.5,
+     "teamRank": 3
+    }
+   ]
+  },
+  {
+   "name": "TimeWalk",
+   "personalHonors": [],
+   "teamHonors": [],
+   "history": [
+    {
+     "year": "23-24",
+     "team": "海盗",
+     "regularPoints": null,
+     "semifinalPoints": 251.7,
+     "finalPoints": 34.3,
+     "regularMaxScore": null,
+     "regularAvoidRate": null,
+     "teamRank": 3
+    },
+    {
+     "year": "24-25",
+     "team": "海盗",
+     "regularPoints": 3.2,
+     "semifinalPoints": null,
+     "finalPoints": null,
+     "regularMaxScore": 39300.0,
+     "regularAvoidRate": 75.0,
+     "teamRank": 7
+    }
+   ]
+  },
+  {
+   "name": "XXHYX",
+   "personalHonors": [],
+   "teamHonors": [],
+   "history": [
+    {
+     "year": "24-25",
+     "team": "赤坂",
+     "regularPoints": -86.4,
+     "semifinalPoints": null,
+     "finalPoints": null,
+     "regularMaxScore": -26400.0,
+     "regularAvoidRate": 0.0,
+     "teamRank": 8
+    }
+   ]
+  },
+  {
+   "name": "Xtzzzz",
+   "personalHonors": [],
+   "teamHonors": [],
+   "history": [
+    {
+     "year": "24-25",
+     "team": "樱花",
+     "regularPoints": 44.6,
+     "semifinalPoints": -114.9,
+     "finalPoints": 77.8,
+     "regularMaxScore": 63900.0,
+     "regularAvoidRate": 66.67,
+     "teamRank": 2
+    }
+   ]
+  },
+  {
+   "name": "Yuan",
+   "personalHonors": [],
+   "teamHonors": [
+    "24-25赛季冠军"
+   ],
+   "history": [
+    {
+     "year": "24-25",
+     "team": "野兽",
+     "regularPoints": 102.1,
+     "semifinalPoints": -9.1,
+     "finalPoints": 1.2,
+     "regularMaxScore": 56200.0,
+     "regularAvoidRate": 100.0,
+     "teamRank": 1
+    },
+    {
+     "year": "25-26",
+     "team": "樱花",
+     "regularPoints": 99.3,
+     "semifinalPoints": -98.3,
+     "finalPoints": -31.9,
+     "regularMaxScore": 50900.0,
+     "regularAvoidRate": 80.0,
+     "teamRank": 3
+    }
+   ]
+  },
+  {
+   "name": "abandoned",
+   "personalHonors": [],
+   "teamHonors": [],
+   "history": [
+    {
+     "year": "25-26",
+     "team": "赤坂",
+     "regularPoints": -85.8,
+     "semifinalPoints": null,
+     "finalPoints": null,
+     "regularMaxScore": 67600.0,
+     "regularAvoidRate": 61.54,
+     "teamRank": 9
+    }
+   ]
+  },
+  {
+   "name": "bbbbhxb",
+   "personalHonors": [],
+   "teamHonors": [],
+   "history": [
+    {
+     "year": "25-26",
+     "team": "凤凰",
+     "regularPoints": -262.1,
+     "semifinalPoints": null,
+     "finalPoints": null,
+     "regularMaxScore": 59100.0,
+     "regularAvoidRate": 53.85,
+     "teamRank": 7
+    }
+   ]
+  },
+  {
+   "name": "luckyoung",
+   "personalHonors": [],
+   "teamHonors": [
+    "23-24赛季冠军"
+   ],
+   "history": [
+    {
+     "year": "23-24",
+     "team": "格斗",
+     "regularPoints": 158.0,
+     "semifinalPoints": 7.9,
+     "finalPoints": -97.9,
+     "regularMaxScore": 58000.0,
+     "regularAvoidRate": 100.0,
+     "teamRank": 1
+    }
+   ]
+  },
+  {
+   "name": "muse",
+   "personalHonors": [],
+   "teamHonors": [],
+   "history": [
+    {
+     "year": "25-26",
+     "team": "地球",
+     "regularPoints": 278.4,
+     "semifinalPoints": -155.4,
+     "finalPoints": null,
+     "regularMaxScore": 62100.0,
+     "regularAvoidRate": 85.0,
+     "teamRank": 6
+    }
+   ]
+  },
+  {
+   "name": "pope",
+   "personalHonors": [],
+   "teamHonors": [],
+   "history": [
+    {
+     "year": "24-25",
+     "team": "凤凰",
+     "regularPoints": -115.7,
+     "semifinalPoints": 82.5,
+     "finalPoints": -37.5,
+     "regularMaxScore": 35400.0,
+     "regularAvoidRate": 25.0,
+     "teamRank": 4
+    },
+    {
+     "year": "25-26",
+     "team": "凤凰",
+     "regularPoints": -24.3,
+     "semifinalPoints": null,
+     "finalPoints": null,
+     "regularMaxScore": 47700.0,
+     "regularAvoidRate": 77.78,
+     "teamRank": 7
+    }
+   ]
+  },
+  {
+   "name": "saki",
+   "personalHonors": [],
+   "teamHonors": [],
+   "history": [
+    {
+     "year": "24-25",
+     "team": "赤坂",
+     "regularPoints": -188.0,
+     "semifinalPoints": null,
+     "finalPoints": null,
+     "regularMaxScore": 17900.0,
+     "regularAvoidRate": 25.0,
+     "teamRank": 8
+    },
+    {
+     "year": "25-26",
+     "team": "赤坂",
+     "regularPoints": -70.8,
+     "semifinalPoints": null,
+     "finalPoints": null,
+     "regularMaxScore": 33900.0,
+     "regularAvoidRate": 87.5,
+     "teamRank": 9
+    }
+   ]
+  },
+  {
+   "name": "trajan",
+   "personalHonors": [],
+   "teamHonors": [],
+   "history": [
+    {
+     "year": "23-24",
+     "team": "海盗",
+     "regularPoints": -6.6,
+     "semifinalPoints": null,
+     "finalPoints": null,
+     "regularMaxScore": 28500.0,
+     "regularAvoidRate": 100.0,
+     "teamRank": 3
+    }
+   ]
+  },
+  {
+   "name": "zombie",
+   "personalHonors": [],
+   "teamHonors": [],
+   "history": [
+    {
+     "year": "23-24",
+     "team": "樱花",
+     "regularPoints": 2.2,
+     "semifinalPoints": -37.2,
+     "finalPoints": 25.9,
+     "regularMaxScore": 44100.0,
+     "regularAvoidRate": 75.0,
+     "teamRank": 2
+    },
+    {
+     "year": "24-25",
+     "team": "樱花",
+     "regularPoints": 35.0,
+     "semifinalPoints": 6.3,
+     "finalPoints": -29.5,
+     "regularMaxScore": 37200.0,
+     "regularAvoidRate": 85.71,
+     "teamRank": 2
+    },
+    {
+     "year": "25-26",
+     "team": "樱花",
+     "regularPoints": -46.3,
+     "semifinalPoints": -54.1,
+     "finalPoints": -183.1,
+     "regularMaxScore": 37900.0,
+     "regularAvoidRate": 80.0,
+     "teamRank": 3
+    }
+   ]
+  },
+  {
+   "name": "一朵南方的云",
+   "personalHonors": [],
+   "teamHonors": [],
+   "history": [
+    {
+     "year": "23-24",
+     "team": "凤凰",
+     "regularPoints": -47.9,
+     "semifinalPoints": -38.4,
+     "finalPoints": -65.7,
+     "regularMaxScore": 46800.0,
+     "regularAvoidRate": 66.67,
+     "teamRank": 4
+    }
+   ]
+  },
+  {
+   "name": "东雨南风",
+   "personalHonors": [],
+   "teamHonors": [],
+   "history": [
+    {
+     "year": "24-25",
+     "team": "火山",
+     "regularPoints": -145.8,
+     "semifinalPoints": null,
+     "finalPoints": null,
+     "regularMaxScore": 38000.0,
+     "regularAvoidRate": 40.0,
+     "teamRank": 9
+    }
+   ]
+  },
+  {
+   "name": "乐楽樂",
+   "personalHonors": [],
+   "teamHonors": [],
+   "history": [
+    {
+     "year": "23-24",
+     "team": "赤坂",
+     "regularPoints": 29.2,
+     "semifinalPoints": -114.5,
+     "finalPoints": null,
+     "regularMaxScore": 50300.0,
+     "regularAvoidRate": 66.67,
+     "teamRank": 6
+    },
+    {
+     "year": "24-25",
+     "team": "赤坂",
+     "regularPoints": 113.0,
+     "semifinalPoints": null,
+     "finalPoints": null,
+     "regularMaxScore": 55000.0,
+     "regularAvoidRate": 90.91,
+     "teamRank": 8
+    },
+    {
+     "year": "25-26",
+     "team": "赤坂",
+     "regularPoints": -38.6,
+     "semifinalPoints": null,
+     "finalPoints": null,
+     "regularMaxScore": 63700.0,
+     "regularAvoidRate": 84.62,
+     "teamRank": 9
+    }
+   ]
+  },
+  {
+   "name": "佐佐木叉外",
+   "personalHonors": [],
+   "teamHonors": [],
+   "history": [
+    {
+     "year": "25-26",
+     "team": "地球",
+     "regularPoints": -53.6,
+     "semifinalPoints": -52.5,
+     "finalPoints": null,
+     "regularMaxScore": 35100.0,
+     "regularAvoidRate": 77.78,
+     "teamRank": 6
+    }
+   ]
+  },
+  {
+   "name": "元",
+   "personalHonors": [],
+   "teamHonors": [],
+   "history": [
+    {
+     "year": "23-24",
+     "team": "赤坂",
+     "regularPoints": 57.7,
+     "semifinalPoints": -226.2,
+     "finalPoints": null,
+     "regularMaxScore": 51800.0,
+     "regularAvoidRate": 77.78,
+     "teamRank": 6
+    },
+    {
+     "year": "24-25",
+     "team": "赤坂",
+     "regularPoints": -108.7,
+     "semifinalPoints": null,
+     "finalPoints": null,
+     "regularMaxScore": 46800.0,
+     "regularAvoidRate": 50.0,
+     "teamRank": 8
+    },
+    {
+     "year": "25-26",
+     "team": "赤坂",
+     "regularPoints": -201.2,
+     "semifinalPoints": null,
+     "finalPoints": null,
+     "regularMaxScore": 42600.0,
+     "regularAvoidRate": 71.43,
+     "teamRank": 9
+    }
+   ]
+  },
+  {
+   "name": "凛冬",
+   "personalHonors": [],
+   "teamHonors": [
+    "24-25赛季冠军"
+   ],
+   "history": [
+    {
+     "year": "24-25",
+     "team": "野兽",
+     "regularPoints": -16.9,
+     "semifinalPoints": 50.8,
+     "finalPoints": 66.3,
+     "regularMaxScore": 50500.0,
+     "regularAvoidRate": 50.0,
+     "teamRank": 1
+    }
+   ]
+  },
+  {
+   "name": "前原Nagi",
+   "personalHonors": [
+    "25-26赛季MVP",
+    "25-26赛季最高打点赏"
+   ],
+   "teamHonors": [
+    "23-24赛季冠军"
+   ],
+   "history": [
+    {
+     "year": "23-24",
+     "team": "格斗",
+     "regularPoints": -77.8,
+     "semifinalPoints": 100.0,
+     "finalPoints": 23.8,
+     "regularMaxScore": 42400.0,
+     "regularAvoidRate": 84.62,
+     "teamRank": 1
+    },
+    {
+     "year": "24-25",
+     "team": "格斗",
+     "regularPoints": -73.5,
+     "semifinalPoints": 334.4,
+     "finalPoints": 39.8,
+     "regularMaxScore": 33600.0,
+     "regularAvoidRate": 85.71,
+     "teamRank": 3
+    },
+    {
+     "year": "25-26",
+     "team": "格斗",
+     "regularPoints": 529.9,
+     "semifinalPoints": 202.2,
+     "finalPoints": 49.9,
+     "regularMaxScore": 94000.0,
+     "regularAvoidRate": 93.33,
+     "teamRank": 2
+    }
+   ]
+  },
+  {
+   "name": "半糖",
+   "personalHonors": [],
+   "teamHonors": [],
+   "history": [
+    {
+     "year": "25-26",
+     "team": "野兽",
+     "regularPoints": -59.5,
+     "semifinalPoints": -163.7,
+     "finalPoints": null,
+     "regularMaxScore": 42000.0,
+     "regularAvoidRate": 88.89,
+     "teamRank": 5
+    }
+   ]
+  },
+  {
+   "name": "吉他新子憧",
+   "personalHonors": [],
+   "teamHonors": [],
+   "history": [
+    {
+     "year": "25-26",
+     "team": "野兽",
+     "regularPoints": 7.4,
+     "semifinalPoints": 56.8,
+     "finalPoints": null,
+     "regularMaxScore": 73700.0,
+     "regularAvoidRate": 64.29,
+     "teamRank": 5
+    }
+   ]
+  },
+  {
+   "name": "同同",
+   "personalHonors": [],
+   "teamHonors": [
+    "25-26赛季冠军"
+   ],
+   "history": [
+    {
+     "year": "23-24",
+     "team": "海盗",
+     "regularPoints": 10.2,
+     "semifinalPoints": -40.3,
+     "finalPoints": 13.2,
+     "regularMaxScore": 54200.0,
+     "regularAvoidRate": 69.23,
+     "teamRank": 3
+    },
+    {
+     "year": "25-26",
+     "team": "海盗",
+     "regularPoints": 21.3,
+     "semifinalPoints": -101.1,
+     "finalPoints": 41.4,
+     "regularMaxScore": 46600.0,
+     "regularAvoidRate": 87.5,
+     "teamRank": 1
+    }
+   ]
+  },
+  {
+   "name": "咲傲江湖",
+   "personalHonors": [],
+   "teamHonors": [],
+   "history": [
+    {
+     "year": "24-25",
+     "team": "AB",
+     "regularPoints": 133.1,
+     "semifinalPoints": -120.1,
+     "finalPoints": null,
+     "regularMaxScore": 38900.0,
+     "regularAvoidRate": 100.0,
+     "teamRank": 6
+    }
+   ]
+  },
+  {
+   "name": "喜之郎果冻",
+   "personalHonors": [],
+   "teamHonors": [],
+   "history": [
+    {
+     "year": "25-26",
+     "team": "火山",
+     "regularPoints": 96.4,
+     "semifinalPoints": -121.8,
+     "finalPoints": -34.7,
+     "regularMaxScore": 42700.0,
+     "regularAvoidRate": 92.31,
+     "teamRank": 4
+    }
+   ]
+  },
+  {
+   "name": "天鹰",
+   "personalHonors": [],
+   "teamHonors": [],
+   "history": [
+    {
+     "year": "23-24",
+     "team": "火山",
+     "regularPoints": 15.9,
+     "semifinalPoints": null,
+     "finalPoints": null,
+     "regularMaxScore": 40400.0,
+     "regularAvoidRate": 83.33,
+     "teamRank": 8
+    },
+    {
+     "year": "24-25",
+     "team": "火山",
+     "regularPoints": 14.9,
+     "semifinalPoints": null,
+     "finalPoints": null,
+     "regularMaxScore": 44900.0,
+     "regularAvoidRate": 60.0,
+     "teamRank": 9
+    },
+    {
+     "year": "25-26",
+     "team": "火山",
+     "regularPoints": 111.3,
+     "semifinalPoints": -51.3,
+     "finalPoints": 15.3,
+     "regularMaxScore": 65000.0,
+     "regularAvoidRate": 88.89,
+     "teamRank": 4
+    }
+   ]
+  },
+  {
+   "name": "小朱",
+   "personalHonors": [],
+   "teamHonors": [],
+   "history": [
+    {
+     "year": "25-26",
+     "team": "火山",
+     "regularPoints": -303.2,
+     "semifinalPoints": -140.4,
+     "finalPoints": -111.1,
+     "regularMaxScore": 41400.0,
+     "regularAvoidRate": 45.45,
+     "teamRank": 4
+    }
+   ]
+  },
+  {
+   "name": "小管",
+   "personalHonors": [],
+   "teamHonors": [],
+   "history": [
+    {
+     "year": "25-26",
+     "team": "AB",
+     "regularPoints": -247.9,
+     "semifinalPoints": null,
+     "finalPoints": null,
+     "regularMaxScore": 42200.0,
+     "regularAvoidRate": 50.0,
+     "teamRank": 10
+    }
+   ]
+  },
+  {
+   "name": "小鹿",
+   "personalHonors": [],
+   "teamHonors": [
+    "23-24赛季冠军"
+   ],
+   "history": [
+    {
+     "year": "23-24",
+     "team": "格斗",
+     "regularPoints": 239.0,
+     "semifinalPoints": 286.5,
+     "finalPoints": -18.0,
+     "regularMaxScore": 64300.0,
+     "regularAvoidRate": 76.92,
+     "teamRank": 1
+    },
+    {
+     "year": "24-25",
+     "team": "格斗",
+     "regularPoints": -16.4,
+     "semifinalPoints": -169.1,
+     "finalPoints": -120.0,
+     "regularMaxScore": 51800.0,
+     "regularAvoidRate": 85.71,
+     "teamRank": 3
+    },
+    {
+     "year": "25-26",
+     "team": "格斗",
+     "regularPoints": 264.4,
+     "semifinalPoints": 1.3,
+     "finalPoints": 72.0,
+     "regularMaxScore": 54800.0,
+     "regularAvoidRate": 81.25,
+     "teamRank": 2
+    }
+   ]
+  },
+  {
+   "name": "岸谷",
+   "personalHonors": [
+    "23-24赛季避四赏"
+   ],
+   "teamHonors": [
+    "24-25赛季冠军"
+   ],
+   "history": [
+    {
+     "year": "23-24",
+     "team": "雷电",
+     "regularPoints": 198.0,
+     "semifinalPoints": null,
+     "finalPoints": null,
+     "regularMaxScore": 52600.0,
+     "regularAvoidRate": 100.0,
+     "teamRank": 7
+    },
+    {
+     "year": "24-25",
+     "team": "野兽",
+     "regularPoints": -11.2,
+     "semifinalPoints": 67.4,
+     "finalPoints": 18.1,
+     "regularMaxScore": 41400.0,
+     "regularAvoidRate": 85.71,
+     "teamRank": 1
+    },
+    {
+     "year": "25-26",
+     "team": "雷电",
+     "regularPoints": 68.4,
+     "semifinalPoints": null,
+     "finalPoints": null,
+     "regularMaxScore": 58600.0,
+     "regularAvoidRate": 75.0,
+     "teamRank": 8
+    }
+   ]
+  },
+  {
+   "name": "川崎镜",
+   "personalHonors": [],
+   "teamHonors": [],
+   "history": [
+    {
+     "year": "23-24",
+     "team": "火山",
+     "regularPoints": -37.3,
+     "semifinalPoints": null,
+     "finalPoints": null,
+     "regularMaxScore": 49600.0,
+     "regularAvoidRate": 61.54,
+     "teamRank": 8
+    }
+   ]
+  },
+  {
+   "name": "师旷",
+   "personalHonors": [],
+   "teamHonors": [],
+   "history": [
+    {
+     "year": "23-24",
+     "team": "AB",
+     "regularPoints": -160.0,
+     "semifinalPoints": -6.7,
+     "finalPoints": null,
+     "regularMaxScore": 44300.0,
+     "regularAvoidRate": 50.0,
+     "teamRank": 5
+    },
+    {
+     "year": "24-25",
+     "team": "AB",
+     "regularPoints": 71.2,
+     "semifinalPoints": -34.7,
+     "finalPoints": null,
+     "regularMaxScore": 39500.0,
+     "regularAvoidRate": 72.73,
+     "teamRank": 6
+    }
+   ]
+  },
+  {
+   "name": "帕可莉娅",
+   "personalHonors": [],
+   "teamHonors": [],
+   "history": [
+    {
+     "year": "23-24",
+     "team": "雷电",
+     "regularPoints": -188.4,
+     "semifinalPoints": null,
+     "finalPoints": null,
+     "regularMaxScore": 9700.0,
+     "regularAvoidRate": 0.0,
+     "teamRank": 7
+    }
+   ]
+  },
+  {
+   "name": "弦Lp",
+   "personalHonors": [],
+   "teamHonors": [],
+   "history": [
+    {
+     "year": "23-24",
+     "team": "雷电",
+     "regularPoints": -108.5,
+     "semifinalPoints": null,
+     "finalPoints": null,
+     "regularMaxScore": 42600.0,
+     "regularAvoidRate": 57.14,
+     "teamRank": 7
+    }
+   ]
+  },
+  {
+   "name": "弦宝可爱捏",
+   "personalHonors": [],
+   "teamHonors": [
+    "25-26赛季冠军"
+   ],
+   "history": [
+    {
+     "year": "25-26",
+     "team": "海盗",
+     "regularPoints": 8.7,
+     "semifinalPoints": 70.0,
+     "finalPoints": 128.6,
+     "regularMaxScore": 40100.0,
+     "regularAvoidRate": 66.67,
+     "teamRank": 1
+    }
+   ]
+  },
+  {
+   "name": "忆水",
+   "personalHonors": [],
+   "teamHonors": [],
+   "history": [
+    {
+     "year": "24-25",
+     "team": "格斗",
+     "regularPoints": 138.7,
+     "semifinalPoints": 23.9,
+     "finalPoints": -59.9,
+     "regularMaxScore": 84100.0,
+     "regularAvoidRate": 100.0,
+     "teamRank": 3
+    },
+    {
+     "year": "25-26",
+     "team": "格斗",
+     "regularPoints": 159.6,
+     "semifinalPoints": 141.9,
+     "finalPoints": 70.9,
+     "regularMaxScore": 46500.0,
+     "regularAvoidRate": 100.0,
+     "teamRank": 2
+    }
+   ]
+  },
+  {
+   "name": "才彻",
+   "personalHonors": [],
+   "teamHonors": [
+    "24-25赛季冠军"
+   ],
+   "history": [
+    {
+     "year": "24-25",
+     "team": "野兽",
+     "regularPoints": 11.1,
+     "semifinalPoints": -133.4,
+     "finalPoints": 80.8,
+     "regularMaxScore": 49300.0,
+     "regularAvoidRate": 85.71,
+     "teamRank": 1
+    },
+    {
+     "year": "25-26",
+     "team": "AB",
+     "regularPoints": -261.4,
+     "semifinalPoints": null,
+     "finalPoints": null,
+     "regularMaxScore": 37800.0,
+     "regularAvoidRate": 54.55,
+     "teamRank": 10
+    }
+   ]
+  },
+  {
+   "name": "曰像男子",
+   "personalHonors": [],
+   "teamHonors": [],
+   "history": [
+    {
+     "year": "23-24",
+     "team": "AB",
+     "regularPoints": 23.6,
+     "semifinalPoints": -19.6,
+     "finalPoints": null,
+     "regularMaxScore": 49700.0,
+     "regularAvoidRate": 77.78,
+     "teamRank": 5
+    },
+    {
+     "year": "24-25",
+     "team": "AB",
+     "regularPoints": -88.9,
+     "semifinalPoints": 99.2,
+     "finalPoints": null,
+     "regularMaxScore": 28500.0,
+     "regularAvoidRate": 80.0,
+     "teamRank": 6
+    },
+    {
+     "year": "25-26",
+     "team": "AB",
+     "regularPoints": -97.3,
+     "semifinalPoints": null,
+     "finalPoints": null,
+     "regularMaxScore": 38400.0,
+     "regularAvoidRate": 61.54,
+     "teamRank": 10
+    }
+   ]
+  },
+  {
+   "name": "树",
+   "personalHonors": [
+    "23-24赛季MVP",
+    "23-24赛季半庄最高打点赏"
+   ],
+   "teamHonors": [],
+   "history": [
+    {
+     "year": "23-24",
+     "team": "凤凰",
+     "regularPoints": 312.7,
+     "semifinalPoints": -1.3,
+     "finalPoints": -103.8,
+     "regularMaxScore": 77700.0,
+     "regularAvoidRate": 90.0,
+     "teamRank": 4
+    },
+    {
+     "year": "24-25",
+     "team": "凤凰",
+     "regularPoints": -64.2,
+     "semifinalPoints": -68.7,
+     "finalPoints": -64.0,
+     "regularMaxScore": 34300.0,
+     "regularAvoidRate": 75.0,
+     "teamRank": 4
+    }
+   ]
+  },
+  {
+   "name": "桃之11",
+   "personalHonors": [],
+   "teamHonors": [],
+   "history": [
+    {
+     "year": "25-26",
+     "team": "火山",
+     "regularPoints": 21.3,
+     "semifinalPoints": 235.9,
+     "finalPoints": -43.4,
+     "regularMaxScore": 48400.0,
+     "regularAvoidRate": 73.33,
+     "teamRank": 4
+    }
+   ]
+  },
+  {
+   "name": "椎名真白",
+   "personalHonors": [],
+   "teamHonors": [],
+   "history": [
+    {
+     "year": "24-25",
+     "team": "雷电",
+     "regularPoints": 61.9,
+     "semifinalPoints": -112.8,
+     "finalPoints": null,
+     "regularMaxScore": 67600.0,
+     "regularAvoidRate": 83.33,
+     "teamRank": 5
+    },
+    {
+     "year": "25-26",
+     "team": "雷电",
+     "regularPoints": -222.0,
+     "semifinalPoints": null,
+     "finalPoints": null,
+     "regularMaxScore": 48100.0,
+     "regularAvoidRate": 50.0,
+     "teamRank": 8
+    }
+   ]
+  },
+  {
+   "name": "正版丶",
+   "personalHonors": [],
+   "teamHonors": [],
+   "history": [
+    {
+     "year": "23-24",
+     "team": "凤凰",
+     "regularPoints": 80.5,
+     "semifinalPoints": -108.0,
+     "finalPoints": 86.7,
+     "regularMaxScore": 46400.0,
+     "regularAvoidRate": 81.82,
+     "teamRank": 4
+    }
+   ]
+  },
+  {
+   "name": "江州司马平安否",
+   "personalHonors": [],
+   "teamHonors": [],
+   "history": [
+    {
+     "year": "23-24",
+     "team": "AB",
+     "regularPoints": 80.9,
+     "semifinalPoints": 90.9,
+     "finalPoints": null,
+     "regularMaxScore": 44000.0,
+     "regularAvoidRate": 80.0,
+     "teamRank": 5
+    },
+    {
+     "year": "24-25",
+     "team": "火山",
+     "regularPoints": -309.4,
+     "semifinalPoints": null,
+     "finalPoints": null,
+     "regularMaxScore": 16500.0,
+     "regularAvoidRate": 33.33,
+     "teamRank": 9
+    }
+   ]
+  },
+  {
+   "name": "没有ID",
+   "personalHonors": [],
+   "teamHonors": [],
+   "history": [
+    {
+     "year": "24-25",
+     "team": "AB",
+     "regularPoints": -28.7,
+     "semifinalPoints": -63.0,
+     "finalPoints": null,
+     "regularMaxScore": 33800.0,
+     "regularAvoidRate": 75.0,
+     "teamRank": 6
+    }
+   ]
+  },
+  {
+   "name": "炸洋芋",
+   "personalHonors": [
+    "25-26赛季最多一位赏"
+   ],
+   "teamHonors": [],
+   "history": [
+    {
+     "year": "23-24",
+     "team": "樱花",
+     "regularPoints": 103.1,
+     "semifinalPoints": 42.2,
+     "finalPoints": 96.5,
+     "regularMaxScore": 54400.0,
+     "regularAvoidRate": 86.67,
+     "teamRank": 2
+    },
+    {
+     "year": "24-25",
+     "team": "樱花",
+     "regularPoints": 31.5,
+     "semifinalPoints": 163.6,
+     "finalPoints": -28.0,
+     "regularMaxScore": 56300.0,
+     "regularAvoidRate": 75.0,
+     "teamRank": 2
+    },
+    {
+     "year": "25-26",
+     "team": "樱花",
+     "regularPoints": 462.6,
+     "semifinalPoints": 78.8,
+     "finalPoints": 20.2,
+     "regularMaxScore": 79800.0,
+     "regularAvoidRate": 82.35,
+     "teamRank": 3
+    }
+   ]
+  },
+  {
+   "name": "玖夜",
+   "personalHonors": [
+    "24-25赛季MVP",
+    "24-25赛季半庄最高打点赏",
+    "24-25赛季避四赏"
+   ],
+   "teamHonors": [],
+   "history": [
+    {
+     "year": "23-24",
+     "team": "凤凰",
+     "regularPoints": -61.5,
+     "semifinalPoints": 53.9,
+     "finalPoints": -107.0,
+     "regularMaxScore": 44700.0,
+     "regularAvoidRate": 77.78,
+     "teamRank": 4
+    },
+    {
+     "year": "24-25",
+     "team": "凤凰",
+     "regularPoints": 282.3,
+     "semifinalPoints": -68.9,
+     "finalPoints": 86.3,
+     "regularMaxScore": 100900.0,
+     "regularAvoidRate": 100.0,
+     "teamRank": 4
+    },
+    {
+     "year": "25-26",
+     "team": "凤凰",
+     "regularPoints": -49.0,
+     "semifinalPoints": null,
+     "finalPoints": null,
+     "regularMaxScore": 69900.0,
+     "regularAvoidRate": 80.0,
+     "teamRank": 7
+    }
+   ]
+  },
+  {
+   "name": "空谷幽兰",
+   "personalHonors": [],
+   "teamHonors": [
+    "25-26赛季冠军"
+   ],
+   "history": [
+    {
+     "year": "24-25",
+     "team": "海盗",
+     "regularPoints": 113.5,
+     "semifinalPoints": null,
+     "finalPoints": null,
+     "regularMaxScore": 48400.0,
+     "regularAvoidRate": 81.82,
+     "teamRank": 7
+    },
+    {
+     "year": "25-26",
+     "team": "海盗",
+     "regularPoints": 20.8,
+     "semifinalPoints": -16.4,
+     "finalPoints": 76.7,
+     "regularMaxScore": 43900.0,
+     "regularAvoidRate": 85.71,
+     "teamRank": 1
+    }
+   ]
+  },
+  {
+   "name": "立直里三",
+   "personalHonors": [
+    "24-25赛季避四赏"
+   ],
+   "teamHonors": [],
+   "history": [
+    {
+     "year": "24-25",
+     "team": "凤凰",
+     "regularPoints": 121.4,
+     "semifinalPoints": -19.2,
+     "finalPoints": -53.5,
+     "regularMaxScore": 46900.0,
+     "regularAvoidRate": 100.0,
+     "teamRank": 4
+    },
+    {
+     "year": "25-26",
+     "team": "凤凰",
+     "regularPoints": 138.8,
+     "semifinalPoints": null,
+     "finalPoints": null,
+     "regularMaxScore": 41100.0,
+     "regularAvoidRate": 90.91,
+     "teamRank": 7
+    }
+   ]
+  },
+  {
+   "name": "老笼包",
+   "personalHonors": [],
+   "teamHonors": [],
+   "history": [
+    {
+     "year": "23-24",
+     "team": "樱花",
+     "regularPoints": 144.4,
+     "semifinalPoints": 11.6,
+     "finalPoints": 154.4,
+     "regularMaxScore": 52100.0,
+     "regularAvoidRate": 90.0,
+     "teamRank": 2
+    }
+   ]
+  },
+  {
+   "name": "蓝胖头鱼",
+   "personalHonors": [],
+   "teamHonors": [],
+   "history": [
+    {
+     "year": "24-25",
+     "team": "雷电",
+     "regularPoints": -183.4,
+     "semifinalPoints": -97.0,
+     "finalPoints": null,
+     "regularMaxScore": 26100.0,
+     "regularAvoidRate": 66.67,
+     "teamRank": 5
+    }
+   ]
+  },
+  {
+   "name": "虹雀",
+   "personalHonors": [],
+   "teamHonors": [],
+   "history": [
+    {
+     "year": "25-26",
+     "team": "AB",
+     "regularPoints": 106.0,
+     "semifinalPoints": null,
+     "finalPoints": null,
+     "regularMaxScore": 73800.0,
+     "regularAvoidRate": 68.75,
+     "teamRank": 10
+    }
+   ]
+  },
+  {
+   "name": "起亚、绿林",
+   "personalHonors": [],
+   "teamHonors": [],
+   "history": [
+    {
+     "year": "25-26",
+     "team": "野兽",
+     "regularPoints": -109.9,
+     "semifinalPoints": -61.0,
+     "finalPoints": null,
+     "regularMaxScore": 49900.0,
+     "regularAvoidRate": 70.0,
+     "teamRank": 5
+    }
+   ]
+  },
+  {
+   "name": "过氧化钠",
+   "personalHonors": [],
+   "teamHonors": [],
+   "history": [
+    {
+     "year": "23-24",
+     "team": "海盗",
+     "regularPoints": 69.6,
+     "semifinalPoints": null,
+     "finalPoints": null,
+     "regularMaxScore": 50100.0,
+     "regularAvoidRate": 100.0,
+     "teamRank": 3
+    }
+   ]
+  },
+  {
+   "name": "追梦少年",
+   "personalHonors": [],
+   "teamHonors": [],
+   "history": [
+    {
+     "year": "23-24",
+     "team": "赤坂",
+     "regularPoints": -141.6,
+     "semifinalPoints": -184.4,
+     "finalPoints": null,
+     "regularMaxScore": 43300.0,
+     "regularAvoidRate": 61.54,
+     "teamRank": 6
+    }
+   ]
+  },
+  {
+   "name": "雪",
+   "personalHonors": [],
+   "teamHonors": [],
+   "history": [
+    {
+     "year": "23-24",
+     "team": "火山",
+     "regularPoints": -132.7,
+     "semifinalPoints": null,
+     "finalPoints": null,
+     "regularMaxScore": 28600.0,
+     "regularAvoidRate": 66.67,
+     "teamRank": 8
+    },
+    {
+     "year": "24-25",
+     "team": "火山",
+     "regularPoints": -144.3,
+     "semifinalPoints": null,
+     "finalPoints": null,
+     "regularMaxScore": 34200.0,
+     "regularAvoidRate": 57.14,
+     "teamRank": 9
+    }
+   ]
+  }
+ ]
+}

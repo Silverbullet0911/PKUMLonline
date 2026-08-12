@@ -1,0 +1,6 @@
+node_modules/
+dist/
+.astro/
+.venv/
+.claude/
+PL指名.xlsx
