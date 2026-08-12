@@ -92,6 +92,7 @@ td.team-col { font-weight: 700; }
   margin-bottom: 16px;
 }
 .alumni-chip {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -106,6 +107,14 @@ td.team-col { font-weight: 700; }
   transition: box-shadow 0.15s;
   text-align: center;
   aspect-ratio: 1.618 / 1;
+}
+.alumni-chip::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0;
+  width: 12px; height: 12px;
+  background: var(--tc, transparent);
+  border-radius: 8px 0 4px 0;
 }
 .alumni-chip:hover {
   box-shadow: 0 2px 8px rgba(0, 0, 0, .15);

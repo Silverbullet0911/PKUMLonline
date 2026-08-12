@@ -10,6 +10,12 @@ const alumni = players.players
 
 const formatName = (name: string) =>
   /^[一-鿿]{2}$/.test(name) ? name[0] + ' ' + name[1] : name
+
+const lastTeamColor = (p: { history: { team: string | null }[] }) => {
+  const last = p.history[p.history.length - 1]
+  if (!last?.team) return null
+  return teams.teams.find(t => t.name === last.team)?.color ?? null
+}
 ---
 <BaseLayout title="队伍与选手">
   <h1>队伍与选手</h1>
@@ -45,7 +51,7 @@ const formatName = (name: string) =>
     ) : (
       <div class="alumni-grid">
         {alumni.map((p) => (
-          <a class="alumni-chip" href={`/archive#player-${encodeURIComponent(p.name)}`}>{p.name}</a>
+          <a class="alumni-chip" href={`/archive#player-${encodeURIComponent(p.name)}`} style={lastTeamColor(p) ? `--tc:${lastTeamColor(p)}` : ''}>{p.name}</a>
         ))}
       </div>
     )
