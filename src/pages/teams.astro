@@ -5,6 +5,10 @@ import { teams, roster, players } from '../lib/data'
 const playersByName = new Map(players.players.map((p) => [p.name, p]))
 const current = new Set(roster.teams.flatMap((t) => t.roster))
 const alumni = players.players.filter((p) => !current.has(p.name))
+
+const isAscii = (name: string) => /^[a-zA-Z0-9]+$/.test(name)
+const formatName = (name: string) =>
+  /^[一-鿿]{2}$/.test(name) ? name[0] + ' ' + name[1] : name
 ---
 <BaseLayout title="队伍与选手">
   <h1>队伍与选手</h1>
@@ -20,8 +24,8 @@ const alumni = players.players.filter((p) => !current.has(p.name))
             {
               r?.roster.map((name) => {
                 return (
-                  <a class="player-chip" href={`/archive#player-${encodeURIComponent(name)}`}>
-                    {name}
+                  <a class:list={['player-chip', { 'en-name': isAscii(name) }]} href={`/archive#player-${encodeURIComponent(name)}`}>
+                    <span class="player-name">{formatName(name)}</span>
                     {name === r.captain && <span class="captain-tag">队长</span>}
                   </a>
                 )
