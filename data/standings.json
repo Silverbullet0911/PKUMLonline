@@ -1,0 +1,9 @@
+{
+  "season": "26-27",
+  "asOf": "赛季未开始",
+  "stages": [
+    { "name": "常规赛", "teamBoard": [], "playerBoard": [] },
+    { "name": "半决赛", "teamBoard": [], "playerBoard": [] },
+    { "name": "决赛", "teamBoard": [], "playerBoard": [] }
+  ]
+}

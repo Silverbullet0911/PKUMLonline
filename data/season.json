@@ -1,0 +1,9 @@
+{
+  "season": "26-27",
+  "hasStarted": false,
+  "stages": [
+    { "name": "常规赛", "totalGames": 24, "promoteRank": 6, "advanceLabel": "常规赛积分前6名进入半决赛" },
+    { "name": "半决赛", "totalGames": 4, "promoteRank": 4, "advanceLabel": "半决赛积分前4名进入决赛" },
+    { "name": "决赛", "totalGames": 2, "promoteRank": 0, "advanceLabel": "决赛争夺冠军" }
+  ]
+}
