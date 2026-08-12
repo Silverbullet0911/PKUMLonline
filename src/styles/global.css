@@ -279,7 +279,7 @@ html { scroll-padding-top: 45vh; }
   gap: 16px;
   margin-bottom: 16px;
 }
-.future-meta { font-size: 13px; color: var(--muted); margin: 0 0 8px; text-align: center; }
+.future-meta { font-size: 18px; font-weight: 700; color: var(--text); margin: 0 0 10px; text-align: center; }
 .future-seats {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
