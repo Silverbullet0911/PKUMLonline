@@ -41,7 +41,7 @@ a:hover { text-decoration: underline; }
   text-decoration: none;
 }
 .site-brand:hover { text-decoration: none; }
-.site-logo { height: 32px; width: auto; }
+.site-logo { height: 48px; width: auto; }
 .site-title { font-size: 18px; font-weight: 700; color: var(--text); letter-spacing: 1px; }
 .site-nav { display: flex; gap: 0; flex-wrap: wrap; }
 .nav-link {

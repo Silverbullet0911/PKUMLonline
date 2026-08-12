@@ -16,10 +16,10 @@ const sample = [
 describe('splitCharter', () => {
   it('拆分为章程 + 各条', () => {
     const blocks = splitCharter(sample)
-    expect(blocks[0].id).toBe('0')
+    expect(blocks[0].id).toBe('preamble')
     expect(blocks[0].heading).toBe('章程')
     expect(blocks[0].content).toContain('章程文字。')
-    expect(blocks.map(b => b.id)).toEqual(['0', '1', '2', '3'])
+    expect(blocks.map(b => b.id)).toEqual(['preamble', '1', '2', '3'])
     expect(blocks[1].heading).toBe('第1条 总则')
   })
   it('条目内容跳过空行', () => {

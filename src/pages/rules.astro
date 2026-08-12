@@ -5,7 +5,7 @@ import charterRaw from '../../PKUML章程.txt?raw'
 import { splitCharter } from '../lib/charter'
 
 const blocks = splitCharter(charterRaw)
-const articles = blocks.filter(b => b.id !== '0')
+const articles = blocks.filter(b => b.id !== 'preamble')
 ---
 <BaseLayout title="赛事章程">
   <h1>赛事章程</h1>
