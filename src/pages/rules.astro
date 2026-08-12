@@ -5,15 +5,16 @@ import charterRaw from '../../PKUML章程.txt?raw'
 import { splitCharter } from '../lib/charter'
 
 const blocks = splitCharter(charterRaw)
+const articles = blocks.filter(b => b.id !== '0')
 ---
-<BaseLayout title="规则与章程">
-  <h1>规则与章程</h1>
+<BaseLayout title="赛事章程">
+  <h1>赛事章程</h1>
   <div class="charter-layout">
-    <CharterNav blocks={blocks} />
+    <CharterNav blocks={articles} />
     <div>
       {
-        blocks.map((b) => (
-          <section class="charter-block" id={b.id === '0' ? 'preamble' : `article-${b.id}`}>
+        articles.map((b) => (
+          <section class="charter-block" id={`article-${b.id}`}>
             <h2>{b.heading}</h2>
             {b.content.map((line) => <p>{line}</p>)}
           </section>
