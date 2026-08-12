@@ -1,0 +1,48 @@
+---
+import { formatPct, formatScore } from '../lib/standings'
+import type { ComputedPlayerRow } from '../lib/standings'
+import type { TeamInfo } from '../lib/types'
+
+interface Props {
+  rows: ComputedPlayerRow[]
+  teams: TeamInfo[]
+}
+
+const { rows, teams } = Astro.props
+const colorOf = (name: string) => teams.find((t) => t.name === name)?.color ?? '#9ca3af'
+---
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th>顺位</th><th>所属</th><th>选手名</th><th>积分</th><th>素点</th><th>判罚</th>
+        <th>比赛数</th><th>平均顺位</th><th>1位</th><th>2位</th><th>3位</th><th>4位</th>
+        <th>一位率</th><th>连对率</th><th>避四率</th><th>最高分</th>
+      </tr>
+    </thead>
+    <tbody>
+      {
+        rows.map((r) => (
+          <tr>
+            <td class="rank">{r.rank}</td>
+            <td class="team-col" style={`background:${colorOf(r.team)}`}>{r.team}</td>
+            <td>{r.name}</td>
+            <td class="num">{formatScore(r.points)}</td>
+            <td class="num">{formatScore(r.rawPoints)}</td>
+            <td class="num">{r.penalty ? r.penalty : ''}</td>
+            <td class="num">{r.games}</td>
+            <td class="num">{r.avgRank == null ? '-' : r.avgRank.toFixed(2)}</td>
+            <td class="num">{r.wins['1']}</td>
+            <td class="num">{r.wins['2']}</td>
+            <td class="num">{r.wins['3']}</td>
+            <td class="num">{r.wins['4']}</td>
+            <td class="num">{formatPct(r.winRate)}</td>
+            <td class="num">{formatPct(r.pairRate)}</td>
+            <td class="num">{formatPct(r.avoidRate)}</td>
+            <td class="num">{r.maxScore ? formatScore(r.maxScore) : '-'}</td>
+          </tr>
+        ))
+      }
+    </tbody>
+  </table>
+</div>

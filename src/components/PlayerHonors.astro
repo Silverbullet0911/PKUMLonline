@@ -1,0 +1,10 @@
+---
+interface Props {
+  personalHonors?: string[]
+  teamHonors?: string[]
+}
+
+const { personalHonors = [], teamHonors = [] } = Astro.props
+---
+{teamHonors.length > 0 && <span class="honors">队伍赏：{teamHonors.join('、')}</span>}
+{personalHonors.length > 0 && <span class="honors">个人赏：{personalHonors.join('、')}</span>}

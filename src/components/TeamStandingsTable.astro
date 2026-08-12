@@ -1,0 +1,56 @@
+---
+import { formatScore } from '../lib/standings'
+import type { ComputedTeamRow } from '../lib/standings'
+import type { TeamInfo, Wins } from '../lib/types'
+
+interface Props {
+  stage: string
+  rows: ComputedTeamRow[]
+  teams: TeamInfo[]
+  totalGames: number
+}
+
+const { stage, rows, teams, totalGames } = Astro.props
+const colorOf = (name: string) => teams.find((t) => t.name === name)?.color ?? '#9ca3af'
+const fmt = (n: number | null) => (n == null ? '-' : String(n))
+const fmtSigned = (n: number | null) =>
+  n == null ? '-' : n > 0 ? `+${n}` : String(n)
+const sum = (w: Wins) => w['1'] + w['2'] + w['3'] + w['4']
+
+const HEADERS: Record<string, string[]> = {
+  常规赛: ['顺位', '队伍', '积分', '素点', '差', '晋级线差', '比赛数', '1位', '2位', '3位', '4位'],
+  半决赛: ['顺位', '队伍', '积分', '半决赛积分', '持越', '半决赛素点', '差', '晋级线差', '比赛数', '1位', '2位', '3位', '4位'],
+  决赛: ['顺位', '队伍', '积分', '决赛积分', '持越', '决赛素点', '差', '一位差', '比赛数', '1位', '2位', '3位', '4位'],
+}
+const header = HEADERS[stage] ?? HEADERS['常规赛']
+---
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr>
+        {header.map((h) => <th>{h}</th>)}
+      </tr>
+    </thead>
+    <tbody>
+      {
+        rows.map((r) => (
+          <tr>
+            <td class="rank">{r.rank}</td>
+            <td class="team-col" style={`background:${colorOf(r.team)}`}>{r.team}</td>
+            <td class="num">{formatScore(r.points)}</td>
+            {stage !== '常规赛' && <td class="num">{formatScore(r.stagePoints)}</td>}
+            {stage !== '常规赛' && <td class="num">{formatScore(r.carry)}</td>}
+            <td class="num">{formatScore(r.stageRaw)}</td>
+            <td class="num">{fmt(r.diff)}</td>
+            {stage === '决赛' ? <td class="num">{fmtSigned(r.firstDiff)}</td> : <td class="num">{fmtSigned(r.advDiff)}</td>}
+            <td class="num">{sum(r.wins)}/{totalGames}</td>
+            <td class="num">{r.wins['1']}</td>
+            <td class="num">{r.wins['2']}</td>
+            <td class="num">{r.wins['3']}</td>
+            <td class="num">{r.wins['4']}</td>
+          </tr>
+        ))
+      }
+    </tbody>
+  </table>
+</div>

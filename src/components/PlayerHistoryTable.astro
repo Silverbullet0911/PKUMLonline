@@ -1,0 +1,39 @@
+---
+import { formatScore } from '../lib/standings'
+import type { PlayerRecord, TeamInfo } from '../lib/types'
+
+interface Props {
+  player: PlayerRecord
+  teams: TeamInfo[]
+}
+
+const { player, teams } = Astro.props
+const colorOf = (name: string) => teams.find((t) => t.name === name)?.color ?? '#9ca3af'
+const fmtPct = (n: number | null) => (n == null ? '-' : `${n.toFixed(2)}%`)
+---
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th>年份</th><th>隶属队伍</th><th>常规赛积分</th><th>半决赛积分</th><th>决赛积分</th>
+        <th>常规赛最高分</th><th>常规赛避四率</th><th>队伍名次</th>
+      </tr>
+    </thead>
+    <tbody>
+      {
+        player.history.map((h) => (
+          <tr>
+            <td class="num">{h.year}</td>
+            <td class="team-col" style={h.team ? `background:${colorOf(h.team)}` : ''}>{h.team ?? '-'}</td>
+            <td class="num">{formatScore(h.regularPoints)}</td>
+            <td class="num">{formatScore(h.semifinalPoints)}</td>
+            <td class="num">{formatScore(h.finalPoints)}</td>
+            <td class="num">{formatScore(h.regularMaxScore)}</td>
+            <td class="num">{fmtPct(h.regularAvoidRate)}</td>
+            <td class="num">{h.teamRank ?? '-'}</td>
+          </tr>
+        ))
+      }
+    </tbody>
+  </table>
+</div>
