@@ -163,7 +163,7 @@ td.num { font-variant-numeric: tabular-nums; }
   aspect-ratio: 1.618 / 1;
 }
 .player-chip:hover {
-  box-shadow: 0 4px 20px rgba(0, 0, 0, .18);
+  box-shadow: 0 4px 20px var(--tc, rgba(0, 0, 0, .18));
   text-decoration: none;
 }
 .player-name { line-height: 1.3; }

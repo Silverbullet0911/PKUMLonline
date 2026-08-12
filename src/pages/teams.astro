@@ -31,7 +31,7 @@ const lastTeamColor = (p: { history: { team: string | null }[] }) => {
             {
               r?.roster.map((name) => {
                 return (
-                  <a class="player-chip" href={`/archive#player-${encodeURIComponent(name)}`}>
+                  <a class="player-chip" href={`/archive#player-${encodeURIComponent(name)}`} style={`--tc:${t.color}`}>
                     <span class="player-name">{formatName(name)}</span>
                     {name === r.captain && <span class="captain-tag">队长</span>}
                   </a>
