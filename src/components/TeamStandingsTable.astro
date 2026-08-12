@@ -14,6 +14,7 @@ interface Props {
 const { stage, rows, teams, totalGames } = Astro.props
 const colorOf = (name: string) => teams.find((t) => t.name === name)?.color ?? '#9ca3af'
 const ts = (name: string) => `background:${colorOf(name)};color:${teamText(name)}`
+const fmtName = (n: string) => /^[一-鿿]{2}$/.test(n) ? n[0] + ' ' + n[1] : n
 const fmt = (n: number | null) => (n == null ? '-' : String(n))
 const sum = (w: Wins) => w['1'] + w['2'] + w['3'] + w['4']
 
@@ -56,7 +57,7 @@ const header = HEADERS[stage] ?? HEADERS['常规赛']
           return (
             <tr class:list={{ 'sep': isSep }}>
               <td class={rankClass(r.rank)}>{r.rank}</td>
-              <td class="team-col" style={ts(r.team)}>{r.team}</td>
+              <td class="team-col" style={ts(r.team)}>{fmtName(r.team)}</td>
               <td class="num col-pts">
                 <span class={`pts-val${neg}`}>{formatScore(r.points)}</span>
                 <span class="pts-label">pts</span>
