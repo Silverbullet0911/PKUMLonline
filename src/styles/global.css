@@ -156,15 +156,16 @@ td.num { font-variant-numeric: tabular-nums; }
 
 .stage-tabs { display: flex; gap: 8px; margin: 16px 0; }
 .stage-tab {
-  padding: 8px 20px;
-  border: 1px solid var(--line);
-  background: var(--card);
-  border-radius: 999px;
+  padding: 8px 16px;
+  border: none;
+  background: transparent;
+  border-radius: 8px;
   cursor: pointer;
   font-size: 14px;
-  color: var(--muted);
+  font-weight: 700;
+  color: var(--text);
 }
-.stage-tab.active { background: var(--green); border-color: var(--green); color: #fff; }
+.stage-tab.active { background: var(--green); color: #fff; }
 .stage-panel { display: none; }
 .stage-panel.active { display: block; }
 

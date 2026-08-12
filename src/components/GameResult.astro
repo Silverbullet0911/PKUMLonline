@@ -1,0 +1,33 @@
+---
+import { teams, teamText } from '../lib/data'
+import { formatScore } from '../lib/standings'
+import type { Game } from '../lib/types'
+
+interface Props {
+  game: Game
+}
+
+const { game } = Astro.props
+const colorOf = (name: string) => teams.teams.find((t) => t.name === name)?.color ?? '#9ca3af'
+const ts = (name: string) => `background:${colorOf(name)};color:${teamText(name)}`
+---
+<section class="game-card">
+  <h2>{game.stage}{game.round ? ` ${game.round}` : ''} · {game.date}</h2>
+  <div class="game-players">
+    {
+      game.seats.map((s) => (
+        <div class="game-player" style={ts(s.team)}>
+          <span class="gp-team">{s.team}</span>
+          <span class="gp-seat">{s.seat}</span>
+          <span class="gp-name">{s.name}</span>
+          <span class="gp-pts">{formatScore(s.points ?? 0)}</span>
+          <span class="gp-rank">{s.rank}位</span>
+        </div>
+      ))
+    }
+  </div>
+  <p>
+    {game.replayUrl && <a href={game.replayUrl} target="_blank" rel="noopener">牌谱</a>}
+    {game.videoUrl && <a href={game.videoUrl} target="_blank" rel="noopener">录像</a>}
+  </p>
+</section>
