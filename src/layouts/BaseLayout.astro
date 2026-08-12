@@ -26,7 +26,10 @@ const path = Astro.url.pathname
   </head>
   <body>
     <header class="site-header">
-      <a class="site-title" href="/">PKU M.LEAGUE</a>
+      <a class="site-brand" href="/">
+        <img class="site-logo" src="/PLG标志平面.png" alt="PLG" />
+        <span class="site-title">PKU M.LEAGUE</span>
+      </a>
       <nav class="site-nav">
         {
           nav.map((item) => {
