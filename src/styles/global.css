@@ -220,7 +220,7 @@ td.num { font-variant-numeric: tabular-nums; }
   border-radius: var(--radius);
   padding: 20px;
   max-width: 780px;
-  margin: 0 auto 20px;
+  margin: 0 auto 10px;
 }
 .team-card h2 { border: none; padding: 0; margin: 0 0 12px; display: flex; align-items: center; gap: 10px; font-size: 16px; }
 .team-dot { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
@@ -328,7 +328,8 @@ html { scroll-padding-top: 45vh; }
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 0;
-  max-width: 780px;
+  width: 780px;
+  max-width: 100%;
   margin: 0 auto 16px;
 }
 .future-game { padding: 0 24px; }
@@ -355,7 +356,7 @@ html { scroll-padding-top: 45vh; }
 .fs-seat { font-size: 13px; opacity: .85; }
 .fs-team { font-size: 18px; }
 @media (max-width: 720px) {
-  .future-games { grid-template-columns: 1fr; }
+  .future-games { grid-template-columns: 1fr; width: 100%; }
   .future-game { padding: 0; }
   .future-game:not(:first-child) { border-left: none; border-top: 1px solid var(--green); padding-top: 16px; }
 }
