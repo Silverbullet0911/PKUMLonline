@@ -335,8 +335,6 @@ html { scroll-padding-top: 45vh; }
   .game-players { grid-template-columns: repeat(2, 1fr); }
   .player-grid { grid-template-columns: repeat(2, 1fr); }
   .alumni-grid { grid-template-columns: repeat(4, 1fr); }
-  .player-chip { aspect-ratio: 2.43/1; padding: 6px 8px; font-size: 18px; }
-  .alumni-chip { aspect-ratio: 2.43/1; padding: 2px 4px; font-size: 11px; }
   .stage-tabs { top: 175px; }
   .az-layout { grid-template-columns: 1fr; }
   .nav-toggle {
@@ -359,7 +357,8 @@ html { scroll-padding-top: 45vh; }
   }
   .az-nav {
     position: fixed;
-    left: 12px;
+    right: 12px;
+    left: auto;
     bottom: 80px;
     z-index: 30;
     display: none;
@@ -433,7 +432,7 @@ html { scroll-padding-top: 45vh; }
   .future-layout.has-guide { grid-template-columns: 1fr; }
   .month-layout { grid-template-columns: 1fr; }
   .future-row { flex-direction: column; align-items: center; }
-  .future-meta { width: fit-content; text-align: left; }
+  .future-meta { width: 100%; text-align: center; }
   .future-seats { width: 100%; }
   .future-seat { width: auto; flex: 1; min-width: 0; }
   .fs-seat { font-size: 13px; }
@@ -466,4 +465,9 @@ html { scroll-padding-top: 45vh; }
 
   .history-table th:nth-child(1), .history-table td:nth-child(1) { left: 0; width: 55px; min-width: 55px; background: var(--card); }
   .history-table th:nth-child(2), .history-table td:nth-child(2) { left: 55px; width: 70px; min-width: 70px; }
+
+  .player-table td.col-rank-p { background: #fff; }
+  .team-table.stage-决赛 tbody tr:nth-child(2) td.rank,
+  .team-table.stage-决赛 tbody tr:nth-child(3) td.rank,
+  .team-table.stage-决赛 tbody tr:nth-child(4) td.rank { background: #fff; }
 }

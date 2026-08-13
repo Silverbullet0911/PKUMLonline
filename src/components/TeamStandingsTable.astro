@@ -42,7 +42,7 @@ const HEADERS: Record<string, string[]> = {
 }
 const header = HEADERS[stage] ?? HEADERS['常规赛']
 ---
-<div class="table-wrap team-table">
+<div class:list={['table-wrap', 'team-table', `stage-${stage}`]}>
   <table>
     <thead>
       <tr>
