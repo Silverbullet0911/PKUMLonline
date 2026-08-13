@@ -220,7 +220,7 @@ td.num { font-variant-numeric: tabular-nums; }
   border-radius: var(--radius);
   padding: 20px;
   max-width: 780px;
-  margin: 0 auto 10px;
+  margin: 0 auto;
 }
 .team-card h2 { border: none; padding: 0; margin: 0 0 12px; display: flex; align-items: center; gap: 10px; font-size: 16px; }
 .team-dot { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
@@ -330,7 +330,7 @@ html { scroll-padding-top: 45vh; }
   gap: 0;
   width: 780px;
   max-width: 100%;
-  margin: 0 auto 16px;
+  margin: 0 0 16px;
 }
 .future-game { padding: 0 24px; }
 .future-game:first-child { padding-left: 0; }
