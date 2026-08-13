@@ -52,6 +52,7 @@ const active = 0
     </div>
   </section>
 
+  <button class="nav-toggle" aria-label="导引">☰</button>
   <script>
     document.querySelectorAll('.stage-tab').forEach((tab) => {
       tab.addEventListener('click', () => {
@@ -66,6 +67,9 @@ const active = 0
         document.querySelectorAll('.az-link').forEach((l) => l.classList.remove('active'))
         link.classList.add('active')
       })
+    })
+    document.querySelector('.nav-toggle')?.addEventListener('click', () => {
+      document.querySelector('.stage-panel.active .az-nav')?.classList.toggle('open')
     })
     const playerHash = window.location.hash
     if (playerHash.startsWith('#player-')) {
