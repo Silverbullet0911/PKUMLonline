@@ -1,0 +1,93 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro'
+import AdminShell from '../../components/admin/AdminShell.astro'
+---
+<BaseLayout title="公告管理">
+  <AdminShell requireRole="admin">
+    <h1>公告管理</h1>
+    <form id="ann-form" class="ann-form">
+      <input name="date" type="date" required>
+      <input name="title" placeholder="标题" required>
+      <input name="category" placeholder="分类" value="公告">
+      <textarea name="body" placeholder="正文" required></textarea>
+      <button type="submit" id="ann-submit">新增</button>
+    </form>
+    <table class="ann-table">
+      <thead><tr><th>日期</th><th>标题</th><th>分类</th><th>操作</th></tr></thead>
+      <tbody id="ann-list"></tbody>
+    </table>
+  </AdminShell>
+  <script>
+    import { supabase } from '../../lib/supabase'
+    const list = document.getElementById('ann-list')!
+    const form = document.getElementById('ann-form') as HTMLFormElement
+    const submitBtn = document.getElementById('ann-submit') as HTMLButtonElement
+    let editingId: string | null = null
+
+    async function load() {
+      const { data, error } = await supabase
+        .from('announcements').select('*').order('date', { ascending: false })
+      if (error) return
+      list.innerHTML = ''
+      for (const a of data) {
+        const tr = document.createElement('tr')
+        const cells = [a.date, a.title, a.category]
+        for (const text of cells) {
+          const td = document.createElement('td')
+          td.textContent = text
+          tr.appendChild(td)
+        }
+        const ops = document.createElement('td')
+        const editBtn = document.createElement('button')
+        editBtn.textContent = '改'
+        editBtn.dataset.edit = a.id
+        const delBtn = document.createElement('button')
+        delBtn.textContent = '删'
+        delBtn.dataset.del = a.id
+        ops.append(editBtn, delBtn)
+        tr.appendChild(ops)
+        list.appendChild(tr)
+      }
+    }
+
+    list.addEventListener('click', async (e) => {
+      const target = e.target as HTMLElement
+      const id = target.dataset.del ?? target.dataset.edit ?? ''
+      if (target.dataset.del) {
+        await supabase.from('announcements').delete().eq('id', id)
+        load()
+      } else if (target.dataset.edit) {
+        const { data } = await supabase.from('announcements').select('*').eq('id', id).single()
+        if (data) {
+          editingId = data.id
+          form.date.value = data.date
+          form.title.value = data.title
+          form.category.value = data.category
+          form.body.value = data.body
+          submitBtn.textContent = '保存'
+        }
+      }
+    })
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault()
+      const payload = {
+        date: form.date.value,
+        title: form.title.value,
+        category: form.category.value,
+        body: form.body.value,
+      }
+      if (editingId) {
+        await supabase.from('announcements').update(payload).eq('id', editingId)
+        editingId = null
+        submitBtn.textContent = '新增'
+      } else {
+        await supabase.from('announcements').insert([payload])
+      }
+      form.reset()
+      load()
+    })
+
+    load()
+  </script>
+</BaseLayout>
