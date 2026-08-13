@@ -3,5 +3,6 @@ dist/
 .astro/
 .venv/
 .claude/
+.superpowers/
 PL指名.xlsx
 ~$PL指名.xlsx
