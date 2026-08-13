@@ -13,7 +13,7 @@ const alumniPlayers = players.players.filter((p) => !rosterNames.has(p.name))
 const currentGroups = groupByLetter(currentPlayers)
 const alumniGroups = groupByLetter(alumniPlayers)
 
-const active = Astro.url.searchParams.get('tab') === 'alum' ? 1 : 0
+const active = 0
 ---
 <BaseLayout title="选手档案">
   <h1>选手档案</h1>
@@ -67,5 +67,20 @@ const active = Astro.url.searchParams.get('tab') === 'alum' ? 1 : 0
         link.classList.add('active')
       })
     })
+    const playerHash = window.location.hash
+    if (playerHash.startsWith('#player-')) {
+      let id = playerHash.slice(1)
+      try { id = decodeURIComponent(id) } catch { /* keep raw */ }
+      const target = document.getElementById(id)
+      if (target) {
+        const panels = Array.from(document.querySelectorAll('.stage-panel'))
+        const index = panels.indexOf(target.closest('.stage-panel'))
+        if (index >= 0) {
+          document.querySelectorAll('.stage-tab').forEach((t, i) => t.classList.toggle('active', i === index))
+          document.querySelectorAll('.stage-panel').forEach((p, i) => p.classList.toggle('active', i === index))
+        }
+        target.scrollIntoView({ block: 'center' })
+      }
+    }
   </script>
 </BaseLayout>

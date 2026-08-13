@@ -330,6 +330,8 @@ html { scroll-padding-top: 45vh; }
 .gp-rank { font-size: 12px; opacity: .9; }
 @media (max-width: 720px) {
   .game-players { grid-template-columns: repeat(2, 1fr); }
+  .player-grid { grid-template-columns: repeat(2, 1fr); }
+  .alumni-grid { grid-template-columns: repeat(4, 1fr); }
 }
 
 .future-layout { min-width: 0; }
@@ -388,6 +390,10 @@ html { scroll-padding-top: 45vh; }
 @media (max-width: 720px) {
   .future-layout.has-guide { grid-template-columns: 1fr; }
   .month-layout { grid-template-columns: 1fr; }
-  .future-row { flex-wrap: wrap; }
-  .future-meta { width: 100%; }
+  .future-row { flex-direction: column; align-items: center; }
+  .future-meta { width: 100%; text-align: center; }
+  .future-seats { width: 100%; }
+  .future-seat { width: auto; flex: 1; min-width: 0; }
+  .fs-seat { font-size: 13px; }
+  .fs-team { font-size: 18px; }
 }
