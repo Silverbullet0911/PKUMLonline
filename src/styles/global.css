@@ -468,6 +468,19 @@ html { scroll-padding-top: 45vh; }
   .player-table th:nth-child(1), .player-table td:nth-child(1) { left: 0; width: 36px; min-width: 36px; }
   .player-table th:nth-child(2), .player-table td:nth-child(2) { left: 36px; width: 36px; min-width: 36px; }
   .player-table th:nth-child(3), .player-table td:nth-child(3) { left: 72px; width: 90px; min-width: 90px; background: var(--card); }
+  .player-table thead th:nth-child(4) { width: 70px; }
+  .player-table thead th:nth-child(5) { width: 60px; }
+  .player-table thead th:nth-child(6) { width: 40px; }
+  .player-table thead th:nth-child(7) { width: 40px; }
+  .player-table thead th:nth-child(8) { width: 50px; }
+  .player-table thead th:nth-child(9) { width: 30px; }
+  .player-table thead th:nth-child(10) { width: 30px; }
+  .player-table thead th:nth-child(11) { width: 30px; }
+  .player-table thead th:nth-child(12) { width: 30px; }
+  .player-table thead th:nth-child(13) { width: 55px; }
+  .player-table thead th:nth-child(14) { width: 55px; }
+  .player-table thead th:nth-child(15) { width: 55px; }
+  .player-table thead th:nth-child(16) { width: 60px; }
 
   .history-table table { table-layout: fixed; width: 605px; }
   .history-table th:nth-child(1), .history-table td:nth-child(1) { left: 0; width: 55px; min-width: 55px; background: var(--card); }
