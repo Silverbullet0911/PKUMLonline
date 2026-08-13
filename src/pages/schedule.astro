@@ -5,8 +5,11 @@ import FutureGames from '../components/FutureGames.astro'
 import GameResult from '../components/GameResult.astro'
 import { schedule } from '../lib/data'
 
+const roundNum = (g: { round?: string }) => Number(g.round?.match(/(\d+)/)?.[1] ?? 0)
 const upcoming = schedule.games.filter((g) => g.status === 'upcoming')
-const finished = schedule.games.filter((g) => g.status === 'finished')
+const finished = schedule.games
+  .filter((g) => g.status === 'finished')
+  .sort((a, b) => roundNum(b) - roundNum(a))
 ---
 <BaseLayout title="赛程与赛果">
   <h1>赛程与赛果</h1>

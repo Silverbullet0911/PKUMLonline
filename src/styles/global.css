@@ -219,7 +219,7 @@ td.num { font-variant-numeric: tabular-nums; }
   background: var(--card);
   border-radius: var(--radius);
   padding: 20px;
-  max-width: 792px;
+  max-width: 780px;
   margin: 0 auto 20px;
 }
 .team-card h2 { border: none; padding: 0; margin: 0 0 12px; display: flex; align-items: center; gap: 10px; font-size: 16px; }
@@ -305,18 +305,21 @@ html { scroll-padding-top: 45vh; }
   position: relative;
   border-radius: 10px;
   border: 1px solid #ccc;
-  padding: 18px 10px;
+  aspect-ratio: 1.618 / 1;
+  padding: 8px 10px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
+  justify-content: center;
+  gap: 2px;
   font-weight: 700;
+  line-height: 1.3;
 }
-.gp-team { position: absolute; top: 8px; left: 10px; font-size: 16px; opacity: .9; }
-.gp-seat { font-size: 12px; opacity: .85; }
-.gp-name { font-size: 22px; }
-.gp-pts { font-size: 22px; }
-.gp-rank { font-size: 14px; opacity: .9; }
+.gp-team { position: absolute; top: 6px; left: 8px; font-size: 14px; opacity: .9; }
+.gp-seat { font-size: 11px; opacity: .85; }
+.gp-name { font-size: 18px; }
+.gp-pts { font-size: 18px; }
+.gp-rank { font-size: 12px; opacity: .9; }
 @media (max-width: 720px) {
   .game-players { grid-template-columns: repeat(2, 1fr); }
 }
@@ -325,10 +328,10 @@ html { scroll-padding-top: 45vh; }
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 0;
-  max-width: 792px;
+  max-width: 780px;
   margin: 0 auto 16px;
 }
-.future-game { padding: 0 20px; }
+.future-game { padding: 0 24px; }
 .future-game:first-child { padding-left: 0; }
 .future-game:last-child { padding-right: 0; }
 .future-game:not(:first-child) { border-left: 1px solid var(--green); }

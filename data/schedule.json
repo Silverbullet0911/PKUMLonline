@@ -14,6 +14,18 @@
       ]
     },
     {
+      "stage": "决赛",
+      "date": "2026-05-22",
+      "round": "第15半庄",
+      "status": "finished",
+      "seats": [
+        { "seat": "东", "team": "格斗", "name": "前原Nagi", "rank": 3, "points": 19700 },
+        { "seat": "南", "team": "海盗", "name": "弦宝可爱捏", "rank": 1, "points": 36400 },
+        { "seat": "西", "team": "火山", "name": "小朱", "rank": 4, "points": 12100 },
+        { "seat": "北", "team": "樱花", "name": "Yuan", "rank": 2, "points": 31800 }
+      ]
+    },
+    {
       "stage": "常规赛",
       "date": "2026-09-01",
       "round": "第1半庄",
