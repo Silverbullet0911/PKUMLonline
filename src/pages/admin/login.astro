@@ -25,7 +25,12 @@ import BaseLayout from '../../layouts/BaseLayout.astro'
         err.textContent = '登录失败：' + error.message
         return
       }
-      window.location.href = import.meta.env.BASE_URL + 'admin/'
+      const { data: { session } } = await supabase.auth.getSession()
+      const uid = session?.user.id
+      if (!uid) { err.textContent = '登录失败：无法获取会话'; return }
+      const { data: profile } = await supabase.from('profiles').select('role').eq('id', uid).single()
+      const dest = profile?.role === 'captain' ? 'captain/' : 'admin/'
+      window.location.href = import.meta.env.BASE_URL + dest
     })
   </script>
 </BaseLayout>

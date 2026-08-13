@@ -31,7 +31,7 @@ const { requireRole } = Astro.props
     const { data: profile } = await supabase
       .from('profiles').select('role').eq('id', session.user.id).single()
     const role = profile?.role ?? null
-    if (!canAccessAdmin(role)) return redirect('admin/login/')
+    if (!canAccessAdmin(role)) return redirect(role === 'captain' ? 'captain/' : 'admin/login/')
     const required = (document.querySelector('.admin-shell') as HTMLElement).dataset.requireRole as Role | ''
     if (required && !guardByRole(role, required)) return redirect('admin/')
   })()
