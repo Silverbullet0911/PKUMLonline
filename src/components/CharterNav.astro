@@ -10,7 +10,7 @@ const { blocks } = Astro.props
 <nav class="charter-nav">
   {
     blocks.map((b) => (
-      <a href={b.id === '0' ? '#preamble' : `#article-${b.id}`}>{b.heading}</a>
+      <a href={`#article-${b.id}`}>{b.heading}</a>
     ))
   }
 </nav>

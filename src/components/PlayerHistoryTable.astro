@@ -15,9 +15,19 @@ const fmtPct = (n: number | null) => (n == null ? '-' : `${n.toFixed(2)}%`)
 ---
 <div class="table-wrap history-table">
   <table>
+    <colgroup>
+      <col style="width:55px">
+      <col style="width:70px">
+      <col style="width:80px">
+      <col style="width:80px">
+      <col style="width:80px">
+      <col style="width:90px">
+      <col style="width:80px">
+      <col style="width:70px">
+    </colgroup>
     <thead>
       <tr>
-        <th>年份</th><th>隶属队伍</th><th>常规赛积分</th><th>半决赛积分</th><th>决赛积分</th>
+        <th>赛季</th><th>隶属队伍</th><th>常规赛积分</th><th>半决赛积分</th><th>决赛积分</th>
         <th>常规赛最高分</th><th>常规赛避四率</th><th>队伍名次</th>
       </tr>
     </thead>
