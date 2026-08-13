@@ -49,7 +49,7 @@ const base = import.meta.env.BASE_URL
   <h2>最近赛程</h2>
   {
     upcomingGames.length > 0 ? (
-      <FutureGames games={upcomingGames} />
+      <FutureGames games={upcomingGames} showHeading={false} />
     ) : (
       <p class="empty">暂无未来赛程。</p>
     )

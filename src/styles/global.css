@@ -349,12 +349,13 @@ html { scroll-padding-top: 45vh; }
   margin-bottom: 16px;
 }
 .future-meta {
-  width: 150px;
   flex-shrink: 0;
   text-align: left;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text);
+  white-space: nowrap;
 }
-.fm-date { font-size: 15px; font-weight: 700; color: var(--text); }
-.fm-stage { font-size: 13px; color: var(--muted); margin-top: 2px; }
 .future-seats {
   display: flex;
   gap: 10px;

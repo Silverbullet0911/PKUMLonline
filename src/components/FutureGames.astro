@@ -7,29 +7,29 @@ import type { Game } from '../lib/types'
 interface Props {
   games: Game[]
   showGuide?: boolean
+  showHeading?: boolean
   prefix?: string
 }
 
-const { games, showGuide = false, prefix = 'sch' } = Astro.props
+const { games, showGuide = false, showHeading = true, prefix = 'sch' } = Astro.props
 const groups = groupByMonth(games, { order: 'asc' })
 const months = groups.map((g) => g.month)
 
 const colorOf = (name: string) => teams.teams.find((t) => t.name === name)?.color ?? '#9ca3af'
 const ts = (name: string) => `background:${colorOf(name)};color:${teamText(name)}`
 ---
-<div class="future-layout">
+<div class:list={['future-layout', { 'has-guide': showGuide }]}>
   {showGuide && <MonthIndex months={months} prefix={prefix} />}
   <div class="month-groups">
     {
       groups.map((mg) => (
         <section id={`${prefix}-${mg.month}`} class="month-group">
-          <h2>{mg.month}</h2>
+          {showHeading && <h2>{mg.month}</h2>}
           {
             mg.games.map((g) => (
               <div class="future-row">
                 <div class="future-meta">
-                  <div class="fm-date">{g.date}</div>
-                  <div class="fm-stage">{g.stage}{g.round ? ` ${g.round}` : ''}</div>
+                  {g.date} · {g.stage}{g.round ? ` ${g.round}` : ''}
                 </div>
                 <div class="future-seats">
                   {

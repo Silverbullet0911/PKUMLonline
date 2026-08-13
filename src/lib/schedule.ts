@@ -1,5 +1,5 @@
 export function monthOf(date: string): string {
-  return date.slice(0, 7)
+  return date.slice(2, 7)
 }
 
 export function roundNum(g: { round?: string }): number {
