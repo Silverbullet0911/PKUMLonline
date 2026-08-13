@@ -72,4 +72,70 @@ const finishedMonths = finishedGroups.map((mg) => mg.month)
       document.querySelector('.stage-panel.active .az-nav')?.classList.toggle('open')
     })
   </script>
+  <script>
+    import { supabase } from '../lib/supabase'
+    import { mapDbGame, splitGames, monthGroupsOf, teamStyle, escHtml } from '../lib/renderSchedule'
+
+    ;(async () => {
+      const { data, error } = await supabase.from('games').select('*').order('date', { ascending: true })
+      if (error || !data || data.length === 0) return
+      const games = (data as any[]).map(mapDbGame)
+      const { upcoming, finished } = splitGames(games)
+
+      const up = document.querySelector('#stage-0')
+      if (up) {
+        if (upcoming.length === 0) {
+          up.innerHTML = '<p class="empty">暂无赛程。</p>'
+        } else {
+          const groups = monthGroupsOf(upcoming, 'asc')
+          up.innerHTML = groups.map((mg) => `
+            <section id="sch-${mg.month}" class="month-group">
+              <h2>${mg.month}</h2>
+              ${mg.games.map((g) => `
+                <div class="future-row">
+                  <div class="future-meta">
+                    <div><span class="fm-date">${g.date}</span><span class="fm-rest"> · ${g.stage}${g.round ? ' ' + g.round : ''}</span></div>
+                    ${g.time ? `<div class="fm-time">${g.time}</div>` : ''}
+                  </div>
+                  <div class="future-seats">
+                    ${g.seats.map((s) => `
+                      <div class="future-seat" style="${teamStyle(s.team)}">
+                        <span class="fs-seat">${s.seat}</span>
+                        <span class="fs-team">${escHtml(s.team)}</span>
+                        ${s.name ? `<span class="fs-player">${escHtml(s.name)}</span>` : ''}
+                      </div>`).join('')}
+                  </div>
+                </div>`).join('')}
+            </section>`).join('')
+        }
+      }
+
+      const res = document.querySelector('#stage-1')
+      if (res) {
+        if (finished.length === 0) {
+          res.innerHTML = '<p class="empty">暂无赛果。</p>'
+        } else {
+          const groups = monthGroupsOf(finished, 'desc')
+          res.innerHTML = groups.map((mg) => `
+            <section id="res-${mg.month}" class="month-group">
+              <h2>${mg.month}</h2>
+              ${mg.games.map((g) => `
+                <section class="game-card">
+                  <h2>${g.stage}${g.round ? ' ' + g.round : ''} · ${g.date}</h2>
+                  <div class="game-players">
+                    ${g.seats.map((s) => `
+                      <div class="game-player" style="${teamStyle(s.team)}">
+                        <span class="gp-team">${escHtml(s.team)}</span>
+                        <span class="gp-seat">${s.seat}</span>
+                        <span class="gp-name">${s.name ? escHtml(s.name) : ''}</span>
+                        <span class="gp-pts">${s.points ?? 0}</span>
+                        <span class="gp-rank">${s.rank ?? ''}位</span>
+                      </div>`).join('')}
+                  </div>
+                </section>`).join('')}
+            </section>`).join('')
+        }
+      }
+    })()
+  </script>
 </BaseLayout>
