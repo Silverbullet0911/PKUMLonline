@@ -1,0 +1,90 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro'
+import AdminShell from '../../components/admin/AdminShell.astro'
+---
+<BaseLayout title="队伍名单管理">
+  <AdminShell requireRole="admin">
+    <h1>队伍名单管理</h1>
+    <form id="team-form" class="team-form">
+      <input name="season" placeholder="赛季 (如 26-27)" required>
+      <input name="name" placeholder="队伍名" required>
+      <input name="captain" placeholder="队长选手名">
+      <textarea name="roster" placeholder="选手名单，每行一个" required></textarea>
+      <button type="submit" id="team-submit">新增</button>
+    </form>
+    <p id="team-err" class="admin-err"></p>
+    <table class="ann-table">
+      <thead><tr><th>赛季</th><th>队伍</th><th>队长</th><th>名单</th><th>操作</th></tr></thead>
+      <tbody id="team-list"></tbody>
+    </table>
+  </AdminShell>
+  <script>
+    import { supabase } from '../../lib/supabase'
+    import { parseRoster } from '../../lib/games'
+    const list = document.getElementById('team-list')!
+    const form = document.getElementById('team-form') as HTMLFormElement
+    const submitBtn = document.getElementById('team-submit') as HTMLButtonElement
+    const errEl = document.getElementById('team-err')!
+    let editingId: string | null = null
+    const showErr = (m: string) => { errEl.textContent = m }
+
+    async function load() {
+      const { data, error } = await supabase.from('teams').select('*').order('season', { ascending: false })
+      if (error) return showErr('加载失败：' + error.message)
+      errEl.textContent = ''
+      list.innerHTML = ''
+      for (const t of data) {
+        const tr = document.createElement('tr')
+        const td = (s: string) => { const x = document.createElement('td'); x.textContent = s; tr.appendChild(x) }
+        td(t.season); td(t.name); td(t.captain ?? '')
+        const rosterTd = document.createElement('td')
+        rosterTd.textContent = (t.roster ?? []).join('、')
+        tr.appendChild(rosterTd)
+        const ops = document.createElement('td')
+        const eb = document.createElement('button'); eb.textContent = '改'; eb.dataset.edit = t.id
+        const db = document.createElement('button'); db.textContent = '删'; db.dataset.del = t.id
+        ops.append(eb, db); tr.appendChild(ops)
+        list.appendChild(tr)
+      }
+    }
+    list.addEventListener('click', async (e) => {
+      const el = e.target as HTMLElement
+      const id = el.dataset.del ?? el.dataset.edit ?? ''
+      if (el.dataset.del) {
+        const { error } = await supabase.from('teams').delete().eq('id', id)
+        if (error) return showErr('删除失败：' + error.message)
+        load()
+      } else if (el.dataset.edit) {
+        const { data, error } = await supabase.from('teams').select('*').eq('id', id).single()
+        if (error) return showErr('加载失败：' + error.message)
+        if (data) {
+          editingId = data.id
+          form.season.value = data.season
+          form.name.value = data.name
+          form.captain.value = data.captain ?? ''
+          form.roster.value = (data.roster ?? []).join('\n')
+          submitBtn.textContent = '保存'
+        }
+      }
+    })
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault()
+      const payload = {
+        season: form.season.value.trim(),
+        name: form.name.value.trim(),
+        captain: form.captain.value.trim() || null,
+        roster: parseRoster(form.roster.value),
+      }
+      if (editingId) {
+        const { error } = await supabase.from('teams').update(payload).eq('id', editingId)
+        if (error) return showErr('保存失败：' + error.message)
+        editingId = null; submitBtn.textContent = '新增'
+      } else {
+        const { error } = await supabase.from('teams').insert([payload])
+        if (error) return showErr('新增失败：' + error.message)
+      }
+      form.reset(); load()
+    })
+    load()
+  </script>
+</BaseLayout>
