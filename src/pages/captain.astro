@@ -1,0 +1,71 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro'
+---
+<BaseLayout title="队长选人">
+  <div class="captain-shell">
+    <h1>队长选人</h1>
+    <p id="cap-info"></p>
+    <p id="cap-err" class="admin-err"></p>
+    <div id="cap-games"></div>
+    <button id="cap-logout">退出</button>
+  </div>
+  <script>
+    import { supabase } from '../lib/supabase'
+    const base = import.meta.env.BASE_URL
+    const errEl = document.getElementById('cap-err')!
+    const redirect = (p: string) => { window.location.href = base + p }
+
+    ;(async () => {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) return redirect('admin/login/')
+      const { data: profile, error: pErr } = await supabase
+        .from('profiles').select('role, team').eq('id', session.user.id).single()
+      if (pErr || !profile || profile.role !== 'captain' || !profile.team) {
+        return redirect('admin/login/')
+      }
+      const team = profile.team
+      document.getElementById('cap-info')!.textContent = '当前队伍：' + team
+
+      const { data: roster } = await supabase.from('teams').select('roster').eq('name', team).single()
+      const rosterList = roster?.roster ?? []
+
+      const { data: games, error: gErr } = await supabase
+        .from('games').select('*').eq('status', 'upcoming').order('date', { ascending: true })
+      if (gErr) { errEl.textContent = '加载赛程失败：' + gErr.message; return }
+
+      const container = document.getElementById('cap-games')!
+      const myGames = (games ?? []).filter((g) => (g.seats ?? []).some((s) => s.team === team))
+      if (myGames.length === 0) {
+        container.innerHTML = '<p class="empty">暂无本队的未来赛程。</p>'
+      }
+      for (const g of myGames) {
+        const row = document.createElement('div')
+        row.className = 'cap-game'
+        row.innerHTML = `<div class="cap-meta">${g.date} · ${g.stage}${g.round ? ' ' + g.round : ''}</div>`
+        const seats = g.seats ?? []
+        const mySeat = seats.find((s) => s.team === team)
+        const sel = document.createElement('select')
+        sel.dataset.game = g.id
+        const emptyOpt = document.createElement('option'); emptyOpt.value = ''; emptyOpt.textContent = '未选定'
+        sel.appendChild(emptyOpt)
+        for (const p of rosterList) {
+          const o = document.createElement('option'); o.value = p; o.textContent = p
+          if (mySeat?.player === p) o.selected = true
+          sel.appendChild(o)
+        }
+        sel.value = mySeat?.player ?? ''
+        sel.addEventListener('change', async () => {
+          const { error } = await supabase.rpc('assign_player', {
+            p_game_id: g.id, p_player: sel.value,
+          })
+          errEl.textContent = error ? '指派失败：' + error.message : ''
+        })
+        row.appendChild(sel)
+        container.appendChild(row)
+      }
+      document.getElementById('cap-logout')!.addEventListener('click', async () => {
+        await supabase.auth.signOut(); redirect('admin/login/')
+      })
+    })()
+  </script>
+</BaseLayout>
