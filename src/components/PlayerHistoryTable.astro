@@ -13,7 +13,7 @@ const colorOf = (name: string) => teams.find((t) => t.name === name)?.color ?? '
 const ts = (name: string) => `background:${colorOf(name)};color:${teamText(name)}`
 const fmtPct = (n: number | null) => (n == null ? '-' : `${n.toFixed(2)}%`)
 ---
-<div class="table-wrap">
+<div class="table-wrap history-table">
   <table>
     <thead>
       <tr>

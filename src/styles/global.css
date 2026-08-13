@@ -439,3 +439,31 @@ html { scroll-padding-top: 45vh; }
   .fs-seat { font-size: 13px; }
   .fs-team { font-size: 18px; }
 }
+
+@media (max-width: 720px) {
+  .team-sep { display: none; }
+
+  .team-table th:nth-child(1), .team-table td:nth-child(1),
+  .team-table th:nth-child(2), .team-table td:nth-child(2),
+  .player-table th:nth-child(1), .player-table td:nth-child(1),
+  .player-table th:nth-child(2), .player-table td:nth-child(2),
+  .player-table th:nth-child(3), .player-table td:nth-child(3),
+  .history-table th:nth-child(1), .history-table td:nth-child(1),
+  .history-table th:nth-child(2), .history-table td:nth-child(2) {
+    position: sticky;
+    z-index: 1;
+  }
+  .team-table thead th:nth-child(-n+2),
+  .player-table thead th:nth-child(-n+3),
+  .history-table thead th:nth-child(-n+2) { z-index: 2; }
+
+  .team-table th:nth-child(1), .team-table td:nth-child(1) { left: 0; width: 50px; min-width: 50px; }
+  .team-table th:nth-child(2), .team-table td:nth-child(2) { left: 50px; width: 70px; min-width: 70px; }
+
+  .player-table th:nth-child(1), .player-table td:nth-child(1) { left: 0; width: 50px; min-width: 50px; }
+  .player-table th:nth-child(2), .player-table td:nth-child(2) { left: 50px; width: 56px; min-width: 56px; }
+  .player-table th:nth-child(3), .player-table td:nth-child(3) { left: 106px; width: 100px; min-width: 100px; background: var(--card); }
+
+  .history-table th:nth-child(1), .history-table td:nth-child(1) { left: 0; width: 55px; min-width: 55px; background: var(--card); }
+  .history-table th:nth-child(2), .history-table td:nth-child(2) { left: 55px; width: 70px; min-width: 70px; }
+}

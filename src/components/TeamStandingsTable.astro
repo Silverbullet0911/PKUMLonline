@@ -57,7 +57,9 @@ const header = HEADERS[stage] ?? HEADERS['常规赛']
           return (
             <tr class:list={{ 'sep': isSep }}>
               <td class={rankClass(r.rank)}>{r.rank}</td>
-              <td class="team-col" style={ts(r.team)}>{fmtName(r.team)}</td>
+              <td class="team-col" style={ts(r.team)}>
+                {/^[一-鿿]{2}$/.test(r.team) ? <>{r.team[0]}<span class="team-sep"> </span>{r.team[1]}</> : r.team}
+              </td>
               <td class="num col-pts">
                 <span class={`pts-val${neg}`}>{formatScore(r.points)}</span>
                 <span class="pts-label">pts</span>
