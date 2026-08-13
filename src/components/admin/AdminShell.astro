@@ -8,6 +8,8 @@ const { requireRole } = Astro.props
   <nav class="admin-nav">
     <a href={`${import.meta.env.BASE_URL}admin/`}>仪表盘</a>
     {(!requireRole || requireRole === 'admin') && <a href={`${import.meta.env.BASE_URL}admin/announcements/`}>公告</a>}
+    {(!requireRole || requireRole === 'admin') && <a href={`${import.meta.env.BASE_URL}admin/teams/`}>队伍</a>}
+    {(!requireRole || requireRole === 'admin') && <a href={`${import.meta.env.BASE_URL}admin/schedule/`}>赛程</a>}
     <a href={`${import.meta.env.BASE_URL}schedule/`}>前台赛程</a>
     <button id="logout" class="admin-logout">退出</button>
   </nav>
