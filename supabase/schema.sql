@@ -96,7 +96,10 @@ as $$
   select status from public.games where id = gid
 $$;
 
--- ============ 策略 ============
+-- ============ 策略（先 drop 再 create，保证可重复执行） ============
+drop policy if exists "profiles own read" on public.profiles;
+drop policy if exists "profiles admin read all" on public.profiles;
+drop policy if exists "profiles admin write" on public.profiles;
 create policy "profiles own read" on public.profiles
   for select using (auth.uid() = id);
 create policy "profiles admin read all" on public.profiles
@@ -104,12 +107,19 @@ create policy "profiles admin read all" on public.profiles
 create policy "profiles admin write" on public.profiles
   for all using (public.current_role() = 'admin');
 
+drop policy if exists "teams public read" on public.teams;
+drop policy if exists "teams admin write" on public.teams;
 create policy "teams public read" on public.teams for select using (true);
 create policy "teams admin write" on public.teams for all using (public.current_role() = 'admin');
 
+drop policy if exists "games public read" on public.games;
+drop policy if exists "games admin write" on public.games;
 create policy "games public read" on public.games for select using (true);
 create policy "games admin write" on public.games for all using (public.current_role() = 'admin');
 
+drop policy if exists "rounds public read" on public.rounds;
+drop policy if exists "rounds write upcoming" on public.rounds;
+drop policy if exists "rounds admin write finished" on public.rounds;
 create policy "rounds public read" on public.rounds for select using (true);
 create policy "rounds write upcoming" on public.rounds
   for all using (public.game_status(game_id) = 'upcoming')
@@ -118,10 +128,13 @@ create policy "rounds admin write finished" on public.rounds
   for all using (public.current_role() = 'admin')
   with check (public.current_role() = 'admin');
 
+drop policy if exists "announcements public read" on public.announcements;
+drop policy if exists "announcements admin write" on public.announcements;
 create policy "announcements public read" on public.announcements for select using (true);
 create policy "announcements admin write" on public.announcements for all using (public.current_role() = 'admin');
 
 -- ============ 触发器与权限授予 ============
+drop trigger if exists on_auth_user_created on auth.users;
 create trigger on_auth_user_created
   after insert on auth.users
   for each row execute procedure public.handle_new_user();
@@ -131,3 +144,58 @@ grant select, insert, update, delete on public.announcements to authenticated;
 grant select, insert, update, delete on public.profiles to authenticated;
 grant select, insert, update, delete on public.teams, public.games to authenticated;
 grant select, insert, update, delete on public.rounds to authenticated;
+
+-- ============ 队长/管理员指派出场选手 ============
+create or replace function public.assign_player(p_game_id uuid, p_player text)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_role text;
+  v_team text;
+  v_game record;
+  v_roster jsonb;
+  v_idx int;
+  v_updated boolean := false;
+  v_new_seats jsonb;
+  v_seat_team text;
+begin
+  select role, team into v_role, v_team from public.profiles where id = auth.uid();
+  if v_role is null or v_role not in ('captain','admin') then
+    raise exception 'forbidden';
+  end if;
+  select * into v_game from public.games where id = p_game_id;
+  if v_game.id is null then raise exception 'game not found'; end if;
+  if v_game.status <> 'upcoming' then raise exception 'game already finished'; end if;
+
+  v_new_seats := v_game.seats;
+  for v_idx in 0..jsonb_array_length(v_new_seats)-1 loop
+    v_seat_team := v_new_seats->v_idx->>'team';
+    if v_role = 'captain' and v_seat_team <> v_team then
+      continue;
+    end if;
+    select roster into v_roster from public.teams
+      where name = v_seat_team and season = v_game.season;
+    if v_roster is null then
+      raise exception 'team % not found in season %', v_seat_team, v_game.season;
+    end if;
+    if not (v_roster @> jsonb_build_array(p_player)) then
+      raise exception 'player not in roster of %', v_seat_team;
+    end if;
+    v_new_seats := jsonb_set(
+      v_new_seats,
+      array[v_idx::text],
+      v_new_seats->v_idx || jsonb_build_object('player', p_player)
+    );
+    v_updated := true;
+    exit;
+  end loop;
+  if not v_updated then raise exception 'no assignable seat'; end if;
+  update public.games set seats = v_new_seats where id = p_game_id;
+  return v_new_seats;
+end;
+$$;
+
+grant execute on function public.assign_player to authenticated;
