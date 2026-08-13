@@ -29,7 +29,7 @@ const ts = (name: string) => `background:${colorOf(name)};color:${teamText(name)
             mg.games.map((g) => (
               <div class="future-row">
                 <div class="future-meta">
-                  <div>{g.date} · {g.stage}{g.round ? ` ${g.round}` : ''}</div>
+                  <div><span class="fm-date">{g.date}</span><span class="fm-rest"> · {g.stage}{g.round ? ` ${g.round}` : ''}</span></div>
                   {g.time && <div class="fm-time">{g.time}</div>}
                 </div>
                 <div class="future-seats">
