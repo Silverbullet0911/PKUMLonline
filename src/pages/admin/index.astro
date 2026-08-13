@@ -1,0 +1,27 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro'
+import AdminShell from '../../components/admin/AdminShell.astro'
+---
+<BaseLayout title="后台">
+  <AdminShell>
+    <h1>后台仪表盘</h1>
+    <p id="profile"></p>
+    <ul class="admin-links" id="admin-links">
+      <li class="admin-only"><a href={`${import.meta.env.BASE_URL}admin/announcements/`}>公告管理</a></li>
+    </ul>
+  </AdminShell>
+  <script>
+    import { supabase } from '../../lib/supabase'
+    ;(async () => {
+      const { data: { session } } = await supabase.auth.getSession()
+      const { data: profile } = await supabase
+        .from('profiles').select('role, team, display_name').eq('id', session!.user.id).single()
+      const role = profile?.role ?? null
+      document.getElementById('profile')!.textContent =
+        `当前角色：${role ?? '-'}${profile?.team ? '（队伍：' + profile.team + '）' : ''}`
+      if (role !== 'admin') {
+        document.querySelectorAll('.admin-only').forEach((el) => (el as HTMLElement).style.display = 'none')
+      }
+    })()
+  </script>
+</BaseLayout>

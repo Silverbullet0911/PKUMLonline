@@ -1,0 +1,36 @@
+---
+interface Props {
+  requireRole?: 'admin' | 'referee' | 'captain'
+}
+const { requireRole } = Astro.props
+---
+<div class="admin-shell" data-require-role={requireRole ?? ''}>
+  <nav class="admin-nav">
+    <a href={`${import.meta.env.BASE_URL}admin/`}>仪表盘</a>
+    {(!requireRole || requireRole === 'admin') && <a href={`${import.meta.env.BASE_URL}admin/announcements/`}>公告</a>}
+    <a href={`${import.meta.env.BASE_URL}schedule/`}>前台赛程</a>
+    <button id="logout" class="admin-logout">退出</button>
+  </nav>
+  <main class="admin-main"><slot /></main>
+</div>
+<script>
+  import { supabase } from '../../lib/supabase'
+  import { canAccessAdmin, guardByRole } from '../../lib/auth'
+  import type { Role } from '../../lib/auth'
+  const base = import.meta.env.BASE_URL
+  const redirect = (path: string) => { window.location.href = base + path }
+  document.getElementById('logout')?.addEventListener('click', async () => {
+    await supabase.auth.signOut()
+    redirect('admin/login/')
+  })
+  ;(async () => {
+    const { data: { session } } = await supabase.auth.getSession()
+    if (!session) return redirect('admin/login/')
+    const { data: profile } = await supabase
+      .from('profiles').select('role').eq('id', session.user.id).single()
+    const role = profile?.role ?? null
+    if (!canAccessAdmin(role)) return redirect('admin/login/')
+    const required = (document.querySelector('.admin-shell') as HTMLElement).dataset.requireRole as Role | ''
+    if (required && !guardByRole(role, required)) return redirect('admin/')
+  })()
+</script>
