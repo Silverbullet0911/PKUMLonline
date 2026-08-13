@@ -357,6 +357,7 @@ html { scroll-padding-top: 45vh; }
   color: var(--text);
   white-space: nowrap;
 }
+.fm-time { font-size: 14px; font-weight: 400; color: var(--muted); }
 .future-seats {
   display: flex;
   gap: 10px;

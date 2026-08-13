@@ -29,6 +29,7 @@
       "stage": "常规赛",
       "date": "2026-09-01",
       "round": "第1半庄",
+      "time": "14:00",
       "status": "upcoming",
       "seats": [
         { "seat": "东", "team": "凤凰" },
@@ -41,6 +42,7 @@
       "stage": "常规赛",
       "date": "2026-09-01",
       "round": "第2半庄",
+      "time": "16:00",
       "status": "upcoming",
       "seats": [
         { "seat": "东", "team": "火山" },

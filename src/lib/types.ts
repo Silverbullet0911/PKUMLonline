@@ -84,6 +84,7 @@ export interface Game {
   stage: string
   date: string
   round?: string
+  time?: string
   status: 'finished' | 'upcoming'
   seats: GameSeat[]
   replayUrl?: string
