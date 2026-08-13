@@ -19,7 +19,7 @@
 | 文件 | 动作 | 职责 |
 |---|---|---|
 | `supabase/schema.sql` | 创建 | 全部 5 张表 + RLS + `current_role()` + 新用户触发器 + 权限授予 |
-| `.env.example` / `.env` | 创建 | `VITE_SUPABASE_URL`、`VITE_SUPABASE_ANON_KEY`（.env 加入 .gitignore） |
+| `.env.example` / `.env` | 创建 | `PUBLIC_SUPABASE_URL`、`PUBLIC_SUPABASE_ANON_KEY`（.env 加入 .gitignore；注意 Astro 客户端用 `PUBLIC_` 前缀，不是 Vite 的 `VITE_`） |
 | `.gitignore` | 修改 | 追加 `.env` |
 | `src/lib/supabase.ts` | 创建 | `createClient` 单例，读环境变量 |
 | `src/lib/auth.ts` | 创建 | 会话/角色辅助函数（可单测） |
@@ -70,15 +70,15 @@ git commit -m "chore: add @supabase/supabase-js"
 创建 `.env.example`：
 
 ```bash
-VITE_SUPABASE_URL=
-VITE_SUPABASE_ANON_KEY=
+PUBLIC_SUPABASE_URL=
+PUBLIC_SUPABASE_ANON_KEY=
 ```
 
 创建 `.env`（真实值由用户填入）：
 
 ```bash
-VITE_SUPABASE_URL=https://YOUR-PROJECT.supabase.co
-VITE_SUPABASE_ANON_KEY=your-anon-key
+PUBLIC_SUPABASE_URL=https://YOUR-PROJECT.supabase.co
+PUBLIC_SUPABASE_ANON_KEY=your-anon-key
 ```
 
 `.gitignore` 追加一行 `.env`。
@@ -267,8 +267,8 @@ git commit -m "feat: supabase schema with tables, RLS, and new-user trigger"
 ```ts
 import { createClient } from '@supabase/supabase-js'
 
-const url = import.meta.env.VITE_SUPABASE_URL as string
-const anon = import.meta.env.VITE_SUPABASE_ANON_KEY as string
+const url = import.meta.env.PUBLIC_SUPABASE_URL as string
+const anon = import.meta.env.PUBLIC_SUPABASE_ANON_KEY as string
 
 export const supabase = createClient(url, anon)
 ```
