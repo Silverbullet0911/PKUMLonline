@@ -4,5 +4,6 @@ dist/
 .venv/
 .claude/
 .superpowers/
+.env
 PL指名.xlsx
 ~$PL指名.xlsx
