@@ -464,7 +464,7 @@ html { scroll-padding-top: 45vh; }
   .team-table th:nth-child(1), .team-table td:nth-child(1) { left: 0; width: 50px; min-width: 50px; }
   .team-table th:nth-child(2), .team-table td:nth-child(2) { left: 50px; width: 70px; min-width: 70px; }
 
-  .player-table table { table-layout: fixed; width: 775px; }
+  .player-table table { table-layout: fixed; width: 767px; }
   .player-table th:nth-child(1), .player-table td:nth-child(1) { left: 0; width: 36px; min-width: 36px; }
   .player-table th:nth-child(2), .player-table td:nth-child(2) { left: 36px; width: 36px; min-width: 36px; }
   .player-table th:nth-child(3), .player-table td:nth-child(3) { left: 72px; width: 90px; min-width: 90px; background: var(--card); }
