@@ -1,0 +1,123 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro'
+import AdminShell from '../../components/admin/AdminShell.astro'
+---
+<BaseLayout title="赛程管理">
+  <AdminShell requireRole="admin">
+    <h1>赛程管理</h1>
+    <form id="game-form" class="game-form">
+      <input name="season" placeholder="赛季 (如 26-27)" required>
+      <select name="stage">
+        <option value="常规赛">常规赛</option>
+        <option value="半决赛">半决赛</option>
+        <option value="决赛">决赛</option>
+      </select>
+      <input name="date" type="date" required>
+      <input name="time" placeholder="时间 (如 14:00)">
+      <input name="round" placeholder="第几半庄">
+      <div class="game-seat-inputs">
+        <select name="seat0" data-seat="东"></select>
+        <select name="seat1" data-seat="南"></select>
+        <select name="seat2" data-seat="西"></select>
+        <select name="seat3" data-seat="北"></select>
+      </div>
+      <button type="submit" id="game-submit">新增</button>
+    </form>
+    <p id="game-err" class="admin-err"></p>
+    <table class="ann-table">
+      <thead><tr><th>日期</th><th>阶段</th><th>半庄</th><th>对阵</th><th>操作</th></tr></thead>
+      <tbody id="game-list"></tbody>
+    </table>
+  </AdminShell>
+  <script>
+    import { supabase } from '../../lib/supabase'
+    import { buildSeats } from '../../lib/games'
+    const list = document.getElementById('game-list')!
+    const form = document.getElementById('game-form') as HTMLFormElement
+    const submitBtn = document.getElementById('game-submit') as HTMLButtonElement
+    const errEl = document.getElementById('game-err')!
+    let editingId: string | null = null
+    let teamsCache: string[] = []
+    const showErr = (m: string) => { errEl.textContent = m }
+    const seatSelects = () => [form.seat0, form.seat1, form.seat2, form.seat3]
+
+    async function loadTeams() {
+      const { data, error } = await supabase.from('teams').select('name').order('name')
+      if (error) return showErr('加载队伍失败：' + error.message)
+      teamsCache = (data ?? []).map((t) => t.name)
+      for (const s of seatSelects()) {
+        s.innerHTML = ''
+        const opt = document.createElement('option')
+        opt.value = ''; opt.textContent = '选择队伍'
+        s.appendChild(opt)
+        for (const n of teamsCache) {
+          const o = document.createElement('option'); o.value = n; o.textContent = n
+          s.appendChild(o)
+        }
+      }
+    }
+    async function load() {
+      const { data, error } = await supabase.from('games').select('*').order('date', { ascending: true })
+      if (error) return showErr('加载失败：' + error.message)
+      errEl.textContent = ''
+      list.innerHTML = ''
+      for (const g of data) {
+        const tr = document.createElement('tr')
+        const td = (s: string) => { const x = document.createElement('td'); x.textContent = s; tr.appendChild(x) }
+        td(g.date); td(g.stage); td(g.round ?? '')
+        td((g.seats ?? []).map((s: { team: string }) => s.team).join(' / '))
+        const ops = document.createElement('td')
+        const eb = document.createElement('button'); eb.textContent = '改'; eb.dataset.edit = g.id
+        const db = document.createElement('button'); db.textContent = '删'; db.dataset.del = g.id
+        ops.append(eb, db); tr.appendChild(ops)
+        list.appendChild(tr)
+      }
+    }
+    list.addEventListener('click', async (e) => {
+      const el = e.target as HTMLElement
+      const id = el.dataset.del ?? el.dataset.edit ?? ''
+      if (el.dataset.del) {
+        const { error } = await supabase.from('games').delete().eq('id', id)
+        if (error) return showErr('删除失败：' + error.message)
+        load()
+      } else if (el.dataset.edit) {
+        const { data, error } = await supabase.from('games').select('*').eq('id', id).single()
+        if (error) return showErr('加载失败：' + error.message)
+        if (data) {
+          editingId = data.id
+          form.season.value = data.season
+          form.stage.value = data.stage
+          form.date.value = data.date
+          form.time.value = data.time ?? ''
+          form.round.value = data.round ?? ''
+          const seats = data.seats ?? []
+          seatSelects().forEach((s, i) => { s.value = seats[i]?.team ?? '' })
+          submitBtn.textContent = '保存'
+        }
+      }
+    })
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault()
+      const teams = seatSelects().map((s) => s.value)
+      if (teams.some((t) => !t)) return showErr('请为每个座位选择队伍')
+      const payload = {
+        season: form.season.value.trim(),
+        stage: form.stage.value,
+        date: form.date.value,
+        time: form.time.value.trim() || null,
+        round: form.round.value.trim() || null,
+        seats: buildSeats(teams),
+      }
+      if (editingId) {
+        const { error } = await supabase.from('games').update(payload).eq('id', editingId)
+        if (error) return showErr('保存失败：' + error.message)
+        editingId = null; submitBtn.textContent = '新增'
+      } else {
+        const { error } = await supabase.from('games').insert([payload])
+        if (error) return showErr('新增失败：' + error.message)
+      }
+      form.reset(); load()
+    })
+    loadTeams(); load()
+  </script>
+</BaseLayout>
