@@ -428,8 +428,9 @@ html { scroll-padding-top: 45vh; }
   font-weight: 700;
   line-height: 1.3;
 }
-.fs-seat { font-size: 16px; opacity: .85; }
+.fs-seat { font-size: 12px; opacity: .6; }
 .fs-team { font-size: 22px; }
+.fs-player { font-size: 13px; font-weight: 600; opacity: .9; }
 .month-layout {
   display: grid;
   grid-template-columns: 64px 1fr;
@@ -443,8 +444,9 @@ html { scroll-padding-top: 45vh; }
   .future-meta { width: fit-content; text-align: left; }
   .future-seats { width: 100%; }
   .future-seat { width: auto; flex: 1; min-width: 0; }
-  .fs-seat { font-size: 13px; }
+  .fs-seat { font-size: 11px; }
   .fs-team { font-size: 18px; }
+  .fs-player { font-size: 12px; }
 }
 
 @media (max-width: 720px) {
