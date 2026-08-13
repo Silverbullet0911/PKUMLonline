@@ -328,7 +328,7 @@ html { scroll-padding-top: 45vh; }
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 0;
-  width: 682px;
+  width: 600px;
   max-width: 100%;
   margin: 0 0 16px;
 }
