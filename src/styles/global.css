@@ -169,6 +169,34 @@ td.num { font-variant-numeric: tabular-nums; }
 .stage-panel { display: none; }
 .stage-panel.active { display: block; }
 
+.az-layout {
+  display: grid;
+  grid-template-columns: 44px 1fr;
+  gap: 16px;
+  align-items: start;
+}
+.az-nav {
+  position: sticky;
+  top: 64px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.az-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text);
+  text-decoration: none;
+}
+.az-link:hover { background: var(--accent-soft); text-decoration: none; }
+.az-link.active { background: var(--green); color: #fff; }
+
 .team-card, .game-card {
   background: var(--card);
   border: 1px solid var(--line);

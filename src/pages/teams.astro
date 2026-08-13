@@ -53,7 +53,7 @@ const lastTeamColor = (p: { history: { team: string | null }[] }) => {
     ) : (
       <div class="alumni-grid">
         {alumni.map((p) => (
-          <a class="alumni-chip" href={`${base}archive#player-${encodeURIComponent(p.name)}`} style={lastTeamColor(p) ? `--tc:${lastTeamColor(p)}` : ''}>{p.name}</a>
+          <a class="alumni-chip" href={`${base}archive?tab=alum#player-${encodeURIComponent(p.name)}`} style={lastTeamColor(p) ? `--tc:${lastTeamColor(p)}` : ''}>{p.name}</a>
         ))}
       </div>
     )

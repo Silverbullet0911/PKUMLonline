@@ -1,0 +1,19 @@
+---
+import PlayerHonors from './PlayerHonors.astro'
+import PlayerHistoryTable from './PlayerHistoryTable.astro'
+import { teams } from '../lib/data'
+import type { PlayerRecord } from '../lib/types'
+
+interface Props {
+  player: PlayerRecord
+}
+
+const { player } = Astro.props
+---
+<article class="player-card" id={`player-${player.name}`}>
+  <h3>
+    {player.name}
+    <PlayerHonors personalHonors={player.personalHonors} teamHonors={player.teamHonors} />
+  </h3>
+  <PlayerHistoryTable player={player} teams={teams.teams} />
+</article>

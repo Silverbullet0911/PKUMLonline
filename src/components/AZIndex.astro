@@ -1,0 +1,17 @@
+---
+import { letterAnchor } from '../lib/pinyin'
+
+interface Props {
+  letters: string[]
+  prefix: string
+}
+
+const { letters, prefix } = Astro.props
+---
+<nav class="az-nav">
+  {
+    letters.map((l) => (
+      <a class="az-link" href={`#${prefix}-${letterAnchor(l)}`}>{l}</a>
+    ))
+  }
+</nav>

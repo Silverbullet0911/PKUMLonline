@@ -1,14 +1,15 @@
 ---
 interface Props {
   stages: { name: string }[]
+  active?: number
 }
 
-const { stages } = Astro.props
+const { stages, active = 0 } = Astro.props
 ---
 <div class="stage-tabs" role="tablist">
   {
     stages.map((s, i) => (
-      <button class:list={['stage-tab', { active: i === 0 }]} data-target={`stage-${i}`}>{s.name}</button>
+      <button class:list={['stage-tab', { active: i === active }]} data-target={`stage-${i}`}>{s.name}</button>
     ))
   }
 </div>

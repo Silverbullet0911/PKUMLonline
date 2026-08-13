@@ -1,23 +1,71 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro'
-import PlayerHonors from '../components/PlayerHonors.astro'
-import PlayerHistoryTable from '../components/PlayerHistoryTable.astro'
-import { players, teams } from '../lib/data'
+import StageTabs from '../components/StageTabs.astro'
+import AZIndex from '../components/AZIndex.astro'
+import PlayerCard from '../components/PlayerCard.astro'
+import { players, roster } from '../lib/data'
+import { groupByLetter, letterAnchor } from '../lib/pinyin'
 
-const sorted = [...players.players].sort((a, b) => a.name.localeCompare(b.name, 'zh'))
+const rosterNames = new Set(roster.teams.flatMap((t) => t.roster))
+const currentPlayers = players.players.filter((p) => rosterNames.has(p.name))
+const alumniPlayers = players.players.filter((p) => !rosterNames.has(p.name))
+
+const currentGroups = groupByLetter(currentPlayers)
+const alumniGroups = groupByLetter(alumniPlayers)
+
+const active = Astro.url.searchParams.get('tab') === 'alum' ? 1 : 0
 ---
 <BaseLayout title="选手档案">
   <h1>选手档案</h1>
 
-  {
-    sorted.map((p) => (
-      <article class="player-card" id={`player-${p.name}`}>
-        <h3>
-          {p.name}
-          <PlayerHonors personalHonors={p.personalHonors} teamHonors={p.teamHonors} />
-        </h3>
-        <PlayerHistoryTable player={p} teams={teams.teams} />
-      </article>
-    ))
-  }
+  <StageTabs stages={[{ name: '现役选手' }, { name: '往届选手' }]} active={active} />
+
+  <section id="stage-0" class:list={['stage-panel', { active: active === 0 }]}>
+    <div class="az-layout">
+      <AZIndex letters={currentGroups.map((g) => g.letter)} prefix="cur" />
+      <div>
+        {
+          currentGroups.map((g) => (
+            <section id={`cur-${letterAnchor(g.letter)}`}>
+              <h2>{g.letter}</h2>
+              {g.players.map((p) => <PlayerCard player={p} />)}
+            </section>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <section id="stage-1" class:list={['stage-panel', { active: active === 1 }]}>
+    <div class="az-layout">
+      <AZIndex letters={alumniGroups.map((g) => g.letter)} prefix="alum" />
+      <div>
+        {
+          alumniGroups.map((g) => (
+            <section id={`alum-${letterAnchor(g.letter)}`}>
+              <h2>{g.letter}</h2>
+              {g.players.map((p) => <PlayerCard player={p} />)}
+            </section>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <script>
+    document.querySelectorAll('.stage-tab').forEach((tab) => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.stage-tab').forEach((t) => t.classList.remove('active'))
+        document.querySelectorAll('.stage-panel').forEach((p) => p.classList.remove('active'))
+        tab.classList.add('active')
+        document.getElementById(tab.dataset.target ?? '')?.classList.add('active')
+      })
+    })
+    document.querySelectorAll('.az-link').forEach((link) => {
+      link.addEventListener('click', () => {
+        document.querySelectorAll('.az-link').forEach((l) => l.classList.remove('active'))
+        link.classList.add('active')
+      })
+    })
+  </script>
 </BaseLayout>

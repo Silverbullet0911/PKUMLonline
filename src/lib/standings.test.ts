@@ -58,10 +58,10 @@ describe('computeTeamBoard', () => {
     expect(board[1].diff).toBe(0)
     expect(board[2].diff).toBe(30)
   })
-  it('计算与晋级线名次的差', () => {
+  it('计算与晋级线名次的差（线上与线下第一名比，线下与线上最后一名比）', () => {
     const board = computeTeamBoard(rows, 2)
-    expect(board[0].advDiff).toBe(0)
-    expect(board[1].advDiff).toBe(0)
+    expect(board[0].advDiff).toBe(30)
+    expect(board[1].advDiff).toBe(30)
     expect(board[2].advDiff).toBe(-30)
   })
   it('计算与第1名的差（第1名为 -）', () => {

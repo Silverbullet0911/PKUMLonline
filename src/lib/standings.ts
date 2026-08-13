@@ -48,7 +48,8 @@ export function computeTeamBoard(rows: TeamBoardRow[], promoteRank: number): Com
     .sort(
       (a, b) => b.points - a.points || b.stageRaw - a.stageRaw || a.team.localeCompare(b.team, 'zh'),
     )
-  const line = promoteRank > 0 && sorted.length >= promoteRank ? sorted[promoteRank - 1].points : null
+  const linePoints = promoteRank > 0 && sorted.length >= promoteRank ? sorted[promoteRank - 1].points : null
+  const firstOutPoints = promoteRank > 0 && sorted.length > promoteRank ? sorted[promoteRank].points : null
   const leader = sorted.length > 0 ? sorted[0].points : null
   return sorted.map((r, i) => {
     const prev = i > 0 ? sorted[i - 1].points : null
@@ -62,7 +63,9 @@ export function computeTeamBoard(rows: TeamBoardRow[], promoteRank: number): Com
       games: gamesPlayed(r.wins),
       wins: r.wins,
       diff: prev == null ? null : round1(prev - r.points),
-      advDiff: line == null ? null : round1(r.points - line),
+      advDiff: linePoints == null || firstOutPoints == null
+        ? null
+        : round1(i < promoteRank ? r.points - firstOutPoints : r.points - linePoints),
       firstDiff: leader == null || i === 0 ? null : round1(r.points - leader),
     }
   })
