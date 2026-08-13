@@ -345,6 +345,7 @@ html { scroll-padding-top: 45vh; }
 .future-row {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 16px;
   margin-bottom: 16px;
 }
