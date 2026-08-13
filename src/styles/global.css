@@ -208,12 +208,19 @@ td.num { font-variant-numeric: tabular-nums; }
 .az-link:hover { background: var(--accent-soft); text-decoration: none; }
 .az-link.active { background: var(--green); color: #fff; }
 
-.team-card, .game-card {
+.team-card {
   background: var(--card);
   border: 1px solid var(--line);
   border-radius: var(--radius);
   padding: 20px;
   margin-bottom: 20px;
+}
+.game-card {
+  background: var(--card);
+  border-radius: var(--radius);
+  padding: 20px;
+  max-width: 792px;
+  margin: 0 auto 20px;
 }
 .team-card h2 { border: none; padding: 0; margin: 0 0 12px; display: flex; align-items: center; gap: 10px; font-size: 16px; }
 .team-dot { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
@@ -318,8 +325,8 @@ html { scroll-padding-top: 45vh; }
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 0;
-  max-width: 880px;
-  margin: 0 0 16px;
+  max-width: 792px;
+  margin: 0 auto 16px;
 }
 .future-game { padding: 0 20px; }
 .future-game:first-child { padding-left: 0; }
