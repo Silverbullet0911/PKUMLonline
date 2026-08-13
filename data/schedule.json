@@ -48,6 +48,102 @@
         { "seat": "西", "team": "雷电" },
         { "seat": "北", "team": "樱花" }
       ]
+    },
+    {
+      "stage": "常规赛",
+      "date": "2026-10-01",
+      "round": "第3半庄",
+      "status": "upcoming",
+      "seats": [
+        { "seat": "东", "team": "格斗" },
+        { "seat": "南", "team": "樱花" },
+        { "seat": "西", "team": "野兽" },
+        { "seat": "北", "team": "地球" }
+      ]
+    },
+    {
+      "stage": "常规赛",
+      "date": "2026-10-01",
+      "round": "第4半庄",
+      "status": "upcoming",
+      "seats": [
+        { "seat": "东", "team": "火山" },
+        { "seat": "南", "team": "海盗" },
+        { "seat": "西", "team": "凤凰" },
+        { "seat": "北", "team": "雷电" }
+      ]
+    },
+    {
+      "stage": "季后赛",
+      "date": "2027-01-01",
+      "round": "第5半庄",
+      "status": "upcoming",
+      "seats": [
+        { "seat": "东", "team": "樱花" },
+        { "seat": "南", "team": "格斗" },
+        { "seat": "西", "team": "赤坂" },
+        { "seat": "北", "team": "凤凰" }
+      ]
+    },
+    {
+      "stage": "季后赛",
+      "date": "2027-01-01",
+      "round": "第6半庄",
+      "status": "upcoming",
+      "seats": [
+        { "seat": "东", "team": "火山" },
+        { "seat": "南", "team": "野兽" },
+        { "seat": "西", "team": "海盗" },
+        { "seat": "北", "team": "雷电" }
+      ]
+    },
+    {
+      "stage": "常规赛",
+      "date": "2025-04-05",
+      "round": "第1半庄",
+      "status": "finished",
+      "seats": [
+        { "seat": "东", "team": "格斗", "name": "忆水", "rank": 1, "points": 42000 },
+        { "seat": "南", "team": "海盗", "name": "Art3mis", "rank": 2, "points": 21000 },
+        { "seat": "西", "team": "樱花", "name": "炸洋芋", "rank": 3, "points": -5000 },
+        { "seat": "北", "team": "火山", "name": "桃之11", "rank": 4, "points": -28000 }
+      ]
+    },
+    {
+      "stage": "常规赛",
+      "date": "2025-04-12",
+      "round": "第2半庄",
+      "status": "finished",
+      "seats": [
+        { "seat": "东", "team": "地球", "name": "Hachimi", "rank": 1, "points": 38000 },
+        { "seat": "南", "team": "凤凰", "name": "玖夜", "rank": 2, "points": 15000 },
+        { "seat": "西", "team": "野兽", "name": "yfy", "rank": 3, "points": -3000 },
+        { "seat": "北", "team": "雷电", "name": "Bywj", "rank": 4, "points": -20000 }
+      ]
+    },
+    {
+      "stage": "常规赛",
+      "date": "2025-04-19",
+      "round": "第3半庄",
+      "status": "finished",
+      "seats": [
+        { "seat": "东", "team": "赤坂", "name": "元", "rank": 1, "points": 45000 },
+        { "seat": "南", "team": "AB", "name": "微汐", "rank": 2, "points": 18000 },
+        { "seat": "西", "team": "海盗", "name": "同同", "rank": 3, "points": -12000 },
+        { "seat": "北", "team": "格斗", "name": "小鹿", "rank": 4, "points": -31000 }
+      ]
+    },
+    {
+      "stage": "常规赛",
+      "date": "2025-04-26",
+      "round": "第4半庄",
+      "status": "finished",
+      "seats": [
+        { "seat": "东", "team": "樱花", "name": "zombie", "rank": 1, "points": 36000 },
+        { "seat": "南", "team": "地球", "name": "94TR", "rank": 2, "points": 14000 },
+        { "seat": "西", "team": "火山", "name": "小朱", "rank": 3, "points": -8000 },
+        { "seat": "北", "team": "凤凰", "name": "立直里三", "rank": 4, "points": -22000 }
+      ]
     }
   ]
 }

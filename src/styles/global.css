@@ -207,6 +207,14 @@ td.num { font-variant-numeric: tabular-nums; }
 }
 .az-link:hover { background: var(--accent-soft); text-decoration: none; }
 .az-link.active { background: var(--green); color: #fff; }
+.az-link.month-link {
+  width: auto;
+  min-width: 52px;
+  height: 28px;
+  padding: 0 8px;
+  border-radius: 14px;
+  font-size: 12px;
+}
 
 .team-card {
   background: var(--card);
@@ -324,26 +332,35 @@ html { scroll-padding-top: 45vh; }
   .game-players { grid-template-columns: repeat(2, 1fr); }
 }
 
-.future-games {
+.future-layout { min-width: 0; }
+.future-layout.has-guide {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 0;
-  width: fit-content;
-  max-width: 100%;
-  margin: 0 auto 16px;
+  grid-template-columns: 64px 1fr;
+  gap: 16px;
+  align-items: start;
 }
-.future-game { padding: 0 24px; }
-.future-game:first-child { padding-left: 0; }
-.future-game:last-child { padding-right: 0; }
-.future-game:not(:first-child) { border-left: 1px solid var(--green); }
-.future-meta { font-size: 18px; font-weight: 700; color: var(--text); margin: 0 0 10px; text-align: center; }
+.month-groups { min-width: 0; }
+.month-group { margin-bottom: 24px; }
+.month-group h2 { margin: 0 0 12px; }
+.future-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+.future-meta {
+  width: 150px;
+  flex-shrink: 0;
+  text-align: left;
+}
+.fm-date { font-size: 15px; font-weight: 700; color: var(--text); }
+.fm-stage { font-size: 13px; color: var(--muted); margin-top: 2px; }
 .future-seats {
-  display: grid;
-  grid-template-columns: repeat(4, 108px);
-  justify-content: center;
+  display: flex;
   gap: 10px;
 }
 .future-seat {
+  width: 108px;
   min-width: 0;
   aspect-ratio: 1.618 / 1;
   border-radius: 10px;
@@ -358,8 +375,15 @@ html { scroll-padding-top: 45vh; }
 }
 .fs-seat { font-size: 16px; opacity: .85; }
 .fs-team { font-size: 22px; }
+.month-layout {
+  display: grid;
+  grid-template-columns: 64px 1fr;
+  gap: 16px;
+  align-items: start;
+}
 @media (max-width: 720px) {
-  .future-games { grid-template-columns: 1fr; width: 100%; }
-  .future-game { padding: 0; }
-  .future-game:not(:first-child) { border-left: none; border-top: 1px solid var(--green); padding-top: 16px; }
+  .future-layout.has-guide { grid-template-columns: 1fr; }
+  .month-layout { grid-template-columns: 1fr; }
+  .future-row { flex-wrap: wrap; }
+  .future-meta { width: 100%; }
 }

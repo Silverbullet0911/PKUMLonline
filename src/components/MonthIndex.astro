@@ -1,0 +1,15 @@
+---
+interface Props {
+  months: string[]
+  prefix: string
+}
+
+const { months, prefix } = Astro.props
+---
+<nav class="az-nav">
+  {
+    months.map((m) => (
+      <a class="az-link month-link" href={`#${prefix}-${m}`}>{m}</a>
+    ))
+  }
+</nav>

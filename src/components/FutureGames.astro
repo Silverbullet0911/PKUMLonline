@@ -1,31 +1,51 @@
 ---
+import MonthIndex from './MonthIndex.astro'
 import { teams, teamText } from '../lib/data'
+import { groupByMonth } from '../lib/schedule'
 import type { Game } from '../lib/types'
 
 interface Props {
   games: Game[]
+  showGuide?: boolean
+  prefix?: string
 }
 
-const { games } = Astro.props
+const { games, showGuide = false, prefix = 'sch' } = Astro.props
+const groups = groupByMonth(games, { order: 'asc' })
+const months = groups.map((g) => g.month)
+
 const colorOf = (name: string) => teams.teams.find((t) => t.name === name)?.color ?? '#9ca3af'
 const ts = (name: string) => `background:${colorOf(name)};color:${teamText(name)}`
 ---
-<div class="future-games">
-  {
-    games.map((g) => (
-      <div class="future-game">
-        <p class="future-meta">{g.stage}{g.round ? ` ${g.round}` : ''} · {g.date}</p>
-        <div class="future-seats">
+<div class="future-layout">
+  {showGuide && <MonthIndex months={months} prefix={prefix} />}
+  <div class="month-groups">
+    {
+      groups.map((mg) => (
+        <section id={`${prefix}-${mg.month}`} class="month-group">
+          <h2>{mg.month}</h2>
           {
-            g.seats.map((s) => (
-              <div class="future-seat" style={ts(s.team)}>
-                <span class="fs-seat">{s.seat}</span>
-                <span class="fs-team">{s.team}</span>
+            mg.games.map((g) => (
+              <div class="future-row">
+                <div class="future-meta">
+                  <div class="fm-date">{g.date}</div>
+                  <div class="fm-stage">{g.stage}{g.round ? ` ${g.round}` : ''}</div>
+                </div>
+                <div class="future-seats">
+                  {
+                    g.seats.map((s) => (
+                      <div class="future-seat" style={ts(s.team)}>
+                        <span class="fs-seat">{s.seat}</span>
+                        <span class="fs-team">{s.team}</span>
+                      </div>
+                    ))
+                  }
+                </div>
               </div>
             ))
           }
-        </div>
-      </div>
-    ))
-  }
+        </section>
+      ))
+    }
+  </div>
 </div>
