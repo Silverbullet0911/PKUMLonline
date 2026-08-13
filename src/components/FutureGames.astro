@@ -38,6 +38,7 @@ const ts = (name: string) => `background:${colorOf(name)};color:${teamText(name)
                       <div class="future-seat" style={ts(s.team)}>
                         <span class="fs-seat">{s.seat}</span>
                         <span class="fs-team">{s.team}</span>
+                        {s.name && <span class="fs-player">{s.name}</span>}
                       </div>
                     ))
                   }
