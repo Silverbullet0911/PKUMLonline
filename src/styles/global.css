@@ -317,9 +317,14 @@ html { scroll-padding-top: 45vh; }
 .future-games {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 16px;
-  margin-bottom: 16px;
+  gap: 0;
+  max-width: 880px;
+  margin: 0 auto 16px;
 }
+.future-game { padding: 0 20px; }
+.future-game:first-child { padding-left: 0; }
+.future-game:last-child { padding-right: 0; }
+.future-game:not(:first-child) { border-left: 1px solid var(--green); }
 .future-meta { font-size: 18px; font-weight: 700; color: var(--text); margin: 0 0 10px; text-align: center; }
 .future-seats {
   display: grid;
@@ -341,4 +346,6 @@ html { scroll-padding-top: 45vh; }
 .fs-team { font-size: 18px; }
 @media (max-width: 720px) {
   .future-games { grid-template-columns: 1fr; }
+  .future-game { padding: 0; }
+  .future-game:not(:first-child) { border-left: none; border-top: 1px solid var(--green); padding-top: 16px; }
 }
