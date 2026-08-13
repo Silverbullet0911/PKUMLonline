@@ -104,6 +104,7 @@ tr.sep td { border-top: 2px solid #cc0000; }
 .col-pts-p { width: 8.7%; background: #fff5ec; }
 .col-diff { width: 4%; }
 .col-avg { width: 4.5%; }
+.avg-short { display: none; }
 .col-rank-p { font-weight: 400; font-size: 14px; font-variant-numeric: tabular-nums; }
 .neg { color: #cc0000; }
 .pts-val { font-size: 16px; font-weight: 700; }
@@ -339,6 +340,8 @@ html { scroll-padding-top: 45vh; }
   .alumni-grid { grid-template-columns: repeat(4, 1fr); }
   .player-chip { font-size: 20px; }
   .player-name { white-space: nowrap; }
+  .avg-full { display: none; }
+  .avg-short { display: inline; }
   .charter-block { scroll-margin-top: calc(175px - 45vh); }
   .stage-tabs { top: 175px; }
   .az-layout { grid-template-columns: 1fr; }
@@ -466,8 +469,8 @@ html { scroll-padding-top: 45vh; }
 
   .player-table table { table-layout: fixed; width: 767px; }
   .player-table th:nth-child(1), .player-table td:nth-child(1) { left: 0; width: 36px; min-width: 36px; }
-  .player-table th:nth-child(2), .player-table td:nth-child(2) { left: 36px; width: 36px; min-width: 36px; }
-  .player-table th:nth-child(3), .player-table td:nth-child(3) { left: 72px; width: 90px; min-width: 90px; background: var(--card); }
+  .player-table th:nth-child(2), .player-table td:nth-child(2) { left: 36px; width: 45px; min-width: 45px; }
+  .player-table th:nth-child(3), .player-table td:nth-child(3) { left: 81px; width: 90px; min-width: 90px; background: var(--card); }
   .player-table thead th:nth-child(4) { width: 70px; }
   .player-table thead th:nth-child(5) { width: 60px; }
   .player-table thead th:nth-child(6) { width: 40px; }
