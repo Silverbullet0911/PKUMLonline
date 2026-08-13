@@ -319,7 +319,7 @@ html { scroll-padding-top: 45vh; }
   grid-template-columns: repeat(2, 1fr);
   gap: 0;
   max-width: 880px;
-  margin: 0 auto 16px;
+  margin: 0 0 16px;
 }
 .future-game { padding: 0 20px; }
 .future-game:first-child { padding-left: 0; }
