@@ -12,6 +12,7 @@ import AdminShell from '../../components/admin/AdminShell.astro'
       <textarea name="body" placeholder="正文" required></textarea>
       <button type="submit" id="ann-submit">新增</button>
     </form>
+    <p id="ann-err" class="admin-err"></p>
     <table class="ann-table">
       <thead><tr><th>日期</th><th>标题</th><th>分类</th><th>操作</th></tr></thead>
       <tbody id="ann-list"></tbody>
@@ -22,12 +23,18 @@ import AdminShell from '../../components/admin/AdminShell.astro'
     const list = document.getElementById('ann-list')!
     const form = document.getElementById('ann-form') as HTMLFormElement
     const submitBtn = document.getElementById('ann-submit') as HTMLButtonElement
+    const errEl = document.getElementById('ann-err')!
     let editingId: string | null = null
+
+    function showErr(msg: string) {
+      errEl.textContent = msg
+    }
 
     async function load() {
       const { data, error } = await supabase
         .from('announcements').select('*').order('date', { ascending: false })
-      if (error) return
+      if (error) return showErr('加载失败：' + error.message)
+      errEl.textContent = ''
       list.innerHTML = ''
       for (const a of data) {
         const tr = document.createElement('tr')
@@ -54,10 +61,12 @@ import AdminShell from '../../components/admin/AdminShell.astro'
       const target = e.target as HTMLElement
       const id = target.dataset.del ?? target.dataset.edit ?? ''
       if (target.dataset.del) {
-        await supabase.from('announcements').delete().eq('id', id)
+        const { error } = await supabase.from('announcements').delete().eq('id', id)
+        if (error) return showErr('删除失败：' + error.message)
         load()
       } else if (target.dataset.edit) {
-        const { data } = await supabase.from('announcements').select('*').eq('id', id).single()
+        const { data, error } = await supabase.from('announcements').select('*').eq('id', id).single()
+        if (error) return showErr('加载失败：' + error.message)
         if (data) {
           editingId = data.id
           form.date.value = data.date
@@ -78,11 +87,13 @@ import AdminShell from '../../components/admin/AdminShell.astro'
         body: form.body.value,
       }
       if (editingId) {
-        await supabase.from('announcements').update(payload).eq('id', editingId)
+        const { error } = await supabase.from('announcements').update(payload).eq('id', editingId)
+        if (error) return showErr('保存失败：' + error.message)
         editingId = null
         submitBtn.textContent = '新增'
       } else {
-        await supabase.from('announcements').insert([payload])
+        const { error } = await supabase.from('announcements').insert([payload])
+        if (error) return showErr('新增失败：' + error.message)
       }
       form.reset()
       load()
