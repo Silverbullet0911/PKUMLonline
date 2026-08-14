@@ -37,7 +37,7 @@
 
 ### Task 0.1: season.json 切换到 26-27
 
-- [ ] **Step 1:** `data/season.json` 改为：
+- [x] **Step 1:** `data/season.json` 改为：
   ```json
   {
     "season": "26-27",
@@ -51,7 +51,7 @@
   ```
   （`totalGames` 为 M.LEAGUE 惯例默认值，赛季首场比赛前由赛事组公布后修改。）
 
-- [ ] **Step 2:** `data/schedule.json` 清空为 `{ "season": "26-27", "games": [] }`；`data/news.json` 清空为 `{ "items": [] }`；`data/standings.json` 清空为：
+- [x] **Step 2:** `data/schedule.json` 清空为 `{ "season": "26-27", "games": [] }`；`data/news.json` 清空为 `{ "items": [] }`；`data/standings.json` 清空为：
   ```json
   {
     "season": "26-27",
@@ -64,18 +64,18 @@
   }
   ```
 
-- [ ] **Step 3:** 验证全部 JSON 可解析、构建通过、各页显示正确空态（首页/赛程/榜单/公告）。
+- [x] **Step 3:** 验证全部 JSON 可解析、构建通过、各页显示正确空态（首页/赛程/榜单/公告）。
 
 ### Task 0.2: 首页榜单随赛季显示
 
 现状 `src/pages/index.astro` 写死取「决赛」榜（25-26 结束时的临时改法）。26-27 开赛后应显示当前阶段榜。
 
-- [ ] **Step 1:** 改为：`season.hasStarted` 时显示「常规赛」队伍榜（简版，复用 `TeamStandingsTable`）；未开始时显示空态占位。阶段选择逻辑收敛为一个可复用函数（如 `activeStageName(season, standings)`），供首页与榜单页共用。
-- [ ] **Step 2:** 构建验证 + 测试通过。
+- [x] **Step 1:** 改为：`season.hasStarted` 时显示「常规赛」队伍榜（简版，复用 `TeamStandingsTable`）；未开始时显示空态占位。阶段选择逻辑收敛为一个可复用函数（如 `activeStageName(season, standings)`），供首页与榜单页共用。
+- [x] **Step 2:** 构建验证 + 测试通过。
 
 ### Task 0.3: 提交
 
-- [ ] **Step 1:** `git add -A && git commit -m "chore: reset data to empty 26-27 season, homepage shows regular-season board"`
+- [x] **Step 1:** `git add -A && git commit -m "chore: reset data to empty 26-27 season, homepage shows regular-season board"`
 
 ---
 
@@ -144,9 +144,11 @@
 
 现状 `standings.ts` 只对预聚合行排序/派生列。新增从 DB 数据聚合 BoardRow 的纯函数（TDD）：
 
-- [ ] **Step 1:** `aggregateTeamBoard(games, season, stage)`：从完赛半庄 seats（含 rank/points）按队伍聚合 stagePoints / stageRaw / wins；常规赛 carry=0；半决赛/决赛 carry=上阶段总分折半（章程第 0 条「分数折半持越」）。
-- [ ] **Step 2:** `aggregatePlayerBoard(games)`：按选手聚合 points（含 penalty 扣分明细，判罚数据来源待定：初始由 admin 在 DB 记录或经 rounds 外字段） / rawPoints / wins / maxScore。
-- [ ] **Step 3:** 测试：跨半庄聚合、持越折半、位次统计、空输入返回空数组。
+- [x] **Step 1:** `aggregateTeamBoard`：从完赛半庄 seats（含 rank/points）按队伍聚合 stagePoints / stageRaw / wins；常规赛 carry=0；半决赛/决赛 carry=上阶段总分折半（章程第 0 条「分数折半持越」）。
+- [x] **Step 2:** `aggregatePlayerBoard`：按选手聚合 points（含 penalty 扣分明细，判罚数据来源待定：初始由 admin 在 DB 记录或经 rounds 外字段） / rawPoints / wins / maxScore。
+- [x] **Step 3:** 测试：跨半庄聚合、持越折半、位次统计、空输入返回空数组。
+
+> 实现说明（`src/lib/aggregate.ts`，2026-08-14）：API 为 `aggregateTeamBoard(games, carryOf?)` / `aggregatePlayerBoard(games, penaltyOf?)` / `stageTeamTotals(games)` / `carryFrom(totals)`——阶段过滤由调用方完成（传该阶段全部完赛对局），持越/判罚经回调注入，便于浏览器端 DB 现算复用。**计分约定待确认**：单场素点 = (最终得分−30000)/1000；单场积分 = 素点 + 顺位加棒，加棒暂按 M.LEAGUE 惯例 +50/+10/−10/−30（`UMA` 常量，章程未规定，如赛事组另有数值改一处即可）。
 
 ### Task 2.2: `/standings` 客户端现算
 
