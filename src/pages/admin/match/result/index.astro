@@ -166,9 +166,10 @@ import AdminShell from '../../../../components/admin/AdminShell.astro'
         const sSum = scores.reduce((a, b) => a + (Number.isFinite(b) ? b : 0), 0)
         sumScoreEl.textContent = `最终分数合计：${sSum}（须为 100000）`
         sumScoreEl.classList.toggle('bad', sSum !== 100000)
-        const pSum = pts.reduce((a, b) => a + (Number.isFinite(b) ? b : 0), 0)
+        const rawPts = pts.reduce((a, b) => a + (Number.isFinite(b) ? b : 0), 0)
+        const pSum = Math.round(rawPts * 10) / 10 // 去除二进制浮点噪声（如 7e-15）
         sumPtEl.textContent = `pt 合计：${pSum}（自动结算通常为 0；判罚另计）`
-        sumPtEl.classList.toggle('bad', Math.abs(pSum) > 0.001)
+        sumPtEl.classList.toggle('bad', Math.abs(rawPts) > 0.001)
       }
 
       seats.forEach((s: any, i: number) => {
