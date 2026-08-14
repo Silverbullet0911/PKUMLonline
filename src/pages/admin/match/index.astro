@@ -12,38 +12,38 @@ import AdminShell from '../../../components/admin/AdminShell.astro'
   </AdminShell>
   <style is:global>
     .match-root { min-width: 0; }
-    /* 勾选与按键放大（约 3-4 倍），填写框约 2 倍；JS 动态创建，故用全局样式 */
-    input[type='checkbox'], input[type='radio'] { transform: scale(4); margin: 0 18px; }
-    .field-row { display: flex; gap: 16px; flex-wrap: wrap; align-items: center; margin: 14px 0; }
-    .field-row label { display: flex; align-items: center; gap: 10px; font-size: 30px; }
-    .field-row input[type='number'] { font-size: 30px; padding: 8px 12px; }
-    .field-row input[type='text'] { font-size: 30px; padding: 8px 12px; }
-    .match-scores { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 12px 0; }
-    .match-score { background: #fff; border: 1px solid var(--line); border-radius: 8px; padding: 8px 12px; text-align: center; }
-    .match-score .ms-label { font-size: 16px; color: var(--muted); }
-    .match-score .ms-value { font-size: 32px; font-variant-numeric: tabular-nums; font-weight: 700; }
-    .match-round-title { font-size: 28px; font-weight: 800; margin: 10px 0; }
+    /* 勾选与按键约缩到之前的 1/2 */
+    input[type='checkbox'], input[type='radio'] { transform: scale(2); margin: 0 10px; }
+    .field-row { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; margin: 10px 0; }
+    .field-row label { display: flex; align-items: center; gap: 6px; font-size: 20px; }
+    .field-row input[type='number'] { font-size: 24px; padding: 6px 10px; }
+    .field-row input[type='text'] { font-size: 24px; padding: 6px 10px; }
+    .match-scores { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 12px 0; }
+    .match-score { background: #fff; border: 1px solid var(--line); border-radius: 8px; padding: 6px 10px; text-align: center; }
+    .match-score .ms-label { font-size: 13px; color: var(--muted); }
+    .match-score .ms-value { font-size: 22px; font-variant-numeric: tabular-nums; font-weight: 700; }
+    .match-round-title { font-size: 20px; font-weight: 800; margin: 10px 0; }
     .points-picker { margin: 10px 0; }
-    .pt-group { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin: 12px 0; }
-    .pt-group-label { font-size: 32px; font-weight: 800; min-width: 72px; }
-    .pt-btn { font-size: 28px; padding: 14px 20px; border-radius: 12px; border: 1px solid var(--line); background: var(--accent-soft); cursor: pointer; font-variant-numeric: tabular-nums; }
+    .pt-group { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin: 8px 0; }
+    .pt-group-label { font-size: 18px; font-weight: 800; min-width: 44px; }
+    .pt-btn { font-size: 15px; padding: 8px 12px; border-radius: 8px; border: 1px solid var(--line); background: var(--accent-soft); cursor: pointer; font-variant-numeric: tabular-nums; }
     .pt-btn:hover { background: var(--accent); color: #fff; }
-    .pt-btn.sel { background: var(--accent); color: #fff; outline: 4px solid #ffd700; }
-    .pt-tiers { display: flex; gap: 12px; flex-wrap: wrap; margin: 14px 0; }
-    .pt-tier { padding: 16px 28px; border-radius: 999px; border: 1px solid var(--line); background: var(--card); cursor: pointer; font-size: 30px; }
+    .pt-btn.sel { background: var(--accent); color: #fff; outline: 2px solid #ffd700; }
+    .pt-tiers { display: flex; gap: 8px; flex-wrap: wrap; margin: 10px 0; }
+    .pt-tier { padding: 10px 18px; border-radius: 999px; border: 1px solid var(--line); background: var(--card); cursor: pointer; font-size: 16px; }
     .pt-tier.sel { background: var(--accent); color: #fff; border-color: var(--accent); }
-    .match-actions { display: flex; gap: 16px; margin: 20px 0; flex-wrap: wrap; }
-    .match-actions button { padding: 16px 34px; border-radius: 12px; border: 1px solid var(--line); background: var(--card); cursor: pointer; font-size: 34px; }
+    .match-actions { display: flex; gap: 10px; margin: 14px 0; flex-wrap: wrap; }
+    .match-actions button { padding: 10px 22px; border-radius: 8px; border: 1px solid var(--line); background: var(--card); cursor: pointer; font-size: 18px; }
     .match-actions button.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
     .match-actions button[disabled] { opacity: .45; cursor: not-allowed; }
-    .sel-info { font-size: 22px; color: var(--muted); min-height: 26px; }
-    .rounds-list { margin-top: 20px; }
-    .rounds-list table { font-size: 20px; }
-    .rounds-list button { font-size: 22px; padding: 10px 18px; border-radius: 8px; border: 1px solid var(--line); background: var(--card); cursor: pointer; }
+    .sel-info { font-size: 15px; color: var(--muted); min-height: 20px; }
+    .rounds-list { margin-top: 16px; }
+    .rounds-list table { font-size: 15px; }
+    .rounds-list button { font-size: 14px; padding: 6px 12px; border-radius: 6px; border: 1px solid var(--line); background: var(--card); cursor: pointer; }
     .rounds-list tr.settled { cursor: pointer; }
     .rounds-list tr.settled:hover { background: var(--accent-soft); }
     .draft-badge { color: #b45309; font-weight: 700; }
-    .manual-panel { margin-top: 12px; padding: 14px; border: 1px dashed var(--line); border-radius: 8px; }
+    .manual-panel { margin-top: 12px; padding: 12px; border: 1px dashed var(--line); border-radius: 8px; }
     @media (max-width: 720px) {
       .match-scores { grid-template-columns: repeat(2, 1fr); }
     }
@@ -291,14 +291,13 @@ import AdminShell from '../../../components/admin/AdminShell.astro'
       actions.append(saveBtn, nextBtn, viewBtn)
       wrap.appendChild(actions)
 
-      // 南四锁定提示
+      // 南四锁定提示：录完本局后半庄结束，点「下一局」保存后去「查看结果」提交
       if (rep && form.winType && formComplete()) {
         const prospective = nextRound(rep.current.round, buildResultFromForm()!)
         if (rep.current.round.wind === '南' && rep.current.round.number === 4 && !prospective) {
-          const note = el('p', 'sel-info', '南四局：该结果后半庄结束，不能再「下一局」，请「查看结果」并提交。')
+          const note = el('p', 'sel-info', '南四局：录完本局后点「下一局」保存（本局结束后半庄即终了），随后「查看结果」提交。')
           note.style.color = '#b45309'
           wrap.appendChild(note)
-          nextBtn.disabled = true
         } else if (rep.current.round.wind === '南' && rep.current.round.number === 4) {
           const note = el('p', 'sel-info', '南四局：亲家和牌/亲家听牌流局可继续「下一局」。')
           wrap.appendChild(note)
@@ -773,8 +772,12 @@ import AdminShell from '../../../components/admin/AdminShell.astro'
     }
 
     // ---------- 查看结果 ----------
-    function goResult() {
+    async function goResult() {
       if (!gameId) return
+      // 先保存当前已完成的小局，避免南四局等最后一局因直接跳转而丢失
+      if (rep && formComplete()) {
+        await saveDraft()
+      }
       location.href = base + 'admin/match/result/?id=' + encodeURIComponent(gameId)
     }
 

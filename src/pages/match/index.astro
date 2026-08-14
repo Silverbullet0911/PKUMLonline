@@ -12,6 +12,9 @@ import BaseLayout from '../../layouts/BaseLayout.astro'
     .md-stats td { padding: 8px 12px; }
     .md-stats th { padding: 8px 12px; }
     .md-stats td.team-col { font-weight: 700; }
+    /* 总表宽度缩至约 2/3，各部分等比例缩小 */
+    .md-summary { max-width: 67%; }
+    .md-summary th, .md-summary td { padding: 6px 10px; font-size: 15px; }
   </style>
   <script>
     import { supabase } from '../../lib/supabase'
@@ -70,8 +73,8 @@ import BaseLayout from '../../layouts/BaseLayout.astro'
       const h = el('h2', '', `${game.stage}${game.round ? ' ' + game.round : ''} · ${game.date}${game.time ? ' ' + game.time : ''}`)
       root.appendChild(h)
 
-      // 总表（8 行 × 5 列）
-      const stats = el('div', 'table-wrap md-stats')
+      // 总表（8 行 × 5 列，宽度 2/3）
+      const stats = el('div', 'table-wrap md-stats md-summary')
       const table = el('table')
       const trHead = el('tr')
       trHead.appendChild(el('th', '', ''))

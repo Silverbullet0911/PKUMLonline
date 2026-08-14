@@ -11,14 +11,14 @@ import AdminShell from '../../../../components/admin/AdminShell.astro'
     </div>
   </AdminShell>
   <style is:global>
-    .res-table input { width: 120px; text-align: right; font-variant-numeric: tabular-nums; font-size: 30px; padding: 8px 10px; }
-    .res-table select { font-size: 26px; padding: 8px 10px; }
-    .res-sum { font-size: 20px; margin: 10px 0; }
+    .res-table input { width: 90px; text-align: right; font-variant-numeric: tabular-nums; font-size: 20px; padding: 6px 8px; }
+    .res-table select { font-size: 18px; padding: 6px 8px; }
+    .res-sum { font-size: 15px; margin: 10px 0; }
     .res-sum.bad { color: #b91c1c; font-weight: 700; }
-    .res-actions { display: flex; gap: 14px; margin: 18px 0; }
-    .res-actions button { padding: 16px 34px; border-radius: 12px; border: 1px solid var(--line); background: var(--card); cursor: pointer; font-size: 32px; }
+    .res-actions { display: flex; gap: 10px; margin: 14px 0; }
+    .res-actions button { padding: 10px 22px; border-radius: 8px; border: 1px solid var(--line); background: var(--card); cursor: pointer; font-size: 18px; }
     .res-actions button.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
-    .res-table { font-size: 20px; }
+    .res-table { font-size: 15px; }
   </style>
   <script>
     import { supabase } from '../../../../lib/supabase'
@@ -65,14 +65,32 @@ import AdminShell from '../../../../components/admin/AdminShell.astro'
       if (error || !g) { showErr('加载对局失败：' + (error?.message ?? 'not found')); root.innerHTML = '<p class="empty">对局不存在。</p>'; return }
       game = g
       if (g.status === 'finished') {
-        root.innerHTML = ''
-        root.appendChild(el('p', 'sel-info', '该半庄已提交为赛果。'))
-        const link = el('a', '', '查看赛果详情')
-        link.href = base + 'match/?id=' + encodeURIComponent(gameId)
-        root.appendChild(link)
+        if (role === 'admin') {
+          // 管理员可修改已提交的赛果并重新提交（以已存 seats 为准）
+          renderFromSeats()
+        } else {
+          root.innerHTML = ''
+          root.appendChild(el('p', 'sel-info', '该半庄已提交为赛果（裁判不可修改，仅管理员可改）。'))
+          const link = el('a', '', '查看赛果详情')
+          link.href = base + 'match/?id=' + encodeURIComponent(gameId)
+          root.appendChild(link)
+        }
         return
       }
       render()
+    }
+
+    // 已提交半庄：以 games.seats 中已存的最终分数/pt/位次/判罚为初值
+    function renderFromSeats() {
+      clearErr()
+      root.innerHTML = ''
+      const seats = game.seats ?? []
+      finalScores = seats.map((s: any) => s.points ?? 25000)
+      renderTable(finalScores, {
+        pts: seats.map((s: any) => (s.pt != null ? s.pt : null)),
+        ranks: seats.map((s: any) => (s.rank != null ? s.rank : null)),
+        pens: seats.map((s: any) => (s.penalty != null ? s.penalty : 0)),
+      })
     }
 
     function render() {
@@ -101,7 +119,7 @@ import AdminShell from '../../../../components/admin/AdminShell.astro'
       renderTable(finalScores)
     }
 
-    function renderTable(initial: number[]) {
+    function renderTable(initial: number[], init?: { pts?: (number | null)[]; ranks?: (number | null)[]; pens?: (number | null)[] }) {
       const seats = game.seats ?? []
       const ptInputs: HTMLInputElement[] = []
       const rankSelects: HTMLSelectElement[] = []
@@ -146,7 +164,7 @@ import AdminShell from '../../../../components/admin/AdminShell.astro'
         const ptInput = document.createElement('input')
         ptInput.type = 'number'
         ptInput.step = '0.1'
-        ptInput.value = String(autoPt[i])
+        ptInput.value = String(init?.pts?.[i] ?? autoPt[i])
         ptInput.addEventListener('input', refresh)
         ptInputs.push(ptInput)
         tdPt.appendChild(ptInput)
@@ -162,7 +180,7 @@ import AdminShell from '../../../../components/admin/AdminShell.astro'
           opt.textContent = r + '位'
           rankSel.appendChild(opt)
         }
-        rankSel.value = String(autoRanks[i])
+        rankSel.value = String(init?.ranks?.[i] ?? autoRanks[i])
         rankSelects.push(rankSel)
         tdRank.appendChild(rankSel)
         tr.appendChild(tdRank)
@@ -170,7 +188,7 @@ import AdminShell from '../../../../components/admin/AdminShell.astro'
         const penInput = document.createElement('input')
         penInput.type = 'number'
         penInput.step = '0.1'
-        penInput.value = '0'
+        penInput.value = String(init?.pens?.[i] ?? 0)
         penInputs.push(penInput)
         tdPen.appendChild(penInput)
         tr.appendChild(tdPen)
@@ -188,7 +206,7 @@ import AdminShell from '../../../../components/admin/AdminShell.astro'
       backBtn.addEventListener('click', () => {
         location.href = base + 'admin/match/?id=' + encodeURIComponent(gameId)
       })
-      const submitBtn = el('button', 'primary', '提交为赛果')
+      const submitBtn = el('button', 'primary', game.status === 'finished' ? '修改并重新提交' : '提交为赛果')
       submitBtn.addEventListener('click', () => submit(submitBtn))
       actions.append(backBtn, submitBtn)
       root.appendChild(actions)
@@ -224,8 +242,13 @@ import AdminShell from '../../../../components/admin/AdminShell.astro'
       }))
       btn.disabled = true
       btn.textContent = '提交中…'
+      // 已提交半庄：管理员修改后需先退回 upcoming 才能再次 finish
+      if (game.status === 'finished') {
+        const u = await supabase.rpc('unfinish_game', { p_game_id: gameId })
+        if (u.error) { showErr('退回失败：' + u.error.message); btn.disabled = false; btn.textContent = '修改并重新提交'; return }
+      }
       const { error } = await supabase.rpc('finish_game', { p_game_id: gameId, p_seats: seats })
-      if (error) { showErr('提交失败：' + error.message); btn.disabled = false; btn.textContent = '提交为赛果'; return }
+      if (error) { showErr('提交失败：' + error.message); btn.disabled = false; btn.textContent = game.status === 'finished' ? '修改并重新提交' : '提交为赛果'; return }
       location.href = base + 'match/?id=' + encodeURIComponent(gameId)
     }
 
