@@ -1,4 +1,4 @@
-import type { PlayerBoardRow, TeamBoardRow, Wins } from './types'
+import type { PlayerBoardRow, StageStandings, TeamBoardRow, Wins } from './types'
 
 export function gamesPlayed(w: Wins): number {
   return w['1'] + w['2'] + w['3'] + w['4']
@@ -26,6 +26,17 @@ export function formatScore(n: number | null): string {
 
 export function round1(x: number): number {
   return Math.round(x * 10) / 10
+}
+
+// 当前进行中的阶段名：赛季未开始返回 null；已开始则取第一个有榜单数据的阶段，
+// 尚无数据时退回第一阶段（常规赛）。供首页与榜单页选择要展示的阶段榜。
+export function activeStageName(
+  season: { hasStarted: boolean },
+  stages: StageStandings[],
+): string | null {
+  if (!season.hasStarted) return null
+  const withData = stages.find((s) => s.teamBoard.length > 0 || s.playerBoard.length > 0)
+  return withData?.name ?? stages[0]?.name ?? null
 }
 
 export interface ComputedTeamRow {

@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
-import { avgRank, rate, formatPct, formatScore, computeTeamBoard, computePlayerBoard } from './standings'
-import type { PlayerBoardRow, TeamBoardRow } from './types'
+import { avgRank, rate, formatPct, formatScore, computeTeamBoard, computePlayerBoard, activeStageName } from './standings'
+import type { PlayerBoardRow, StageStandings, TeamBoardRow } from './types'
 
 describe('avgRank', () => {
   it('计算加权平均顺位', () => {
@@ -79,6 +79,24 @@ describe('computeTeamBoard', () => {
   })
   it('空数组返回空数组', () => {
     expect(computeTeamBoard([], 6)).toEqual([])
+  })
+})
+
+describe('activeStageName', () => {
+  const empty = (name: string): StageStandings => ({ name, teamBoard: [], playerBoard: [] })
+  const withTeam = (name: string): StageStandings => ({
+    name,
+    teamBoard: [{ team: '海盗', carry: 0, stagePoints: 0, stageRaw: 0, wins: { '1': 0, '2': 0, '3': 0, '4': 0 } }],
+    playerBoard: [],
+  })
+  it('赛季未开始返回 null', () => {
+    expect(activeStageName({ hasStarted: false }, [empty('常规赛'), empty('半决赛'), empty('决赛')])).toBeNull()
+  })
+  it('已开始但无数据时退回第一阶段', () => {
+    expect(activeStageName({ hasStarted: true }, [empty('常规赛'), empty('半决赛'), empty('决赛')])).toBe('常规赛')
+  })
+  it('已开始且半决赛有数据时返回半决赛', () => {
+    expect(activeStageName({ hasStarted: true }, [empty('常规赛'), withTeam('半决赛'), empty('决赛')])).toBe('半决赛')
   })
 })
 
