@@ -26,6 +26,8 @@ export interface RoundOverride {
   points?: number
   /** 手动设定的供托（点数） */
   pool?: number
+  /** 手动设定的局名文案（如「东3局 1本场」），优先于自动推导显示 */
+  roundLabel?: string
 }
 
 export interface RoundHistory {

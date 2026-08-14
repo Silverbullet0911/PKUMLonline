@@ -23,8 +23,10 @@ import AdminShell from '../../../../components/admin/AdminShell.astro'
     .res-stages input { width: 84px; font-size: 15px; padding: 3px 6px; text-align: right; font-variant-numeric: tabular-nums; }
     .res-stages input[type='text'] { width: 140px; text-align: left; }
     .res-actions { display: flex; gap: 10px; margin: 14px 0; justify-content: center; }
-    .res-actions button, .res-stages button { padding: 10px 22px; border-radius: 8px; border: 1px solid var(--line); background: var(--card); cursor: pointer; font-size: 18px; }
-    .res-actions button.primary, .res-stages button.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+    .res-actions button { padding: 10px 22px; border-radius: 8px; border: 1px solid var(--line); background: var(--card); cursor: pointer; font-size: 18px; }
+    .res-actions button.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+    .res-stages button { padding: 6px 14px; border-radius: 6px; border: 1px solid var(--line); background: var(--card); cursor: pointer; font-size: 16px; }
+    .res-stages button.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
   </style>
   <script>
     import { supabase } from '../../../../lib/supabase'
@@ -60,7 +62,7 @@ import AdminShell from '../../../../components/admin/AdminShell.astro'
     let rankSelects: HTMLSelectElement[] = []
     let penInputs: HTMLInputElement[] = []
     // 阶段表行编辑引用
-    let roundEdits: { order: number; resultInput: HTMLInputElement; pointsInput: HTMLInputElement; poolInput: HTMLInputElement; deltaInputs: HTMLInputElement[] }[] = []
+    let roundEdits: { order: number; roundLabelInput: HTMLInputElement; resultInput: HTMLInputElement; pointsInput: HTMLInputElement; poolInput: HTMLInputElement; deltaInputs: HTMLInputElement[] }[] = []
 
     async function loadRounds(): Promise<any[]> {
       const { data } = await supabase.from('rounds').select('*').eq('game_id', gameId).order('order', { ascending: true })
@@ -226,15 +228,15 @@ import AdminShell from '../../../../components/admin/AdminShell.astro'
       refresh()
     }
 
-    // ---------- 阶段对局表（每格可改） ----------
+    // ---------- 阶段对局表（每格可改 + 任意位置插入 + 局名可改） ----------
     function renderRoundsTable() {
       if (!rep) return
       const box = el('div', 'table-wrap res-stages')
-      box.appendChild(el('h3', '', '阶段对局表（管理员可修改每一格：结果/打点/供托/四家增减）'))
+      box.appendChild(el('h3', '', '阶段对局表（管理员可修改每一格：局/结果/打点/供托/四家增减；点「＋」在任意两行间插入一行）'))
       const table = el('table')
       const thead = el('thead')
       const htr = el('tr')
-      ;['局', '结果', '打点', '供托', '东', '南', '西', '北'].forEach((h) => htr.appendChild(el('th', '', h)))
+      ;['局', '结果', '打点', '供托', '东', '南', '西', '北', ''].forEach((h) => htr.appendChild(el('th', '', h)))
       thead.appendChild(htr)
       table.appendChild(thead)
       const tbody = el('tbody')
@@ -242,7 +244,9 @@ import AdminShell from '../../../../components/admin/AdminShell.astro'
 
       rep.history.forEach((h) => {
         const tr = el('tr')
-        tr.appendChild(el('td', '', roundLabel(h.round)))
+        const roundLabelInput = document.createElement('input')
+        roundLabelInput.type = 'text'
+        roundLabelInput.value = h.override?.roundLabel ?? roundLabel(h.round)
         const resultInput = document.createElement('input')
         resultInput.type = 'text'
         resultInput.value = h.override?.result ?? resultText(h.result)
@@ -258,11 +262,18 @@ import AdminShell from '../../../../components/admin/AdminShell.astro'
           inp.value = String(h.deltas[i])
           return inp
         })
+        tr.appendChild(wrapTd(roundLabelInput))
         tr.appendChild(wrapTd(resultInput))
         tr.appendChild(wrapTd(pointsInput))
         tr.appendChild(wrapTd(poolInput))
         deltaInputs.forEach((di) => tr.appendChild(wrapTd(di)))
-        roundEdits.push({ order: h.order, resultInput, pointsInput, poolInput, deltaInputs })
+        const insertBtn = document.createElement('button')
+        insertBtn.type = 'button'
+        insertBtn.textContent = '＋'
+        insertBtn.title = '在此行后插入一行'
+        insertBtn.addEventListener('click', () => insertAfter(h.order))
+        tr.appendChild(wrapTd(insertBtn))
+        roundEdits.push({ order: h.order, roundLabelInput, resultInput, pointsInput, poolInput, deltaInputs })
         tbody.appendChild(tr)
       })
       table.appendChild(tbody)
@@ -273,12 +284,37 @@ import AdminShell from '../../../../components/admin/AdminShell.astro'
       root.appendChild(box)
     }
 
+    // 在指定小局后插入一行：其后所有局 order +1，新行默认「流局·无人听、增减 0」，由管理员再编辑
+    async function insertAfter(order: number) {
+      if (!gameId) return
+      clearErr()
+      const { data: later } = await supabase
+        .from('rounds').select('id, order').eq('game_id', gameId).gt('order', order).order('order', { ascending: false })
+      for (const r of later ?? []) {
+        const { error } = await supabase.from('rounds').update({ order: r.order + 1 }).eq('id', r.id)
+        if (error) { showErr('插入失败（重排）' + error.message); return }
+      }
+      const { error } = await supabase.from('rounds').insert([{
+        game_id: gameId,
+        order: order + 1,
+        win_type: 'draw',
+        riichi: [false, false, false, false],
+        tenpai: [false, false, false, false],
+      }])
+      if (error) { showErr('插入失败：' + error.message); return }
+      const rounds = await loadRounds()
+      rep = replayGame(rounds)
+      if (game.status !== 'finished') finalScores = [...rep.current.scores]
+      renderAll(game.status === 'finished')
+    }
+
     async function persistRoundsOverrides(): Promise<boolean> {
       if (!gameId) return false
       for (const e of roundEdits) {
         const deltas = e.deltaInputs.map((x) => Number(x.value))
         if (deltas.some((x) => !Number.isFinite(x))) { showErr('第' + e.order + '局四家增减须为数字'); return false }
         const override: Record<string, unknown> = { deltas }
+        if (e.roundLabelInput.value.trim()) override.roundLabel = e.roundLabelInput.value.trim()
         if (e.resultInput.value.trim()) override.result = e.resultInput.value.trim()
         if (e.pointsInput.value !== '') override.points = Number(e.pointsInput.value)
         if (e.poolInput.value !== '') override.pool = Number(e.poolInput.value)

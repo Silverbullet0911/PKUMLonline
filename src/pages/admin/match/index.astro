@@ -615,7 +615,7 @@ import AdminShell from '../../../components/admin/AdminShell.astro'
       rep.history.forEach((h) => {
         const tr = el('tr', 'settled')
         tr.appendChild(el('td', '', String(h.order)))
-        tr.appendChild(el('td', '', roundLabel(h.round)))
+        tr.appendChild(el('td', '', h.override?.roundLabel ?? roundLabel(h.round)))
         tr.appendChild(el('td', '', h.override?.result ?? resultText(h.result)))
         tr.appendChild(el('td', 'num', h.override?.points != null ? String(h.override.points) : pointsText(h.result)))
         tr.appendChild(el('td', 'num', String(h.pool * 1000)))
