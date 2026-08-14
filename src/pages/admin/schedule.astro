@@ -28,17 +28,37 @@ import AdminShell from '../../components/admin/AdminShell.astro'
       <thead><tr><th>日期</th><th>阶段</th><th>半庄</th><th>对阵</th><th>操作</th></tr></thead>
       <tbody id="game-list"></tbody>
     </table>
+    <div id="fill-panel"></div>
   </AdminShell>
+  <style>
+    .fill-panel { margin-top: 16px; padding: 14px; border: 1px solid var(--line); border-radius: 8px; background: var(--card); }
+    .fill-panel h3 { margin: 0 0 10px; font-size: 16px; }
+    .fill-seat { display: flex; align-items: center; gap: 10px; margin: 6px 0; font-size: 14px; }
+    .fill-seat .fs-tag { display: inline-block; width: 44px; font-weight: 700; text-align: center; border-radius: 6px; padding: 4px 0; color: #fff; }
+    .fill-seat .fs-team { width: 90px; }
+    .fill-seat select { flex: 1; max-width: 240px; padding: 4px 6px; }
+    .fill-actions { display: flex; gap: 10px; margin-top: 12px; }
+    .fill-actions button { padding: 6px 16px; border-radius: 6px; border: 1px solid var(--line); background: var(--card); cursor: pointer; }
+    .fill-actions button.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+  </style>
   <script>
     import { supabase } from '../../lib/supabase'
     import { buildSeats } from '../../lib/games'
+    import teamsRaw from '../../../data/teams.json'
     const list = document.getElementById('game-list')!
     const form = document.getElementById('game-form') as HTMLFormElement
     const submitBtn = document.getElementById('game-submit') as HTMLButtonElement
     const errEl = document.getElementById('game-err')!
+    const fillPanel = document.getElementById('fill-panel')!
     const base = import.meta.env.BASE_URL
     let editingId: string | null = null
     let teamsCache: string[] = []
+    let gamesCache: any[] = []
+    let fillGame: any = null
+    let fillSelects: HTMLSelectElement[] = []
+    // 赛季__队伍名 -> roster
+    const rosters = new Map<string, string[]>()
+    const teamColorOf = (name: string) => teamsRaw.teams.find((t: any) => t.name === name)?.color ?? '#9ca3af'
     const showErr = (m: string) => { errEl.textContent = m }
     const seatSelects = () => [form.seat0, form.seat1, form.seat2, form.seat3]
 
@@ -57,10 +77,20 @@ import AdminShell from '../../components/admin/AdminShell.astro'
         }
       }
     }
+    async function loadRosters() {
+      const { data, error } = await supabase.from('teams').select('season, name, roster')
+      if (error) return showErr('加载名单失败：' + error.message)
+      rosters.clear()
+      for (const t of data ?? []) rosters.set(`${t.season}__${t.name}`, t.roster ?? [])
+    }
+    function rosterOf(season: string, team: string): string[] {
+      return rosters.get(`${season}__${team}`) ?? []
+    }
     async function load() {
       const { data, error } = await supabase.from('games').select('*').order('date', { ascending: true })
       if (error) return showErr('加载失败：' + error.message)
       errEl.textContent = ''
+      gamesCache = data ?? []
       list.innerHTML = ''
       for (const g of data) {
         const tr = document.createElement('tr')
@@ -72,6 +102,9 @@ import AdminShell from '../../components/admin/AdminShell.astro'
         const db = document.createElement('button'); db.textContent = '删'; db.dataset.del = g.id
         ops.append(eb, db)
         if (g.status === 'upcoming') {
+          const fb = document.createElement('button'); fb.textContent = '填选手'; fb.dataset.fill = g.id
+          fb.style.marginLeft = '8px'
+          ops.appendChild(fb)
           const link = document.createElement('a')
           link.href = base + 'admin/match/?id=' + encodeURIComponent(g.id)
           link.textContent = '录入'
@@ -88,6 +121,73 @@ import AdminShell from '../../components/admin/AdminShell.astro'
         list.appendChild(tr)
       }
     }
+
+    // ---------- 管理员代填选手 ----------
+    function openFill(g: any) {
+      fillGame = g
+      fillPanel.innerHTML = ''
+      const box = document.createElement('div')
+      box.className = 'fill-panel'
+      const title = document.createElement('h3')
+      title.textContent = `填选手：${g.date} · ${g.stage}${g.round ? ' ' + g.round : ''}`
+      box.appendChild(title)
+      fillSelects = []
+      ;(g.seats ?? []).forEach((s: any) => {
+        const row = document.createElement('div')
+        row.className = 'fill-seat'
+        const tag = document.createElement('span')
+        tag.className = 'fs-tag'
+        tag.style.background = teamColorOf(s.team)
+        tag.textContent = s.seat
+        const team = document.createElement('span')
+        team.className = 'fs-team'
+        team.textContent = s.team
+        const sel = document.createElement('select')
+        const empty = document.createElement('option')
+        empty.value = ''
+        empty.textContent = '未选定'
+        sel.appendChild(empty)
+        for (const p of rosterOf(g.season, s.team)) {
+          const o = document.createElement('option')
+          o.value = p
+          o.textContent = p
+          sel.appendChild(o)
+        }
+        sel.value = s.player ?? ''
+        fillSelects.push(sel)
+        row.append(tag, team, sel)
+        box.appendChild(row)
+      })
+      const actions = document.createElement('div')
+      actions.className = 'fill-actions'
+      const saveBtn = document.createElement('button')
+      saveBtn.className = 'primary'
+      saveBtn.textContent = '保存'
+      saveBtn.addEventListener('click', saveFill)
+      const cancelBtn = document.createElement('button')
+      cancelBtn.textContent = '关闭'
+      cancelBtn.addEventListener('click', closeFill)
+      actions.append(saveBtn, cancelBtn)
+      box.appendChild(actions)
+      fillPanel.appendChild(box)
+      window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' })
+    }
+    function closeFill() {
+      fillGame = null
+      fillPanel.innerHTML = ''
+    }
+    async function saveFill() {
+      if (!fillGame) return
+      const seats = fillSelects.map((sel, i) => ({
+        seat: fillGame.seats[i].seat,
+        team: fillGame.seats[i].team,
+        player: sel.value || null,
+      }))
+      const { error } = await supabase.from('games').update({ seats }).eq('id', fillGame.id)
+      if (error) return showErr('保存选手失败：' + error.message)
+      closeFill()
+      load()
+    }
     list.addEventListener('click', async (e) => {
       const el = e.target as HTMLElement
       const id = el.dataset.del ?? el.dataset.edit ?? ''
@@ -95,6 +195,9 @@ import AdminShell from '../../components/admin/AdminShell.astro'
         const { error } = await supabase.from('games').delete().eq('id', id)
         if (error) return showErr('删除失败：' + error.message)
         load()
+      } else if (el.dataset.fill) {
+        const g = gamesCache.find((x) => x.id === el.dataset.fill)
+        if (g) openFill(g)
       } else if (el.dataset.edit) {
         const { data, error } = await supabase.from('games').select('*').eq('id', id).single()
         if (error) return showErr('加载失败：' + error.message)
@@ -133,6 +236,6 @@ import AdminShell from '../../components/admin/AdminShell.astro'
       }
       form.reset(); load()
     })
-    loadTeams(); load()
+    loadTeams(); loadRosters(); load()
   </script>
 </BaseLayout>
