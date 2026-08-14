@@ -1,5 +1,5 @@
 import { dealerSeat, nextRound, settleRound } from './scoring'
-import type { RoundResult, RoundState, Settlement } from './scoring'
+import type { RoundResult, RoundState } from './scoring'
 import { SEAT_ORDER, seatIndexOf } from './games'
 
 /** DB rounds 行（tsumo_points 为 jsonb 拆分数组） */
@@ -13,6 +13,17 @@ export interface StoredRound {
   tsumo_winner: string | null
   tsumo_points: number[] | null
   tenpai: boolean[] | null
+  /** 手动覆盖：自动生成的行可被录入人手动修改（四家增减/对局情况/打点） */
+  override?: RoundOverride
+}
+
+export interface RoundOverride {
+  /** 手动设定的四家本小局增减 */
+  deltas?: number[]
+  /** 手动设定的对局情况文案（如「荣和·东」） */
+  result?: string
+  /** 手动设定的打点 */
+  points?: number
 }
 
 export interface RoundHistory {
@@ -24,8 +35,10 @@ export interface RoundHistory {
   scores: number[]
   /** 结算后供托棒数 */
   pool: number
-  /** 本小局各家的增减 */
+  /** 本小局各家的增减（手动覆盖时取 override.deltas） */
   deltas: number[]
+  /** 手动覆盖（若有） */
+  override?: RoundOverride
 }
 
 export interface ReplayState {
@@ -94,10 +107,19 @@ export function replayGame(rounds: StoredRound[], startScore = 25000): ReplayRes
       break
     }
     const result = buildRoundResult(r, state)
-    const s: Settlement = settleRound(state, result, pool)
-    scores = scores.map((v, i) => v + s.deltas[i])
-    pool = s.poolAfter
-    history.push({ order: r.order, round: { ...state }, result, scores: [...scores], pool, deltas: s.deltas })
+    const auto = settleRound(state, result, pool)
+    const deltas = r.override?.deltas ?? auto.deltas
+    scores = scores.map((v, i) => v + deltas[i])
+    pool = auto.poolAfter // 供托池仍按立直/和了类型跟踪（手动增减不影响池）
+    history.push({
+      order: r.order,
+      round: { ...state },
+      result,
+      scores: [...scores],
+      pool,
+      deltas,
+      override: r.override,
+    })
     settled++
     const next = nextRound(state, result)
     if (!next) break // 半庄结束（南四推进）
@@ -118,14 +140,4 @@ export function roundLabel(round: RoundState): string {
 /** 座位序 → 东南西北（供 UI 显示） */
 export function seatLabel(i: number): string {
   return SEAT_ORDER[i] ?? '?'
-}
-
-/** 由四家最终分数计算位次（1-4）：分数降序，同分按座位序（东→北） */
-export function rankScores(scores: number[]): number[] {
-  const order = scores
-    .map((s, i) => ({ s, i }))
-    .sort((a, b) => b.s - a.s || a.i - b.i)
-  const ranks = [0, 0, 0, 0]
-  order.forEach((o, idx) => { ranks[o.i] = idx + 1 })
-  return ranks
 }

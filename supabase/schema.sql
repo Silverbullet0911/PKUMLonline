@@ -218,6 +218,7 @@ declare
   v_game record;
   v_sum int;
   v_ranks int[];
+  v_sorted int[];
 begin
   select role into v_role from public.profiles where id = auth.uid();
   if v_role is null or v_role not in ('referee','admin') then
@@ -243,9 +244,16 @@ begin
     v_ranks := v_ranks || (p_seats->i->>'rank')::int;
   end loop;
   if v_sum <> 100000 then raise exception 'points total must be 100000, got %', v_sum; end if;
-  if (select array_agg(x order by x) from unnest(v_ranks) as x) <> array[1,2,3,4] then
-    raise exception 'ranks must be a permutation of 1-4';
+  -- 竞争位次校验：同分同位（如 1,2,2,4 / 1,1,1,4），非降、从 1 起、步进 ≤1
+  v_sorted := (select array_agg(x order by x) from unnest(v_ranks) as x);
+  if v_sorted[1] is distinct from 1 then
+    raise exception 'ranks must start at 1';
   end if;
+  for i in 2..coalesce(array_length(v_sorted, 1), 0) loop
+    if v_sorted[i] < v_sorted[i - 1] or v_sorted[i] > v_sorted[i - 1] + 1 then
+      raise exception 'invalid rank sequence';
+    end if;
+  end loop;
 
   update public.games set seats = p_seats, status = 'finished' where id = p_game_id;
   return p_seats;

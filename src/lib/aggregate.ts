@@ -25,11 +25,46 @@ export function rawScoreOf(points: number): number {
   return round1((points - 25000) / 1000)
 }
 
-/** 单场积分 = 素点 + 顺位点；rank 缺失或非法时顺位点按 0 计 */
-export function gamePointsOf(rank: number | undefined, points: number | undefined): number {
-  if (points == null) return 0
-  const rp = rank != null ? (RANK_POINTS[String(rank) as keyof typeof RANK_POINTS] ?? 0) : 0
-  return round1(rawScoreOf(points) + rp)
+/**
+ * 顺位点（同分平分）：同分者平分所占位次的顺位点。
+ * 例：26000/25000/25000/24000 → [45, -5, -5, -35]；全员同分 → [0,0,0,0]
+ */
+export function rankPointsForScores(scores: number[]): number[] {
+  const order = scores.map((s, i) => ({ s, i })).sort((a, b) => b.s - a.s)
+  const pts = new Array<number>(scores.length).fill(0)
+  let i = 0
+  while (i < scores.length) {
+    let j = i
+    while (j + 1 < scores.length && order[j + 1].s === order[i].s) j++
+    let sum = 0
+    for (let k = i; k <= j; k++) sum += RANK_POINTS[String(k + 1) as keyof typeof RANK_POINTS]
+    const avg = round1(sum / (j - i + 1))
+    for (let k = i; k <= j; k++) pts[order[k].i] = avg
+    i = j + 1
+  }
+  return pts
+}
+
+/**
+ * 竞争位次（同分同位）：26000/25000/25000/24000 → [1,2,2,4]；全员同分 → [1,1,1,1]
+ */
+export function competitionRanks(scores: number[]): number[] {
+  const order = scores.map((s, i) => ({ s, i })).sort((a, b) => b.s - a.s)
+  const ranks = new Array<number>(scores.length).fill(0)
+  let i = 0
+  while (i < scores.length) {
+    let j = i
+    while (j + 1 < scores.length && order[j + 1].s === order[i].s) j++
+    const r = i + 1
+    for (let k = i; k <= j; k++) ranks[order[k].i] = r
+    i = j + 1
+  }
+  return ranks
+}
+
+/** 单场某家积分 = 素点 + 顺位点（同分平分） */
+export function seatGamePoints(scores: number[], seat: number): number {
+  return round1(rawScoreOf(scores[seat]) + rankPointsForScores(scores)[seat])
 }
 
 /** 聚合队伍榜：传入某阶段全部完赛对局；carryOf 给出各队持越（默认 0） */
@@ -39,9 +74,13 @@ export function aggregateTeamBoard(
 ): TeamBoardRow[] {
   const map = new Map<string, TeamBoardRow>()
   for (const g of games) {
-    if (g.status !== 'finished') continue
-    for (const s of g.seats) {
-      if (!s.team || s.points == null) continue
+    if (g.status !== 'finished' || g.seats.length !== 4) continue
+    const scores = g.seats.map((s) => s.points)
+    if (scores.some((p) => p == null)) continue
+    const rp = rankPointsForScores(scores as number[])
+    const ranks = competitionRanks(scores as number[])
+    g.seats.forEach((s, i) => {
+      if (!s.team) return
       const row = map.get(s.team) ?? {
         team: s.team,
         carry: 0,
@@ -49,12 +88,12 @@ export function aggregateTeamBoard(
         stageRaw: 0,
         wins: { '1': 0, '2': 0, '3': 0, '4': 0 },
       }
-      row.stagePoints = round1(row.stagePoints + gamePointsOf(s.rank, s.points))
-      row.stageRaw = round1(row.stageRaw + rawScoreOf(s.points))
-      const r = String(s.rank) as keyof Wins
+      row.stagePoints = round1(row.stagePoints + rawScoreOf(scores[i]!) + rp[i])
+      row.stageRaw = round1(row.stageRaw + rawScoreOf(scores[i]!))
+      const r = String(ranks[i]) as keyof Wins
       if (r in row.wins) row.wins[r]++
       map.set(s.team, row)
-    }
+    })
   }
   return [...map.values()].map((r) => ({ ...r, carry: round1(carryOf(r.team)) }))
 }
@@ -66,9 +105,13 @@ export function aggregatePlayerBoard(
 ): PlayerBoardRow[] {
   const map = new Map<string, PlayerBoardRow>()
   for (const g of games) {
-    if (g.status !== 'finished') continue
-    for (const s of g.seats) {
-      if (!s.name || s.points == null) continue
+    if (g.status !== 'finished' || g.seats.length !== 4) continue
+    const scores = g.seats.map((s) => s.points)
+    if (scores.some((p) => p == null)) continue
+    const rp = rankPointsForScores(scores as number[])
+    const ranks = competitionRanks(scores as number[])
+    g.seats.forEach((s, i) => {
+      if (!s.name) return
       const row = map.get(s.name) ?? {
         team: s.team,
         name: s.name,
@@ -78,13 +121,13 @@ export function aggregatePlayerBoard(
         wins: { '1': 0, '2': 0, '3': 0, '4': 0 },
         maxScore: 0,
       }
-      row.rawPoints = round1(row.rawPoints + rawScoreOf(s.points))
-      row.points = round1(row.points + gamePointsOf(s.rank, s.points))
-      const r = String(s.rank) as keyof Wins
+      row.rawPoints = round1(row.rawPoints + rawScoreOf(scores[i]!))
+      row.points = round1(row.points + rawScoreOf(scores[i]!) + rp[i])
+      const r = String(ranks[i]) as keyof Wins
       if (r in row.wins) row.wins[r]++
-      if (s.points > row.maxScore) row.maxScore = s.points
+      if (scores[i]! > row.maxScore) row.maxScore = scores[i]!
       map.set(s.name, row)
-    }
+    })
   }
   return [...map.values()].map((r) => {
     const penalty = penaltyOf(r.name)
@@ -96,11 +139,14 @@ export function aggregatePlayerBoard(
 export function stageTeamTotals(games: Game[]): Map<string, number> {
   const totals = new Map<string, number>()
   for (const g of games) {
-    if (g.status !== 'finished') continue
-    for (const s of g.seats) {
-      if (!s.team || s.points == null) continue
-      totals.set(s.team, round1((totals.get(s.team) ?? 0) + gamePointsOf(s.rank, s.points)))
-    }
+    if (g.status !== 'finished' || g.seats.length !== 4) continue
+    const scores = g.seats.map((s) => s.points)
+    if (scores.some((p) => p == null)) continue
+    const rp = rankPointsForScores(scores as number[])
+    g.seats.forEach((s, i) => {
+      if (!s.team) return
+      totals.set(s.team, round1((totals.get(s.team) ?? 0) + rawScoreOf(scores[i]!) + rp[i]))
+    })
   }
   return totals
 }

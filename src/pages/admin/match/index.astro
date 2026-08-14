@@ -50,7 +50,7 @@ import AdminShell from '../../../components/admin/AdminShell.astro'
   <script>
     import { supabase } from '../../../../lib/supabase'
     import { dealerSeat, nextRound, settleRound } from '../../../../lib/scoring'
-    import { replayGame, roundLabel, seatLabel, rankScores } from '../../../../lib/replay'
+    import { replayGame, roundLabel, seatLabel } from '../../../../lib/replay'
     import type { RoundResult } from '../../../../lib/scoring'
     import type { StoredRound } from '../../../../lib/replay'
     import pointsRaw from '../../../../data/points_table.json'
@@ -130,6 +130,7 @@ import AdminShell from '../../../components/admin/AdminShell.astro'
         tsumo_winner: r.tsumo_winner,
         tsumo_points: r.tsumo_points,
         tenpai: r.tenpai,
+        override: r.override,
       }))
       rep = replayGame(rounds)
 
@@ -313,18 +314,18 @@ import AdminShell from '../../../components/admin/AdminShell.astro'
       const actions = el('div', 'match-actions')
       const saveBtn = el('button', '', '保存草稿')
       saveBtn.addEventListener('click', saveDraft)
-      const nextBtn = el('button', 'primary', editingOrder != null ? '保存修改' : '下一局')
+      const nextBtn = el('button', '', editingOrder != null ? '保存修改' : '下一局')
       nextBtn.addEventListener('click', saveAndNext)
-      const submitBtn = el('button', '', '提交赛果')
-      submitBtn.addEventListener('click', submitGame)
-      actions.append(saveBtn, nextBtn, submitBtn)
+      const viewBtn = el('button', 'primary', '查看结果')
+      viewBtn.addEventListener('click', goResult)
+      actions.append(saveBtn, nextBtn, viewBtn)
       wrap.appendChild(actions)
 
       // 南四锁定提示
       if (rep && form.winType && formComplete()) {
         const prospective = nextRound(rep.current.round, buildResultFromForm()!)
         if (rep.current.round.wind === '南' && rep.current.round.number === 4 && !prospective) {
-          const note = el('p', 'sel-info', '南四局：该结果后半庄结束，只能提交，不能再「下一局」。')
+          const note = el('p', 'sel-info', '南四局：该结果后半庄结束，不能再「下一局」，请「查看结果」并提交。')
           note.style.color = '#b45309'
           wrap.appendChild(note)
           nextBtn.disabled = true
@@ -556,6 +557,7 @@ import AdminShell from '../../../components/admin/AdminShell.astro'
         tsumo_winner: form.winType === 'tsumo' ? seatLabelOf(form.winner!) : null,
         tsumo_points: form.winType === 'tsumo' ? form.tsumoSplit : null,
         tenpai: form.winType === 'draw' ? form.tenpai : null,
+        override: null, // 重新按输入自动生成时清除手动覆盖
       }
       const { error } = await supabase.from('rounds').upsert(payload, { onConflict: 'game_id,order' })
       if (error) return showErr('保存失败：' + error.message)
@@ -565,7 +567,7 @@ import AdminShell from '../../../components/admin/AdminShell.astro'
       }
       // 南四锁定：下一局为 null 时不允许继续
       if (nextRound(rep.current.round, result) === null && editingOrder == null) {
-        showErr('南四局已结束（非连庄结果），请提交赛果。')
+        showErr('南四局已结束（非连庄结果），请「查看结果」并提交。')
         editingOrder = null
         resetForm()
         rep = replayGame(await fetchRounds())
@@ -602,6 +604,7 @@ import AdminShell from '../../../components/admin/AdminShell.astro'
         tsumo_winner: r.tsumo_winner,
         tsumo_points: r.tsumo_points,
         tenpai: r.tenpai,
+        override: r.override,
       }))
     }
 
@@ -626,15 +629,17 @@ import AdminShell from '../../../components/admin/AdminShell.astro'
       return i >= 0 ? i : null
     }
 
-    // ---------- 倒推 ----------
+    // ---------- 已录小局列表 + 手动修改 ----------
+    let manualOrder: number | null = null
+
     function renderRoundsList(container: HTMLElement, readonly: boolean) {
       if (!rep) return
       const box = el('div', 'rounds-list')
-      box.appendChild(el('h3', '', '已录小局' + (readonly ? '' : '（点击可倒推修改）')))
+      box.appendChild(el('h3', '', '阶段表' + (readonly ? '' : '（点「改」手动修改本局，点行倒推重录）')))
       const table = el('table')
       const thead = el('thead')
       const htr = el('tr')
-      ;['序', '局', '结果', '打点', '供托'].forEach((h) => htr.appendChild(el('th', '', h)))
+      ;['序', '局', '结果', '打点', '供托', '增减', '操作'].forEach((h) => htr.appendChild(el('th', '', h)))
       thead.appendChild(htr)
       table.appendChild(thead)
       const tbody = el('tbody')
@@ -642,13 +647,23 @@ import AdminShell from '../../../components/admin/AdminShell.astro'
         const tr = el('tr', 'settled')
         tr.appendChild(el('td', '', String(h.order)))
         tr.appendChild(el('td', '', roundLabel(h.round)))
-        tr.appendChild(el('td', '', resultText(h.result)))
-        tr.appendChild(el('td', '', pointsText(h.result)))
-        tr.appendChild(el('td', '', String(h.pool)))
+        tr.appendChild(el('td', '', h.override?.result ?? resultText(h.result)))
+        tr.appendChild(el('td', 'num', h.override?.points != null ? String(h.override.points) : pointsText(h.result)))
+        tr.appendChild(el('td', 'num', String(h.pool)))
+        const deltasTd = el('td', 'num', h.deltas.join('/'))
+        if (h.override?.deltas) deltasTd.classList.add('draft-badge')
+        tr.appendChild(deltasTd)
         if (!readonly) {
-          tr.addEventListener('click', () => {
-            editRound(h.order)
+          const opsTd = el('td')
+          const editBtn = el('button', '', '改')
+          editBtn.addEventListener('click', (e) => {
+            e.stopPropagation()
+            manualOrder = h.order
+            render()
           })
+          opsTd.appendChild(editBtn)
+          tr.appendChild(opsTd)
+          tr.addEventListener('click', () => editRound(h.order))
         }
         tbody.appendChild(tr)
       })
@@ -659,11 +674,82 @@ import AdminShell from '../../../components/admin/AdminShell.astro'
         tr.appendChild(el('td', 'draft-badge', '未完成'))
         tr.appendChild(el('td', '', ''))
         tr.appendChild(el('td', '', ''))
+        tr.appendChild(el('td', '', ''))
+        tr.appendChild(el('td', '', ''))
         tbody.appendChild(tr)
       }
       table.appendChild(tbody)
       box.appendChild(table)
+      if (manualOrder != null && !readonly) {
+        renderManualPanel(box, manualOrder)
+      }
       container.appendChild(box)
+    }
+
+    function renderManualPanel(box: HTMLElement, order: number) {
+      const h = rep?.history.find((x) => x.order === order)
+      if (!h) return
+      const panel = el('div', 'manual-panel')
+      panel.appendChild(el('h4', '', `手动修改 第${order}局（${roundLabel(h.round)}）`))
+      const dInputs: HTMLInputElement[] = []
+      const row = el('div', 'field-row')
+      ;[0, 1, 2, 3].forEach((i) => {
+        const label = el('label')
+        const input = document.createElement('input')
+        input.type = 'number'
+        input.value = String(h.deltas[i])
+        input.style.width = '80px'
+        dInputs.push(input)
+        label.append(document.createTextNode(seatLabelOf(i)), input)
+        row.appendChild(label)
+      })
+      panel.appendChild(row)
+      const resRow = el('div', 'field-row')
+      resRow.appendChild(el('span', '', '对局情况：'))
+      const resInput = document.createElement('input')
+      resInput.value = h.override?.result ?? resultText(h.result)
+      resInput.style.width = '180px'
+      resRow.appendChild(resInput)
+      panel.appendChild(resRow)
+      const ptsRow = el('div', 'field-row')
+      ptsRow.appendChild(el('span', '', '打点：'))
+      const ptsInput = document.createElement('input')
+      ptsInput.type = 'number'
+      ptsInput.value = String(h.override?.points ?? pointsNum(h.result))
+      ptsRow.appendChild(ptsInput)
+      panel.appendChild(ptsRow)
+      const btnRow = el('div', 'field-row')
+      const save = el('button', 'primary', '保存手动修改')
+      save.addEventListener('click', async () => {
+        const deltas = dInputs.map((x) => Number(x.value))
+        if (deltas.some((x) => !Number.isFinite(x))) { showErr('四家增减须为数字'); return }
+        const { error } = await supabase.from('rounds').upsert({
+          game_id: gameId,
+          order,
+          override: {
+            deltas,
+            result: resInput.value.trim() || undefined,
+            points: ptsInput.value ? Number(ptsInput.value) : undefined,
+          },
+        }, { onConflict: 'game_id,order' })
+        if (error) return showErr('保存失败：' + error.message)
+        clearErr()
+        manualOrder = null
+        rep = replayGame(await fetchRounds())
+        render()
+      })
+      const clear = el('button', '', '清除手动')
+      clear.addEventListener('click', async () => {
+        await supabase.from('rounds').upsert({ game_id: gameId, order, override: null }, { onConflict: 'game_id,order' })
+        manualOrder = null
+        rep = replayGame(await fetchRounds())
+        render()
+      })
+      const cancel = el('button', '', '取消')
+      cancel.addEventListener('click', () => { manualOrder = null; render() })
+      btnRow.append(save, clear, cancel)
+      panel.appendChild(btnRow)
+      box.appendChild(panel)
     }
 
     function resultText(r: RoundResult): string {
@@ -680,6 +766,15 @@ import AdminShell from '../../../components/admin/AdminShell.astro'
         return pays.join('/')
       }
       return ''
+    }
+
+    function pointsNum(r: RoundResult): number | null {
+      if (r.winType === 'ron') return r.ronPoints ?? null
+      if (r.winType === 'tsumo') {
+        const pays = r.tsumoPayments!.filter((x) => x > 0)
+        return pays.reduce((a, b) => a + b, 0) || null
+      }
+      return null
     }
 
     function editRound(order: number) {
@@ -705,29 +800,10 @@ import AdminShell from '../../../components/admin/AdminShell.astro'
       window.scrollTo({ top: 0, behavior: 'smooth' })
     }
 
-    // ---------- 提交 ----------
-    async function submitGame() {
-      if (!gameId || !rep) return
-      clearErr()
-      if (rep.current.draft) {
-        // 弃置未完成草稿（比赛按已录小局结算）
-        await supabase.from('rounds').delete().eq('game_id', gameId).is('win_type', null)
-        rep = replayGame(await fetchRounds())
-      }
-      if (rep.settled === 0) { showErr('尚无已录小局，无法提交'); return }
-      const scores = rep.current.scores
-      const ranks = rankScores(scores)
-      const seats = (game.seats ?? []).map((s: any, i: number) => ({
-        seat: s.seat,
-        team: s.team,
-        player: s.player,
-        rank: ranks[i],
-        points: scores[i],
-      }))
-      const { data, error } = await supabase.rpc('finish_game', { p_game_id: gameId, p_seats: seats })
-      if (error) { showErr('提交失败：' + error.message); return }
-      showErr('赛果已提交！')
-      location.href = base + 'match/?id=' + encodeURIComponent(gameId)
+    // ---------- 查看结果 ----------
+    function goResult() {
+      if (!gameId) return
+      location.href = base + 'admin/match/result/?id=' + encodeURIComponent(gameId)
     }
 
     load()

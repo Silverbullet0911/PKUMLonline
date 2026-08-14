@@ -1,8 +1,9 @@
 import { describe, it, expect } from 'vitest'
 import {
   aggregateTeamBoard, aggregatePlayerBoard, stageTeamTotals, carryFrom,
-  rawScoreOf, gamePointsOf,
+  rawScoreOf, rankPointsForScores, competitionRanks, seatGamePoints,
 } from './aggregate'
+import { round1 } from './standings'
 import type { Game } from './types'
 
 const finishedGame = (overrides: Partial<Game> = {}): Game => ({
@@ -19,20 +20,39 @@ const finishedGame = (overrides: Partial<Game> = {}): Game => ({
   ...overrides,
 })
 
-describe('rawScoreOf / gamePointsOf', () => {
+describe('rawScoreOf / rankPointsForScores / seatGamePoints', () => {
   it('素点 = (得分-25000)/1000', () => {
     expect(rawScoreOf(42000)).toBe(17)
     expect(rawScoreOf(21000)).toBe(-4)
     expect(rawScoreOf(-5000)).toBe(-30)
   })
-  it('积分 = 素点 + 顺位点(45/5/-15/-35)', () => {
-    expect(gamePointsOf(1, 42000)).toBe(62)
-    expect(gamePointsOf(2, 21000)).toBe(1)
-    expect(gamePointsOf(3, -5000)).toBe(-45)
-    expect(gamePointsOf(4, -28000)).toBe(-88)
+  it('顺位点无同分时按 45/5/-15/-35', () => {
+    expect(rankPointsForScores([42000, 21000, -5000, -28000])).toEqual([45, 5, -15, -35])
   })
-  it('points 缺失时积分为 0', () => {
-    expect(gamePointsOf(1, undefined)).toBe(0)
+  it('同分平分顺位点：26000/25000/25000/24000 → 两个 25000 各 -5', () => {
+    expect(rankPointsForScores([26000, 25000, 25000, 24000])).toEqual([45, -5, -5, -35])
+  })
+  it('全员同分：顺位点均为 0', () => {
+    expect(rankPointsForScores([25000, 25000, 25000, 25000])).toEqual([0, 0, 0, 0])
+  })
+  it('三人同分：平分前三位顺位点', () => {
+    expect(rankPointsForScores([28000, 25000, 25000, 25000])).toEqual([45, round1((5 - 15 - 35) / 3), round1((5 - 15 - 35) / 3), round1((5 - 15 - 35) / 3)])
+  })
+  it('单场积分 = 素点 + 顺位点（同分平分）', () => {
+    expect(seatGamePoints([26000, 25000, 25000, 24000], 0)).toBe(46)
+    expect(seatGamePoints([26000, 25000, 25000, 24000], 1)).toBe(-5)
+    expect(seatGamePoints([26000, 25000, 25000, 24000], 2)).toBe(-5)
+    expect(seatGamePoints([26000, 25000, 25000, 24000], 3)).toBe(-36)
+  })
+})
+
+describe('competitionRanks', () => {
+  it('无同分按分数降序', () => {
+    expect(competitionRanks([26000, 30000, 24000, 25000])).toEqual([2, 1, 4, 3])
+  })
+  it('同分同位', () => {
+    expect(competitionRanks([26000, 25000, 25000, 24000])).toEqual([1, 2, 2, 4])
+    expect(competitionRanks([25000, 25000, 25000, 25000])).toEqual([1, 1, 1, 1])
   })
 })
 

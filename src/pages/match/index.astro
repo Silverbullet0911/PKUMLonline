@@ -63,6 +63,7 @@ import BaseLayout from '../layouts/BaseLayout.astro'
         tsumo_winner: r.tsumo_winner,
         tsumo_points: r.tsumo_points,
         tenpai: r.tenpai,
+        override: r.override,
       }))
       const rep = replayGame(rounds)
       const seats = game.seats ?? []
@@ -120,8 +121,8 @@ import BaseLayout from '../layouts/BaseLayout.astro'
         const tr = el('tr')
         tr.appendChild(el('td', '', roundLabel(h.round)))
         h.scores.forEach((v) => tr.appendChild(el('td', 'num', String(v))))
-        tr.appendChild(el('td', '', resultText(h.result)))
-        tr.appendChild(el('td', 'num', pointsText(h.result)))
+        tr.appendChild(el('td', '', h.override?.result ?? resultText(h.result)))
+        tr.appendChild(el('td', 'num', h.override?.points != null ? String(h.override.points) : pointsText(h.result)))
         tr.appendChild(el('td', 'num', String(h.pool)))
         st.appendChild(tr)
       })

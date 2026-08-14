@@ -117,7 +117,7 @@
 - [ ] **Step 2:** 用户整段重跑 `supabase/schema.sql`（全部 `create or replace` / `drop ... create`，可重复执行）。
 - [ ] **Step 3:** 验证函数存在（REST 端点非 404）+ 提交。
 
-> 实现说明：`finish_game`/`unfinish_game` 已写入 `supabase/schema.sql` 末尾（等待用户在 Supabase SQL Editor 整段执行）。同时将 `rounds.tsumo_points` 由 int 改为 jsonb（存自摸支付拆分 [子付,亲付]/[各付]，回放需要精确拆分），含旧库 ALTER 迁移。**评审点**：SQL 信任客户端算好的 seats（总分校验兜底），如希望 SQL 全量重算需另行实现。**待用户执行**：Step 2 重跑 schema.sql。
+> 实现说明：`finish_game`/`unfinish_game` 已写入 `supabase/schema.sql` 末尾（等待用户在 Supabase SQL Editor 整段执行）。同时将 `rounds.tsumo_points` 由 int 改为 jsonb（存自摸支付拆分 [子付,亲付]/[各付]，回放需要精确拆分），含旧库 ALTER 迁移。位次校验为**竞争位次**（同分同位，如 1,2,2,4），非 1-4 全排列。**评审点**：SQL 信任客户端算好的 seats（总分校验兜底），如希望 SQL 全量重算需另行实现。**待用户执行**：Step 2 重跑 schema.sql。
 
 ### Task 1.4: 对局录入页（referee/admin）
 
@@ -133,7 +133,7 @@
   - 半庄提交后裁判只读；admin 可经「退回修改」调 `unfinish_game` 后修改并重新提交
 - [x] **Step 3:** 草稿数据存 `rounds` 表（字段不完整允许），完整性/平衡校验在「下一局」/「提交」时执行。
 
-> 实现说明：静态托管无法构建动态路由，录入页路由为 **`/admin/match/?id=<uuid>`**（`src/pages/admin/match/index.astro`），提交后跳转详情页。回放逻辑 `src/lib/replay.ts`（`replayGame`/`roundLabel`/`rankScores`，11 用例测试）。
+> 实现说明：静态托管无法构建动态路由，录入页路由为 **`/admin/match/?id=<uuid>`**（`src/pages/admin/match/index.astro`）。**录入流程（赛事组确认 2026-08-14）**：每小局自动生成阶段表行 → 可「改」手动修改该局四家增减/对局情况/打点（存 `rounds.override`）→ 录入页无提交键，录完点「查看结果」→ 结果页（`/admin/match/result/?id=`）总表可手动改各家最终分数（实时显示素点/顺位点/pt/位次，同分平分顺位点），校验总分 100000 后「提交为赛果」。回放逻辑 `src/lib/replay.ts`（`replayGame`/`roundLabel`，支持 override，12 用例测试）。
 
 ### Task 1.5: 对局详情页（公开）
 
@@ -158,7 +158,7 @@
 - [x] **Step 2:** `aggregatePlayerBoard`：按选手聚合 points（含 penalty 扣分明细，判罚数据来源待定：初始由 admin 在 DB 记录或经 rounds 外字段） / rawPoints / wins / maxScore。
 - [x] **Step 3:** 测试：跨半庄聚合、持越折半、位次统计、空输入返回空数组。
 
-> 实现说明（`src/lib/aggregate.ts`，2026-08-14）：API 为 `aggregateTeamBoard(games, carryOf?)` / `aggregatePlayerBoard(games, penaltyOf?)` / `stageTeamTotals(games)` / `carryFrom(totals)`——阶段过滤由调用方完成（传该阶段全部完赛对局），持越/判罚经回调注入，便于浏览器端 DB 现算复用。**计分约定（赛事组已确认）**：起手 25000 点，单场素点 = (最终得分−25000)/1000；单场积分 = 素点 + 顺位点；顺位点 1位 +45 / 2位 +5 / 3位 −15 / 4位 −35（和为 0，每场总分归零）；持越 = 上阶段总积分折半。
+> 实现说明（`src/lib/aggregate.ts`，2026-08-14）：API 为 `aggregateTeamBoard(games, carryOf?)` / `aggregatePlayerBoard(games, penaltyOf?)` / `stageTeamTotals(games)` / `carryFrom(totals)`——阶段过滤由调用方完成（传该阶段全部完赛对局），持越/判罚经回调注入，便于浏览器端 DB 现算复用。**计分约定（赛事组已确认）**：起手 25000 点，单场素点 = (最终得分−25000)/1000；单场积分 = 素点 + 顺位点；顺位点 1位 +45 / 2位 +5 / 3位 −15 / 4位 −35（和为 0，每场总分归零）；**顺位点同分平分**（同分者平分所占位次的顺位点，全员同分则全 0）；位次统计用竞争位次（同分同位，如 1,2,2,4）；持越 = 上阶段总积分折半。
 
 ### Task 2.2: `/standings` 客户端现算
 

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { replayGame, roundLabel, rankScores, seatLabel } from './replay'
+import { replayGame, roundLabel, seatLabel } from './replay'
 import type { StoredRound } from './replay'
 
 const round = (over: Partial<StoredRound>): StoredRound => ({
@@ -81,6 +81,26 @@ describe('replayGame', () => {
     expect(current.scores).toEqual([26000, 25000, 25000, 24000])
   })
 
+  it('手动覆盖四家增减：累计分按 override.deltas，池仍按规则跟踪', () => {
+    const { current, history } = replayGame([
+      round({
+        order: 1,
+        win_type: 'ron',
+        riichi: [false, true, false, false],
+        ron_winner: '东',
+        ron_loser: '北',
+        ron_points: 1000,
+        override: { deltas: [2000, -500, 500, -2000], result: '荣和·东(手改)', points: 1500 },
+      }),
+    ])
+    expect(history[0].deltas).toEqual([2000, -500, 500, -2000])
+    expect(history[0].override?.result).toBe('荣和·东(手改)')
+    expect(history[0].override?.points).toBe(1500)
+    expect(history[0].scores).toEqual([27000, 24500, 25500, 23000])
+    // 供托池仍按立直(南 −1000 → +1 棒)与荣和（池清零）跟踪
+    expect(current.pool).toBe(0)
+  })
+
   it('南4 子家和牌后半庄结束：不再有下一局', () => {
     const dealers = [0, 1, 2, 3, 0, 1, 2, 3] // 东1-4、南1-4 的亲家座位
     const winners = [1, 0, 3, 0, 2, 3, 0, 1] // 每局由子家（非亲家）和牌 → 全部推进
@@ -103,7 +123,7 @@ describe('replayGame', () => {
   })
 })
 
-describe('roundLabel / seatLabel / rankScores', () => {
+describe('roundLabel / seatLabel', () => {
   it('局名文案', () => {
     expect(roundLabel({ wind: '东', number: 1, honba: 0 })).toBe('东1局')
     expect(roundLabel({ wind: '南', number: 3, honba: 2 })).toBe('南3局 2本场')
@@ -111,9 +131,5 @@ describe('roundLabel / seatLabel / rankScores', () => {
   it('座位文案', () => {
     expect(seatLabel(0)).toBe('东')
     expect(seatLabel(3)).toBe('北')
-  })
-  it('位次：分数降序，同分按座位序', () => {
-    expect(rankScores([26000, 30000, 24000, 25000])).toEqual([2, 1, 4, 3])
-    expect(rankScores([25000, 25000, 25000, 25000])).toEqual([1, 2, 3, 4])
   })
 })
