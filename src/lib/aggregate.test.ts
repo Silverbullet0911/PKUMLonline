@@ -3,7 +3,6 @@ import {
   aggregateTeamBoard, aggregatePlayerBoard, stageTeamTotals, carryFrom,
   rawScoreOf, rankPointsForScores, competitionRanks, seatGamePoints,
 } from './aggregate'
-import { round1 } from './standings'
 import type { Game } from './types'
 
 const finishedGame = (overrides: Partial<Game> = {}): Game => ({
@@ -35,19 +34,35 @@ describe('rawScoreOf / rankPointsForScores / seatGamePoints', () => {
   it('全员同分：顺位点均为 0', () => {
     expect(rankPointsForScores([25000, 25000, 25000, 25000])).toEqual([0, 0, 0, 0])
   })
-  it('三人同分：平分前三位顺位点', () => {
-    expect(rankPointsForScores([28000, 25000, 25000, 25000])).toEqual([45, round1((5 - 15 - 35) / 3), round1((5 - 15 - 35) / 3), round1((5 - 15 - 35) / 3)])
+  it('三人同分：平分前三位顺位点（尾差保和）', () => {
+    expect(rankPointsForScores([28000, 25000, 25000, 25000])).toEqual([45, -15, -15, -15])
   })
   it('各种同分情况：1134 / 1114 / 1222', () => {
     // 1134：前两名同分
     expect(competitionRanks([26000, 26000, 25000, 24000])).toEqual([1, 1, 3, 4])
     expect(rankPointsForScores([26000, 26000, 25000, 24000])).toEqual([25, 25, -15, -35])
-    // 1114：前三名同分
+    // 1114：前三名同分（35/3 尾差：11.7, 11.7, 11.6）
     expect(competitionRanks([26000, 26000, 26000, 24000])).toEqual([1, 1, 1, 4])
-    expect(rankPointsForScores([26000, 26000, 26000, 24000])).toEqual([round1(35 / 3), round1(35 / 3), round1(35 / 3), -35])
+    expect(rankPointsForScores([26000, 26000, 26000, 24000])).toEqual([11.7, 11.7, 11.6, -35])
     // 1222：后三名同分
     expect(competitionRanks([26000, 25000, 25000, 25000])).toEqual([1, 2, 2, 2])
     expect(rankPointsForScores([26000, 25000, 25000, 25000])).toEqual([45, -15, -15, -15])
+  })
+  it('顺位点合计恒为 0（任意同分组合）', () => {
+    const cases = [
+      [26000, 25000, 24000, 23000],
+      [26000, 26000, 25000, 24000],
+      [26000, 26000, 26000, 24000],
+      [26000, 25000, 25000, 25000],
+      [26000, 26000, 24000, 24000],
+      [25000, 25000, 25000, 25000],
+      [27000, 25000, 25000, 23000],
+      [26000, 26000, 26000, 26000],
+    ]
+    for (const s of cases) {
+      const sum = rankPointsForScores(s).reduce((a, b) => a + b, 0)
+      expect(Math.abs(sum)).toBeLessThanOrEqual(0.001)
+    }
   })
   it('单场积分 = 素点 + 顺位点（同分平分）', () => {
     expect(seatGamePoints([26000, 25000, 25000, 24000], 0)).toBe(46)

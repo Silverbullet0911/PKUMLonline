@@ -27,7 +27,9 @@ export function rawScoreOf(points: number): number {
 
 /**
  * 顺位点（同分平分）：同分者平分所占位次的顺位点。
- * 例：26000/25000/25000/24000 → [45, -5, -5, -35]；全员同分 → [0,0,0,0]
+ * 组内每家取 round1 均值，**最后一家取尾差**，保证同组顺位点和恰等于所占位次之和（总和恒为 0）。
+ * 例：26000/25000/25000/24000 → [45, -5, -5, -35]；全员同分 → [0,0,0,0]；
+ *     前三同分（45+5-15=35）→ [11.7, 11.7, 11.6, -35]（合计 0）
  */
 export function rankPointsForScores(scores: number[]): number[] {
   const order = scores.map((s, i) => ({ s, i })).sort((a, b) => b.s - a.s)
@@ -38,8 +40,10 @@ export function rankPointsForScores(scores: number[]): number[] {
     while (j + 1 < scores.length && order[j + 1].s === order[i].s) j++
     let sum = 0
     for (let k = i; k <= j; k++) sum += RANK_POINTS[String(k + 1) as keyof typeof RANK_POINTS]
-    const avg = round1(sum / (j - i + 1))
-    for (let k = i; k <= j; k++) pts[order[k].i] = avg
+    const n = j - i + 1
+    const base = round1(sum / n)
+    const tail = round1(sum - base * (n - 1)) // 尾差，保证组内和恰等于 sum
+    for (let k = i; k <= j; k++) pts[order[k].i] = k < j ? base : tail
     i = j + 1
   }
   return pts
