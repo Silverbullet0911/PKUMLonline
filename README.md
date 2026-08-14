@@ -1,69 +1,72 @@
 # PKU M.LEAGUE 官方网站
 
-北京大学校内立直麻将团体赛官网。静态站（Astro），数据全部在 `data/*.json`，部署到 Vercel。
+北京大学校内立直麻将团体赛官网。前端为 Astro 静态站（部署到 GitHub Pages，`/PKUMLonline/`），动态数据（公告、赛程、赛果、积分榜）由 Supabase（Postgres + Auth + RLS）驱动，页面加载后客户端拉取渲染，失败/无数据时回退到静态 JSON。
 
 ## 常用命令
 
 ```bash
-npm run dev      # 本地开发 http://localhost:4321
+npm run dev      # 本地开发 http://localhost:4321/PKUMLonline/
 npm run build    # 生成静态产物到 dist/
 npm run preview  # 本地预览构建产物
-npm test         # 运行单元测试（榜单计算、章程分块）
+npm test         # 运行单元测试（榜单/对局引擎/回放/点数表/渲染等）
 ```
 
-## 数据更新 SOP
+> 注意：沙箱/受限环境下 `npm test` 若报 forks worker 超时，可用 `npx vitest run --pool=threads`。
 
-> 所有页面只读数据、渲染。改数据 → 重新 build → 部署即可，前端代码无需改动。
+## 架构
 
-### 1. 录入对局（赛程与结果）
-在 `data/schedule.json` 的 `games` 数组追加一条：
-
-```json
-{
-  "stage": "常规赛",
-  "date": "2026-09-05",
-  "players": [
-    { "team": "海盗", "name": "Art3mis", "rank": 1, "points": 42000 },
-    { "team": "格斗", "name": "忆水", "rank": 2, "points": 18000 },
-    { "team": "樱花", "name": "炸洋芋", "rank": 3, "points": -12000 },
-    { "team": "火山", "name": "桃之11", "rank": 4, "points": -48000 }
-  ],
-  "replayUrl": "牌谱链接",
-  "videoUrl": null
-}
+```
+├── src/pages/                  公开页 + 后台页（Astro）
+│   ├── index / news / schedule / standings / teams / rules / archive
+│   └── admin/                  login、index、announcements、teams、schedule、
+│                               match（对局录入）、match/result（查看结果/提交）
+│   └── captain                 队长选人
+├── src/lib/                    纯函数库（均有 vitest 测试）
+│   ├── standings.ts            榜单计算（排序/差/晋级线差/比率）
+│   ├── aggregate.ts            榜单聚合（同分平分顺位点、竞争位次、持越折半、判罚）
+│   ├── scoring.ts              对局引擎（局推进/本场/亲家/供托/流局罚符/平衡校验）
+│   ├── replay.ts               半庄回放（rounds → 局状态/累计分/供托，支持手动覆盖）
+│   ├── renderStandings.ts      客户端榜单渲染（HTML 生成，复用 global.css）
+│   └── ...
+├── data/*.json                 静态数据（回退/档案）
+│   ├── teams.json              队伍代表色（真）
+│   ├── current_roster.json     26-27 指名名单（真）
+│   ├── players_history.json    往届选手档案（真，唯一保留的榜单类静态数据）
+│   ├── archive.json            历届名次/冠军（真）
+│   ├── season.json             赛季配置
+│   ├── schedule / standings / news   空骨架（假数据已清空，以 DB 为准）
+│   └── points_table.json       点数表（赛事组确认）
+├── supabase/schema.sql         全部表 + RLS + RPC（整段可重复执行）
+├── supabase/cleanup_demo_data.sql  演示数据清理（新赛季初始化前执行）
+└── .github/workflows/deploy.yml    GitHub Pages 自动构建部署
 ```
 
-### 2. 更新榜单（积分排名）
-在 `data/standings.json` 对应阶段的 `teamBoard` / `playerBoard` 数组维护行：
+## 数据流（26-27 起）
 
-- 队伍榜行：`{ "team": "海盗", "carry": 0, "stagePoints": 0, "stageRaw": 0, "wins": { "1": 0, "2": 0, "3": 0, "4": 0 } }`
-  - `carry` = 持越（常规赛填 0；半决赛/决赛 = 上阶段总积分折半）。页面「积分」列 = `carry + stagePoints`。
-- 个人榜行：`{ "team": "海盗", "name": "Art3mis", "points": 0, "rawPoints": 0, "penalty": 0, "wins": { "1": 0, "2": 0, "3": 0, "4": 0 }, "maxScore": 0 }`
-  - `penalty` 无则填 0（页面留空）；`maxScore` 无则填 0（页面显示 `-`）。
-- 榜单行数达到赛季进度后，把 `standings.asOf` 改为「xx月xx日终了时点」；赛季结束改为「全日程终了」。
+- **公告 / 赛程 / 赛果 / 积分榜**：全部由 Supabase 提供。管理员在后台录入，页面客户端拉取渲染；静态 JSON 仅作空态/回退。
+- **积分榜**：浏览器拉完赛对局 → `aggregate.ts` 现算（素点 = (分数−25000)/1000；顺位点 45/5/−15/−35，**同分平分**）→ `standings.ts` 排序渲染；持越 = 上阶段总积分折半。
+- **选手档案 / 历届名次 / 队色 / 指名名单**：静态 JSON，保留不迁库。
 
-页面会自动计算：积分排序、差 / 晋级线差 / 一位差、平均顺位、一位率/连对率/避四率、比赛数 `x/总场数`。
+## 后台使用
 
-### 3. 阶段配置
-`data/season.json` 的 `stages[].totalGames` 为各阶段总场数（默认 24/4/2，赛季首场比赛前按赛事组公布修改）。
+1. **首次**：在 Supabase SQL Editor 整段执行 `supabase/schema.sql`（建表 + RLS + finish_game/unfinish_game/assign_player RPC；可重复执行）。
+2. **建账号**：Supabase Dashboard 手动建号（Auth → Users），并在 SQL Editor 设置角色：
+   ```sql
+   update public.profiles set role='admin' where email='你的账号邮箱';  -- admin / referee / captain
+   update public.profiles set team='队伍名' where email='队长账号邮箱';  -- captain 时
+   ```
+3. **新赛季初始化**：执行 `supabase/cleanup_demo_data.sql` 清空演示数据（可选）。
+4. **赛季流程**：
+   - `/admin/teams` 录入 26-27 队伍名单（roster 参照 `data/current_roster.json`）
+   - `/admin/schedule` 建半庄（4 座位选队）→「填选手」/ 队长 `/captain` 选人
+   - `/admin/match/?id=` 逐小局录入（荣和/自摸/流局 + 立直 + 点数表；草稿可续录、倒推可改、南四锁定）
+   - `/admin/match/result/?id=` 查看结果：总表（最终分数/pt/顺位点/位次/判罚每格可改）+ 阶段对局表（每格可改、任意位置插入行、局名可改）→「提交为赛果」/「修改并重新提交」
+   - 前台 `/schedule` 赛果 → `/match/?id=` 详情（总表 + 阶段表）；`/standings` 与首页自动现算积分榜
 
-### 4. 往届选手数据（一般不再动）
-由 `scripts/build_history.py` 从 `往届成绩excel/` 生成 `data/players_history.json`：
+## 部署
 
-```bash
-.venv/Scripts/python.exe scripts/build_history.py
-```
+推送到 GitHub `main` 分支 → Actions 自动 `npm run build` → 发布到 GitHub Pages（`https://<user>.github.io/PKUMLonline/`）。
 
-### 5. 公告
-在 `data/news.json` 的 `items` 数组追加 `{ "date": "2026-08-12", "title": "标题", "category": "公告", "body": "正文" }`。
+## 测试
 
-## 部署（Vercel）
-
-1. 把项目推到 GitHub 仓库（注意 `.venv`、`node_modules`、`.astro`、`dist` 已被 .gitignore 忽略）。
-2. 在 Vercel 导入该仓库：Framework Preset 选 **Astro**，Build Command `npm run build`，Output Directory `dist`。
-3. 之后每次推送，Vercel 自动重新构建部署。
-
-本地手动部署（可选）：
-```bash
-npm i -g vercel && vercel --prod
-```
+`npm test`（vitest）。覆盖：榜单计算、聚合（同分平分/持越/判罚）、对局引擎（局推进/结算/罚符/平衡不变量）、回放（手动覆盖/供托）、点数表结构、客户端榜单渲染。

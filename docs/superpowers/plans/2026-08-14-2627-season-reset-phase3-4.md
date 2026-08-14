@@ -162,23 +162,27 @@
 
 ### Task 2.2: `/standings` 客户端现算
 
-- [ ] **Step 1:** 页面保留 SSR 空态回退；追加客户端脚本：拉取 `games`（finished）+ 对应 `rounds` → 按阶段调用聚合函数 → 复用 `computeTeamBoard` / `computePlayerBoard` 渲染三阶段队伍榜/个人榜（沿用现有 `TeamStandingsTable` / `PlayerStandingsTable` 组件渲染方式）。
-- [ ] **Step 2:** `asOf` 标注改为客户端生成（「xx月xx日终了时点」/「全日程终了」按 DB 最后完赛日期推导）。
+- [x] **Step 1:** 页面保留 SSR 空态回退；追加客户端脚本：拉取 `games`（finished）+ 对应 `rounds` → 按阶段调用聚合函数 → 复用 `computeTeamBoard` / `computePlayerBoard` 渲染三阶段队伍榜/个人榜（沿用现有 `TeamStandingsTable` / `PlayerStandingsTable` 组件渲染方式）。
+- [x] **Step 2:** `asOf` 标注改为客户端生成（「xx月xx日终了时点」/「全日程终了」按 DB 最后完赛日期推导）。
+
+> 实现说明（2026-08-14）：新增 `src/lib/renderStandings.ts`（`renderTeamTable`/`renderPlayerTable` 客户端 HTML 渲染 + `standingsAsOf`/`activeStageFromGames`，10 用例测试）；`/standings` 与首页均加客户端脚本从 DB 现算（含持越链、同分平分顺位点、判罚），`mapDbGame` 扩展透传 pt/penalty。
 
 ### Task 2.3: 数据交接与初始化
 
-- [ ] **Step 1:** 清理 DB 中的联调测试数据（Phase 2 验证时插入的 teams/games/announcements，如「凤凰」队、测试半庄、测试公告）——提供一段清理 SQL 由用户在 Dashboard 执行。
-- [ ] **Step 2:** 新赛季空表就绪：26-27 队伍名单由 admin 在 `/admin/teams` 录入（roster 来自 `current_roster.json` 待指名补齐后），赛程由 admin 在 `/admin/schedule` 建半庄，队长在 `/captain` 填出场。
+- [x] **Step 1:** 清理 DB 中的联调测试数据（Phase 2 验证时插入的 teams/games/announcements，如「凤凰」队、测试半庄、测试公告）——提供一段清理 SQL 由用户在 Dashboard 执行。
+- [x] **Step 2:** 新赛季空表就绪：26-27 队伍名单由 admin 在 `/admin/teams` 录入（roster 来自 `current_roster.json` 待指名补齐后），赛程由 admin 在 `/admin/schedule` 建半庄，队长在 `/captain` 填出场。
 - [ ] **Step 3:** 端到端验收：队长选人 → 裁判录入 → 提交 → 前台赛果/榜单/公告即时更新；刷新后数据仍在。
+
+> 实现说明：清理 SQL 已写入 `supabase/cleanup_demo_data.sql`（清空 rounds/games/announcements/teams，附校验查询），由用户在确认后于 Dashboard 执行。端到端验收待用户执行清理后走查。
 
 ---
 
 ## 阶段 3 · 收尾与体验
 
-- [ ] **Task 3.1:** 管理后台样式：`AdminShell`/登录/公告/队伍/赛程/队长选人页补充 `global.css` 样式（当前后台页无样式）。
+- [x] **Task 3.1:** 管理后台样式：`AdminShell`/登录/公告/队伍/赛程/队长选人页补充 `global.css` 样式（当前后台页无样式）。
 - [ ] **Task 3.2:** 加载态/错误态：DB 拉取失败提示 + 静态回退已具备，补充 loading 提示。
 - [ ] **Task 3.3:** `src/lib/pinyin.ts` 字典补全或换用拼音库（当前硬编码约 40 字，未覆盖姓名回退 `#`）。
-- [ ] **Task 3.4:** README 更新：部署平台改为 GitHub Pages（现有 `.github/workflows/deploy.yml`），补充 Supabase 后台说明与 26-27 新 SOP（数据从 DB 录入，静态 JSON 仅作回退/档案）。
+- [x] **Task 3.4:** README 更新：部署平台改为 GitHub Pages（现有 `.github/workflows/deploy.yml`），补充 Supabase 后台说明与 26-27 新 SOP（数据从 DB 录入，静态 JSON 仅作回退/档案）。
 - [ ] **Task 3.5:** 全量测试 + 构建 + 推送部署。
 
 ---
