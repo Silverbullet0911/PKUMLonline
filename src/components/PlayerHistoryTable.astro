@@ -33,18 +33,24 @@ const fmtPct = (n: number | null) => (n == null ? '-' : `${n.toFixed(2)}%`)
     </thead>
     <tbody>
       {
-        [...player.history].reverse().map((h) => (
+        player.history.length === 0 ? (
           <tr>
-            <td class="num">{h.year}</td>
-            <td class="team-col" style={h.team ? ts(h.team) : ''}>{h.team ?? '-'}</td>
-            <td class="num">{formatScore(h.regularPoints)}</td>
-            <td class="num">{formatScore(h.semifinalPoints)}</td>
-            <td class="num">{formatScore(h.finalPoints)}</td>
-            <td class="num">{formatScore(h.regularMaxScore)}</td>
-            <td class="num">{fmtPct(h.regularAvoidRate)}</td>
-            <td class="num">{h.teamRank ?? '-'}</td>
+            <td colspan="8" class="empty-history">暂无往届数据（本赛季新加入队伍）</td>
           </tr>
-        ))
+        ) : (
+          [...player.history].reverse().map((h) => (
+            <tr>
+              <td class="num">{h.year}</td>
+              <td class="team-col" style={h.team ? ts(h.team) : ''}>{h.team ?? '-'}</td>
+              <td class="num">{formatScore(h.regularPoints)}</td>
+              <td class="num">{formatScore(h.semifinalPoints)}</td>
+              <td class="num">{formatScore(h.finalPoints)}</td>
+              <td class="num">{formatScore(h.regularMaxScore)}</td>
+              <td class="num">{fmtPct(h.regularAvoidRate)}</td>
+              <td class="num">{h.teamRank ?? '-'}</td>
+            </tr>
+          ))
+        )
       }
     </tbody>
   </table>
