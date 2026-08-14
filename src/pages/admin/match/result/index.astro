@@ -14,13 +14,15 @@ import AdminShell from '../../../../components/admin/AdminShell.astro'
     .res-table input { width: 90px; text-align: right; font-variant-numeric: tabular-nums; font-size: 18px; padding: 4px 6px; }
     .res-table select { font-size: 16px; padding: 4px 6px; }
     .res-table { font-size: 15px; }
-    .res-sum { font-size: 15px; margin: 10px 0; }
+    /* 两个表格居中 */
+    .res-table-wrap { max-width: 85%; margin: 0 auto; }
+    .res-sum { font-size: 15px; margin: 10px 0; text-align: center; }
     .res-sum.bad { color: #b91c1c; font-weight: 700; }
-    .res-stages { margin-top: 18px; }
+    .res-stages { margin: 18px auto 0; max-width: 95%; }
     .res-stages h3 { font-size: 18px; }
     .res-stages input { width: 84px; font-size: 15px; padding: 3px 6px; text-align: right; font-variant-numeric: tabular-nums; }
     .res-stages input[type='text'] { width: 140px; text-align: left; }
-    .res-actions { display: flex; gap: 10px; margin: 14px 0; }
+    .res-actions { display: flex; gap: 10px; margin: 14px 0; justify-content: center; }
     .res-actions button, .res-stages button { padding: 10px 22px; border-radius: 8px; border: 1px solid var(--line); background: var(--card); cursor: pointer; font-size: 18px; }
     .res-actions button.primary, .res-stages button.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
   </style>

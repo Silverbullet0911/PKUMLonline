@@ -8,13 +8,14 @@ import BaseLayout from '../../layouts/BaseLayout.astro'
     <p class="empty">加载中…</p>
   </div>
   <style is:global>
-    .md-stats { overflow-x: auto; margin: 12px 0; }
+    .md-stats { overflow-x: auto; margin: 12px auto; }
     .md-stats td { padding: 8px 12px; }
     .md-stats th { padding: 8px 12px; }
     .md-stats td.team-col { font-weight: 700; }
-    /* 总表宽度缩至约 2/3，各部分等比例缩小 */
+    /* 总表宽度约 2/3，居中；阶段表约 95% 居中 */
     .md-summary { max-width: 67%; }
     .md-summary th, .md-summary td { padding: 6px 10px; font-size: 15px; }
+    .md-stage { max-width: 95%; }
   </style>
   <script>
     import { supabase } from '../../lib/supabase'
@@ -115,7 +116,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro'
       root.appendChild(stats)
 
       // 阶段表
-      const stageBox = el('div', 'table-wrap md-stats')
+      const stageBox = el('div', 'table-wrap md-stats md-stage')
       const st = el('table')
       const sh = el('tr')
       sh.appendChild(el('th', '', '局'))
