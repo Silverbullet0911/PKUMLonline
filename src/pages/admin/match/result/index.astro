@@ -59,6 +59,7 @@ import AdminShell from '../../../../components/admin/AdminShell.astro'
     let finalScores: number[] = []
     let scoreInputs: HTMLInputElement[] = []
     let ptInputs: HTMLInputElement[] = []
+    let rpInputs: HTMLInputElement[] = []
     let rankSelects: HTMLSelectElement[] = []
     let penInputs: HTMLInputElement[] = []
     // 阶段表行编辑引用
@@ -144,7 +145,7 @@ import AdminShell from '../../../../components/admin/AdminShell.astro'
       table.className = 'res-table'
       const thead = el('thead')
       const htr = el('tr')
-      ;['座位', '队伍', '选手', '最终分数(可改)', '素点', '顺位点', 'pt(可改)', '位次(可改)', '判罚(可改)'].forEach((h) => htr.appendChild(el('th', '', h)))
+      ;['座位', '队伍', '选手', '最终分数(可改)', '素点', '顺位点(可改)', 'pt(可改)', '位次(可改)', '判罚(可改)'].forEach((h) => htr.appendChild(el('th', '', h)))
       thead.appendChild(htr)
       table.appendChild(thead)
       const tbody = el('tbody')
@@ -152,16 +153,35 @@ import AdminShell from '../../../../components/admin/AdminShell.astro'
       const sumScoreEl = el('p', 'res-sum', '')
       const sumPtEl = el('p', 'res-sum', '')
 
+      // 分数/顺位点/pt 三方联动：改任意一方，另一方自动重算（素点=由分数推导）
+      function refreshFromScore(i: number) {
+        const raw = rawScoreOf(Number(scoreInputs[i].value) || 0)
+        const rp = Number(rpInputs[i].value)
+        const pt = Math.round((raw + (Number.isFinite(rp) ? rp : 0)) * 10) / 10
+        ptInputs[i].value = String(pt)
+        refresh()
+      }
+      function refreshFromRp(i: number) {
+        const raw = rawScoreOf(Number(scoreInputs[i].value) || 0)
+        const rp = Number(rpInputs[i].value)
+        const pt = Math.round((raw + (Number.isFinite(rp) ? rp : 0)) * 10) / 10
+        ptInputs[i].value = String(pt)
+        refresh()
+      }
+      function refreshFromPt(i: number) {
+        const raw = rawScoreOf(Number(scoreInputs[i].value) || 0)
+        const pt = Number(ptInputs[i].value)
+        const rp = Math.round(((Number.isFinite(pt) ? pt : 0) - raw) * 10) / 10
+        rpInputs[i].value = String(rp)
+        refresh()
+      }
       function refresh() {
         const scores = scoreInputs.map((x) => Number(x.value))
         const pts = ptInputs.map((x) => Number(x.value))
         const rows = tbody.querySelectorAll('tr')
         rows.forEach((tr, i) => {
           const tds = tr.querySelectorAll('td')
-          const raw = rawScoreOf(scores[i])
-          const rp = Math.round((pts[i] - raw) * 10) / 10
-          tds[4].textContent = String(raw)
-          tds[5].textContent = String(rp)
+          tds[4].textContent = String(rawScoreOf(scores[i]))
         })
         const sSum = scores.reduce((a, b) => a + (Number.isFinite(b) ? b : 0), 0)
         sumScoreEl.textContent = `最终分数合计：${sSum}（须为 100000）`
@@ -172,6 +192,9 @@ import AdminShell from '../../../../components/admin/AdminShell.astro'
         sumPtEl.classList.toggle('bad', Math.abs(rawPts) > 0.001)
       }
 
+      // 初始 pt 与顺位点
+      const initPt = seats.map((s: any, i: number) => (fromSeats && s.pt != null ? s.pt : autoPt[i]))
+
       seats.forEach((s: any, i: number) => {
         const tr = el('tr')
         tr.appendChild(el('td', '', s.seat))
@@ -181,18 +204,26 @@ import AdminShell from '../../../../components/admin/AdminShell.astro'
         const scoreInput = document.createElement('input')
         scoreInput.type = 'number'
         scoreInput.value = String(scoreArr[i])
-        scoreInput.addEventListener('input', refresh)
+        scoreInput.addEventListener('input', () => refreshFromScore(i))
         scoreInputs.push(scoreInput)
         tdScore.appendChild(scoreInput)
         tr.appendChild(tdScore)
         tr.appendChild(el('td', 'num', ''))
-        tr.appendChild(el('td', 'num', ''))
+        const tdRp = el('td')
+        const rpInput = document.createElement('input')
+        rpInput.type = 'number'
+        rpInput.step = '0.1'
+        rpInput.value = String(Math.round((initPt[i] - rawScoreOf(scoreArr[i])) * 10) / 10)
+        rpInput.addEventListener('input', () => refreshFromRp(i))
+        rpInputs.push(rpInput)
+        tdRp.appendChild(rpInput)
+        tr.appendChild(tdRp)
         const tdPt = el('td')
         const ptInput = document.createElement('input')
         ptInput.type = 'number'
         ptInput.step = '0.1'
-        ptInput.value = String(fromSeats && s.pt != null ? s.pt : autoPt[i])
-        ptInput.addEventListener('input', refresh)
+        ptInput.value = String(initPt[i])
+        ptInput.addEventListener('input', () => refreshFromPt(i))
         ptInputs.push(ptInput)
         tdPt.appendChild(ptInput)
         tr.appendChild(tdPt)
