@@ -50,11 +50,15 @@ create table if not exists public.rounds (
   -- 自摸支付拆分：子家自摸 [子付, 亲付]，亲家自摸 [各付]（回放需要精确拆分，故用 jsonb）
   tsumo_points jsonb,
   tenpai jsonb,
+  -- 手动覆盖：录入人对该局自动生成行的修改（四家增减/对局情况/打点）
+  override jsonb,
   unique (game_id, "order")
 );
 
 -- 旧安装迁移：tsumo_points 原为 int，改为 jsonb（测试数据可丢弃）
 alter table public.rounds alter column tsumo_points type jsonb using null;
+-- 旧安装迁移：新增 override 列（可重复执行）
+alter table public.rounds add column if not exists override jsonb;
 
 alter table public.rounds enable row level security;
 

@@ -48,14 +48,14 @@ import AdminShell from '../../../components/admin/AdminShell.astro'
     }
   </style>
   <script>
-    import { supabase } from '../../../../lib/supabase'
-    import { dealerSeat, nextRound, settleRound } from '../../../../lib/scoring'
-    import { replayGame, roundLabel, seatLabel } from '../../../../lib/replay'
-    import type { RoundResult } from '../../../../lib/scoring'
-    import type { StoredRound } from '../../../../lib/replay'
+    import { supabase } from '../../../lib/supabase'
+    import { dealerSeat, nextRound, settleRound } from '../../../lib/scoring'
+    import { replayGame, roundLabel, seatLabel } from '../../../lib/replay'
+    import type { RoundResult } from '../../../lib/scoring'
+    import type { StoredRound } from '../../../lib/replay'
     import pointsRaw from '../../../../data/points_table.json'
     import teamsRaw from '../../../../data/teams.json'
-    import type { PointsTable } from '../../../../lib/types'
+    import type { PointsTable } from '../../../lib/types'
 
     const points = pointsRaw as PointsTable
     const teamColorOf = (name: string) => teamsRaw.teams.find((t: any) => t.name === name)?.color ?? '#9ca3af'

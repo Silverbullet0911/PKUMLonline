@@ -28,7 +28,7 @@ import AdminShell from '../../../../components/admin/AdminShell.astro'
     import { supabase } from '../../../../lib/supabase'
     import { replayGame } from '../../../../lib/replay'
     import { rawScoreOf, rankPointsForScores, competitionRanks } from '../../../../lib/aggregate'
-    import teamsRaw from '../../../../data/teams.json'
+    import teamsRaw from '../../../../../data/teams.json'
 
     const base = import.meta.env.BASE_URL
     const errEl = document.getElementById('res-err')!

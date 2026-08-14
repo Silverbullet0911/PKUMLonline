@@ -1,5 +1,5 @@
 ---
-import BaseLayout from '../layouts/BaseLayout.astro'
+import BaseLayout from '../../layouts/BaseLayout.astro'
 ---
 <BaseLayout title="对局详情">
   <h1>对局详情</h1>
@@ -20,9 +20,9 @@ import BaseLayout from '../layouts/BaseLayout.astro'
     @media (max-width: 720px) { .md-seats { grid-template-columns: repeat(2, 1fr); } }
   </style>
   <script>
-    import { supabase } from '../lib/supabase'
-    import { replayGame, roundLabel } from '../lib/replay'
-    import { rawScoreOf, rankPointsForScores } from '../lib/aggregate'
+    import { supabase } from '../../lib/supabase'
+    import { replayGame, roundLabel } from '../../lib/replay'
+    import { rawScoreOf, rankPointsForScores } from '../../lib/aggregate'
     import teamsRaw from '../../../data/teams.json'
 
     const base = import.meta.env.BASE_URL
