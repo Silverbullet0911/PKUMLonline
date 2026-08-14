@@ -1,0 +1,735 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro'
+import AdminShell from '../../../components/admin/AdminShell.astro'
+---
+<BaseLayout title="对局录入">
+  <AdminShell>
+    <h1>对局录入</h1>
+    <p id="match-err" class="admin-err"></p>
+    <div id="match-root" class="match-root">
+      <p class="empty">加载中…</p>
+    </div>
+  </AdminShell>
+  <style>
+    .match-root { min-width: 0; }
+    .match-seats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 12px 0; }
+    .match-seat { border-radius: 8px; padding: 8px 10px; color: #fff; font-weight: 700; }
+    .match-seat .ms-seat { font-size: 12px; opacity: .8; }
+    .match-seat .ms-team { font-size: 15px; }
+    .match-seat .ms-player { font-size: 13px; font-weight: 400; opacity: .9; }
+    .match-scores { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 12px 0; }
+    .match-score { background: #fff; border: 1px solid var(--line); border-radius: 8px; padding: 6px 10px; text-align: center; }
+    .match-score .ms-label { font-size: 11px; color: var(--muted); }
+    .match-score .ms-value { font-size: 20px; font-variant-numeric: tabular-nums; }
+    .match-round-title { font-size: 18px; font-weight: 800; margin: 8px 0; }
+    .field-row { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; margin: 8px 0; }
+    .field-row label { display: flex; align-items: center; gap: 4px; font-size: 14px; }
+    .points-table { display: grid; grid-template-columns: 44px repeat(11, minmax(74px, 1fr)); gap: 2px; margin: 10px 0; max-width: 100%; overflow-x: auto; }
+    .pt-cell { padding: 6px 2px; text-align: center; font-size: 12px; border-radius: 4px; background: var(--accent-soft); cursor: pointer; font-variant-numeric: tabular-nums; }
+    .pt-cell:hover { background: var(--accent); color: #fff; }
+    .pt-cell.blank { background: transparent; cursor: default; }
+    .pt-cell.sel { background: var(--accent); color: #fff; outline: 2px solid #ffd700; }
+    .pt-head { font-weight: 700; background: var(--card); text-align: center; align-self: center; }
+    .pt-tiers { display: flex; gap: 6px; flex-wrap: wrap; margin: 8px 0; }
+    .pt-tier { padding: 8px 12px; border-radius: 999px; border: 1px solid var(--line); background: var(--card); cursor: pointer; font-size: 13px; }
+    .pt-tier.sel { background: var(--accent); color: #fff; border-color: var(--accent); }
+    .match-actions { display: flex; gap: 10px; margin: 14px 0; }
+    .match-actions button { padding: 8px 18px; border-radius: 8px; border: 1px solid var(--line); background: var(--card); cursor: pointer; font-size: 14px; }
+    .match-actions button.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+    .match-actions button[disabled] { opacity: .45; cursor: not-allowed; }
+    .sel-info { font-size: 13px; color: var(--muted); min-height: 20px; }
+    .rounds-list { margin-top: 20px; }
+    .rounds-list table { font-size: 12px; }
+    .rounds-list tr.settled { cursor: pointer; }
+    .rounds-list tr.settled:hover { background: var(--accent-soft); }
+    .draft-badge { color: #b45309; font-weight: 700; }
+    @media (max-width: 720px) {
+      .match-seats, .match-scores { grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
+  <script>
+    import { supabase } from '../../../../lib/supabase'
+    import { dealerSeat, nextRound, settleRound } from '../../../../lib/scoring'
+    import { replayGame, roundLabel, seatLabel, rankScores } from '../../../../lib/replay'
+    import type { RoundResult } from '../../../../lib/scoring'
+    import type { StoredRound } from '../../../../lib/replay'
+    import pointsRaw from '../../../../data/points_table.json'
+    import teamsRaw from '../../../../data/teams.json'
+    import type { PointsTable } from '../../../../lib/types'
+
+    const points = pointsRaw as PointsTable
+    const teamColorOf = (name: string) => teamsRaw.teams.find((t: any) => t.name === name)?.color ?? '#9ca3af'
+    const base = import.meta.env.BASE_URL
+    const errEl = document.getElementById('match-err')!
+    const root = document.getElementById('match-root')!
+    const showErr = (m: string) => { errEl.textContent = m }
+    const clearErr = () => { errEl.textContent = '' }
+
+    const FU = ['20', '25', '30', '40', '50', '60', '70', '80', '90', '100', '110']
+    const HAN = ['1', '2', '3', '4']
+    const TIERS = points.tiers
+
+    const params = new URLSearchParams(location.search)
+    const gameId = params.get('id')
+    if (!gameId) {
+      root.innerHTML = '<p class="empty">缺少对局 id（?id=…）</p>'
+    }
+
+    let game: any = null
+    let role: string | null = null
+    let rounds: StoredRound[] = []
+    let rep: ReturnType<typeof replayGame> | null = null
+    let editingOrder: number | null = null
+    let draftLoaded = false
+
+    // 表单状态
+    const form: {
+      winType: 'ron' | 'tsumo' | 'draw' | null
+      riichi: boolean[]
+      winner: number | null
+      loser: number | null
+      ronPoints: number | null
+      tsumoSplit: number[] | null
+      tenpai: boolean[] | null
+      selKey: string | null
+    } = {
+      winType: null,
+      riichi: [false, false, false, false],
+      winner: null,
+      loser: null,
+      ronPoints: null,
+      tsumoSplit: null,
+      tenpai: null,
+      selKey: null,
+    }
+
+    function seatLabelOf(i: number): string { return seatLabel(i) }
+    const view = (): 'child' | 'dealer' =>
+      form.winner != null && rep && form.winner === dealerSeat(rep.current.round) ? 'dealer' : 'child'
+
+    // ---------- 加载 ----------
+    async function load() {
+      if (!gameId) return
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) { location.href = base + 'admin/login/'; return }
+      const { data: profile } = await supabase.from('profiles').select('role').eq('id', session.user.id).single()
+      role = profile?.role ?? null
+
+      const { data: g, error } = await supabase.from('games').select('*').eq('id', gameId).single()
+      if (error || !g) { showErr('加载对局失败：' + (error?.message ?? 'not found')); root.innerHTML = '<p class="empty">对局不存在。</p>'; return }
+      game = g
+
+      const { data: rs } = await supabase.from('rounds').select('*').eq('game_id', gameId).order('order', { ascending: true })
+      rounds = (rs ?? []).map((r: any) => ({
+        order: r.order,
+        win_type: r.win_type,
+        riichi: r.riichi ?? [false, false, false, false],
+        ron_winner: r.ron_winner,
+        ron_loser: r.ron_loser,
+        ron_points: r.ron_points,
+        tsumo_winner: r.tsumo_winner,
+        tsumo_points: r.tsumo_points,
+        tenpai: r.tenpai,
+      }))
+      rep = replayGame(rounds)
+
+      if (game.status === 'finished' && role !== 'admin') {
+        renderReadonly()
+      } else {
+        render()
+      }
+    }
+
+    // ---------- 渲染 ----------
+    function el(tag: string, cls = '', text = ''): HTMLElement {
+      const n = document.createElement(tag)
+      if (cls) n.className = cls
+      if (text) n.textContent = text
+      return n
+    }
+
+    function renderReadonly() {
+      root.innerHTML = ''
+      root.appendChild(el('p', '', '该半庄已完结，赛果如下（裁判不可修改，仅管理员可退回修改）。'))
+      renderSummary(root)
+    }
+
+    function renderSummary(container: HTMLElement) {
+      const seats = game.seats ?? []
+      const grid = el('div', 'match-seats')
+      seats.forEach((s: any, i: number) => {
+        const card = el('div', 'match-seat')
+        card.style.background = teamColor(s.team)
+        const seat = el('div', 'ms-seat', s.seat ?? seatLabelOf(i))
+        const team = el('div', 'ms-team', s.team)
+        const player = el('div', 'ms-player', s.player ?? s.name ?? '')
+        card.append(seat, team, player)
+        grid.appendChild(card)
+      })
+      container.appendChild(grid)
+      if (rep) {
+        const scores = el('div', 'match-scores')
+        seats.forEach((s: any, i: number) => {
+          const box = el('div', 'match-score')
+          const label = el('div', 'ms-label', `${s.seat} ${s.player ?? ''} ${s.rank ? s.rank + '位' : ''}`)
+          const val = el('div', 'ms-value', String(s.points ?? rep!.current.scores[i]))
+          box.append(label, val)
+          scores.appendChild(box)
+        })
+        container.appendChild(scores)
+      }
+      renderRoundsList(container, true)
+    }
+
+    function render() {
+      clearErr()
+      if (!rep) return
+      root.innerHTML = ''
+      const seats = game.seats ?? []
+
+      // 座位卡
+      const grid = el('div', 'match-seats')
+      seats.forEach((s: any) => {
+        const card = el('div', 'match-seat')
+        card.style.background = teamColor(s.team)
+        card.append(
+          el('div', 'ms-seat', s.seat),
+          el('div', 'ms-team', s.team),
+          el('div', 'ms-player', s.player ?? ''),
+        )
+        grid.appendChild(card)
+      })
+      root.appendChild(grid)
+
+      // 当前累计分
+      const scores = el('div', 'match-scores')
+      seats.forEach((s: any, i: number) => {
+        const box = el('div', 'match-score')
+        box.append(
+          el('div', 'ms-label', s.seat + (s.player ? ' ' + s.player : '')),
+          el('div', 'ms-value', String(rep!.current.scores[i])),
+        )
+        scores.appendChild(box)
+      })
+      root.appendChild(scores)
+
+      // 局标题
+      const roundTitle = el('div', 'match-round-title')
+      roundTitle.textContent = `${roundLabel(rep.current.round)}　亲家：${seatLabelOf(dealerSeat(rep.current.round))}　供托：${rep.current.pool}本`
+      root.appendChild(roundTitle)
+
+      if (rep.current.draft && !draftLoaded) {
+        loadDraftToForm(rep.current.draft)
+        draftLoaded = true
+      }
+
+      if (game.status === 'finished' && role === 'admin') {
+        const row = el('div', 'field-row')
+        row.appendChild(el('span', '', '该半庄已完结，'))
+        const backBtn = el('button', '', '退回修改（admin）')
+        backBtn.addEventListener('click', async () => {
+          const { error } = await supabase.rpc('unfinish_game', { p_game_id: gameId })
+          if (error) return showErr('退回失败：' + error.message)
+          clearErr()
+          game.status = 'upcoming'
+          render()
+        })
+        row.appendChild(backBtn)
+        root.appendChild(row)
+      }
+
+      renderForm(root)
+      renderRoundsList(root, false)
+    }
+
+    function teamColor(name: string): string {
+      return teamColorOf(name)
+    }
+
+    // ---------- 表单 ----------
+    function renderForm(container: HTMLElement) {
+      container.querySelector('.match-form')?.remove()
+      const wrap = el('div', 'match-form')
+
+      // 结果类型
+      const typeRow = el('div', 'field-row')
+      typeRow.appendChild(el('span', '', '结果：'))
+      ;(['ron', 'tsumo', 'draw'] as const).forEach((t) => {
+        const label = el('label')
+        const radio = document.createElement('input')
+        radio.type = 'radio'
+        radio.name = 'winType'
+        radio.value = t
+        radio.checked = form.winType === t
+        radio.addEventListener('change', () => { form.winType = t; renderForm(container) })
+        const names: Record<string, string> = { ron: '荣和', tsumo: '自摸', draw: '荒牌流局' }
+        label.append(radio, document.createTextNode(names[t]))
+        typeRow.appendChild(label)
+      })
+      wrap.appendChild(typeRow)
+
+      if (form.winType === 'ron') {
+        wrap.appendChild(seatSelectRow('赢家', form.winner, (i) => { form.winner = i; renderForm(container) }))
+        wrap.appendChild(seatSelectRow('放铳', form.loser, (i) => { form.loser = i; renderForm(container) }))
+      } else if (form.winType === 'tsumo') {
+        wrap.appendChild(seatSelectRow('自摸家', form.winner, (i) => { form.winner = i; renderForm(container) }))
+      } else if (form.winType === 'draw') {
+        const row = el('div', 'field-row')
+        row.appendChild(el('span', '', '听牌：'))
+        ;[0, 1, 2, 3].forEach((i) => {
+          const label = el('label')
+          const cb = document.createElement('input')
+          cb.type = 'checkbox'
+          cb.checked = form.tenpai?.[i] ?? false
+          cb.addEventListener('change', () => {
+            form.tenpai = form.tenpai ?? [false, false, false, false]
+            form.tenpai[i] = cb.checked
+          })
+          label.append(cb, document.createTextNode(seatLabelOf(i)))
+          row.appendChild(label)
+        })
+        wrap.appendChild(row)
+      }
+
+      // 立直
+      const riichiRow = el('div', 'field-row')
+      riichiRow.appendChild(el('span', '', '立直：'))
+      ;[0, 1, 2, 3].forEach((i) => {
+        const label = el('label')
+        const cb = document.createElement('input')
+        cb.type = 'checkbox'
+        cb.checked = form.riichi[i]
+        cb.addEventListener('change', () => { form.riichi[i] = cb.checked })
+        label.append(cb, document.createTextNode(seatLabelOf(i)))
+        riichiRow.appendChild(label)
+      })
+      wrap.appendChild(riichiRow)
+
+      if (form.winType === 'ron' || form.winType === 'tsumo') {
+        renderPointsPicker(wrap)
+      }
+
+      // 操作按钮
+      const actions = el('div', 'match-actions')
+      const saveBtn = el('button', '', '保存草稿')
+      saveBtn.addEventListener('click', saveDraft)
+      const nextBtn = el('button', 'primary', editingOrder != null ? '保存修改' : '下一局')
+      nextBtn.addEventListener('click', saveAndNext)
+      const submitBtn = el('button', '', '提交赛果')
+      submitBtn.addEventListener('click', submitGame)
+      actions.append(saveBtn, nextBtn, submitBtn)
+      wrap.appendChild(actions)
+
+      // 南四锁定提示
+      if (rep && form.winType && formComplete()) {
+        const prospective = nextRound(rep.current.round, buildResultFromForm()!)
+        if (rep.current.round.wind === '南' && rep.current.round.number === 4 && !prospective) {
+          const note = el('p', 'sel-info', '南四局：该结果后半庄结束，只能提交，不能再「下一局」。')
+          note.style.color = '#b45309'
+          wrap.appendChild(note)
+          nextBtn.disabled = true
+        } else if (rep.current.round.wind === '南' && rep.current.round.number === 4) {
+          const note = el('p', 'sel-info', '南四局：亲家和牌/亲家听牌流局可继续「下一局」。')
+          wrap.appendChild(note)
+        }
+      }
+
+      const selInfo = el('p', 'sel-info', selectionText())
+      wrap.appendChild(selInfo)
+
+      container.appendChild(wrap)
+    }
+
+    function seatSelectRow(labelText: string, value: number | null, onPick: (i: number) => void): HTMLElement {
+      const row = el('div', 'field-row')
+      row.appendChild(el('span', '', labelText + '：'))
+      ;[0, 1, 2, 3].forEach((i) => {
+        const label = el('label')
+        const radio = document.createElement('input')
+        radio.type = 'radio'
+        radio.name = labelText
+        radio.checked = value === i
+        radio.addEventListener('change', () => onPick(i))
+        const seat = game.seats?.[i]
+        label.append(radio, document.createTextNode(`${seatLabelOf(i)}${seat?.player ? ' ' + seat.player : ''}`))
+        row.appendChild(label)
+      })
+      return row
+    }
+
+    // ---------- 点数选择 ----------
+    function renderPointsPicker(container: HTMLElement) {
+      const v = view()
+      const isRon = form.winType === 'ron'
+      const box = el('div', 'points-picker')
+
+      const head = el('div', 'sel-info', `点数表：${v === 'dealer' ? '亲家' : '子家'}视图（${isRon ? '荣和' : '自摸'}）`)
+      box.appendChild(head)
+
+      // 网格
+      const grid = el('div', 'points-table')
+      const corner = el('div', 'pt-head', '番＼符')
+      grid.appendChild(corner)
+      FU.forEach((f) => { const h = el('div', 'pt-head', f); grid.appendChild(h) })
+      HAN.forEach((h) => {
+        grid.appendChild(el('div', 'pt-head', `${h}番`))
+        FU.forEach((f) => {
+          const cell = points.grid[v][h]?.[f]
+          if (!cell) {
+            grid.appendChild(el('div', 'pt-cell blank', ''))
+            return
+          }
+          const btn = el('div', 'pt-cell')
+          btn.textContent = isRon ? String(cell.ron) : cell.tsumo.join('/')
+          btn.title = `${h}番${f}符`
+          const key = `cell:${v}:${h}:${f}`
+          if (form.selKey === key) btn.classList.add('sel')
+          btn.addEventListener('click', () => {
+            form.selKey = key
+            if (isRon) { form.ronPoints = cell.ron; form.tsumoSplit = null }
+            else { form.tsumoSplit = [...cell.tsumo]; form.ronPoints = null }
+            render()
+          })
+          grid.appendChild(btn)
+        })
+      })
+      box.appendChild(grid)
+
+      // 高番档
+      const tiers = el('div', 'pt-tiers')
+      TIERS.forEach((t) => {
+        const btn = el('button', 'pt-tier')
+        const val = v === 'dealer' ? (isRon ? t.dealerRon : t.dealerTsumo[0]) : (isRon ? t.childRon : `${t.childTsumo[0]}/${t.childTsumo[1]}`)
+        btn.textContent = `${t.label} ${val}`
+        const key = `tier:${t.key}`
+        if (form.selKey === key) btn.classList.add('sel')
+        btn.addEventListener('click', () => {
+          form.selKey = key
+          if (isRon) {
+            form.ronPoints = v === 'dealer' ? t.dealerRon : t.childRon
+            form.tsumoSplit = null
+          } else {
+            form.tsumoSplit = v === 'dealer' ? [...t.dealerTsumo] : [...t.childTsumo]
+            form.ronPoints = null
+          }
+          render()
+        })
+        tiers.appendChild(btn)
+      })
+      box.appendChild(tiers)
+
+      // 手动输入兜底
+      const manual = el('div', 'field-row')
+      manual.appendChild(el('span', '', '手动：'))
+      if (isRon) {
+        const input = document.createElement('input')
+        input.type = 'number'
+        input.placeholder = '基础点数'
+        input.style.width = '110px'
+        input.value = form.ronPoints != null ? String(form.ronPoints) : ''
+        input.addEventListener('change', () => {
+          form.ronPoints = Number(input.value) || null
+          form.tsumoSplit = null
+          form.selKey = null
+          render()
+        })
+        manual.appendChild(input)
+      } else {
+        const parts = v === 'dealer' ? 1 : 2
+        const inputs: HTMLInputElement[] = []
+        for (let k = 0; k < parts; k++) {
+          const input = document.createElement('input')
+          input.type = 'number'
+          input.placeholder = v === 'dealer' ? '各付' : k === 0 ? '子付' : '亲付'
+          input.style.width = '90px'
+          if (form.tsumoSplit?.[k] != null) input.value = String(form.tsumoSplit[k])
+          inputs.push(input)
+          manual.appendChild(input)
+        }
+        manual.appendChild(el('span', '', '点'))
+        const apply = el('button', '', '确认')
+        apply.addEventListener('click', () => {
+          const vals = inputs.map((i) => Number(i.value))
+          if (vals.some((x) => !x || x <= 0 || x % 100 !== 0)) { showErr('手动点数须为正的 100 倍数'); return }
+          form.tsumoSplit = vals
+          form.ronPoints = null
+          form.selKey = null
+          clearErr()
+          render()
+        })
+        manual.appendChild(apply)
+      }
+      box.appendChild(manual)
+
+      container.appendChild(box)
+    }
+
+    function selectionText(): string {
+      if (form.winType === 'ron') return form.ronPoints ? `荣和 ${form.ronPoints} 点` : '未选择点数'
+      if (form.winType === 'tsumo') return form.tsumoSplit ? `自摸 ${form.tsumoSplit.join('/')} 点` : '未选择点数'
+      if (form.winType === 'draw') {
+        const n = (form.tenpai ?? []).filter(Boolean).length
+        return `荒牌流局，听牌 ${n} 家`
+      }
+      return ''
+    }
+
+    // ---------- 结果构建 / 校验 ----------
+    function buildResultFromForm(): RoundResult | null {
+      const riichi = [...form.riichi]
+      if (form.winType === 'ron') {
+        if (form.winner == null || form.loser == null || !form.ronPoints) return null
+        return { winType: 'ron', riichi, winner: form.winner, loser: form.loser, ronPoints: form.ronPoints }
+      }
+      if (form.winType === 'tsumo') {
+        if (form.winner == null || !form.tsumoSplit) return null
+        const pays = [0, 0, 0, 0]
+        if (form.tsumoSplit.length === 1) {
+          for (let i = 0; i < 4; i++) if (i !== form.winner) pays[i] = form.tsumoSplit[0]
+        } else {
+          const d = dealerSeat(rep!.current.round)
+          for (let i = 0; i < 4; i++) {
+            if (i === form.winner) continue
+            pays[i] = i === d ? form.tsumoSplit[1] : form.tsumoSplit[0]
+          }
+        }
+        return { winType: 'tsumo', riichi, winner: form.winner, tsumoPayments: pays }
+      }
+      if (form.winType === 'draw') {
+        if (!form.tenpai) return null
+        return { winType: 'draw', riichi, tenpai: form.tenpai }
+      }
+      return null
+    }
+
+    function formComplete(): boolean {
+      if (!form.winType) return false
+      const r = buildResultFromForm()
+      if (!r) return false
+      if (r.winType === 'ron' && r.winner === r.loser) return false
+      return true
+    }
+
+    // ---------- 保存 ----------
+    async function saveDraft() {
+      if (!gameId || !rep) return
+      clearErr()
+      const order = editingOrder ?? rep.current.settled + 1
+      const payload = {
+        game_id: gameId,
+        order,
+        win_type: form.winType,
+        riichi: form.riichi,
+        ron_winner: form.winType === 'ron' && form.winner != null ? seatLabelOf(form.winner) : null,
+        ron_loser: form.winType === 'ron' && form.loser != null ? seatLabelOf(form.loser) : null,
+        ron_points: form.winType === 'ron' ? form.ronPoints : null,
+        tsumo_winner: form.winType === 'tsumo' && form.winner != null ? seatLabelOf(form.winner) : null,
+        tsumo_points: form.winType === 'tsumo' ? form.tsumoSplit : null,
+        tenpai: form.winType === 'draw' ? form.tenpai : null,
+      }
+      const { error } = await supabase.from('rounds').upsert(payload, { onConflict: 'game_id,order' })
+      if (error) return showErr('保存草稿失败：' + error.message)
+      showErr('草稿已保存。')
+    }
+
+    async function saveAndNext() {
+      if (!gameId || !rep) return
+      clearErr()
+      if (!formComplete()) { showErr('请补全本小局：结果、赢家/放铳（或自摸家）、点数（或听牌）'); return }
+      if (form.winType === 'ron' && form.winner === form.loser) { showErr('荣和赢家与放铳不能是同一家'); return }
+      const result = buildResultFromForm()!
+      // 平衡校验（不变量恒成立，这里做完整性复核）
+      const s = settleRound(rep.current.round, result, rep.current.pool)
+      if (s.deltas.reduce((a, b) => a + b, 0) + (s.poolAfter - rep.current.pool) * 1000 !== 0) {
+        showErr('点数不平衡，请检查录入')
+        return
+      }
+      const order = editingOrder ?? rep.current.settled + 1
+      const payload = {
+        game_id: gameId,
+        order,
+        win_type: form.winType,
+        riichi: form.riichi,
+        ron_winner: form.winType === 'ron' ? seatLabelOf(form.winner!) : null,
+        ron_loser: form.winType === 'ron' ? seatLabelOf(form.loser!) : null,
+        ron_points: form.winType === 'ron' ? form.ronPoints : null,
+        tsumo_winner: form.winType === 'tsumo' ? seatLabelOf(form.winner!) : null,
+        tsumo_points: form.winType === 'tsumo' ? form.tsumoSplit : null,
+        tenpai: form.winType === 'draw' ? form.tenpai : null,
+      }
+      const { error } = await supabase.from('rounds').upsert(payload, { onConflict: 'game_id,order' })
+      if (error) return showErr('保存失败：' + error.message)
+      // 倒推保存：删除其后小局
+      if (editingOrder != null) {
+        await supabase.from('rounds').delete().eq('game_id', gameId).gt('order', editingOrder)
+      }
+      // 南四锁定：下一局为 null 时不允许继续
+      if (nextRound(rep.current.round, result) === null && editingOrder == null) {
+        showErr('南四局已结束（非连庄结果），请提交赛果。')
+        editingOrder = null
+        resetForm()
+        rep = replayGame(await fetchRounds())
+        render()
+        return
+      }
+      editingOrder = null
+      resetForm()
+      rep = replayGame(await fetchRounds())
+      render()
+    }
+
+    function resetForm() {
+      form.winType = null
+      form.riichi = [false, false, false, false]
+      form.winner = null
+      form.loser = null
+      form.ronPoints = null
+      form.tsumoSplit = null
+      form.tenpai = null
+      form.selKey = null
+      draftLoaded = false
+    }
+
+    async function fetchRounds(): Promise<StoredRound[]> {
+      const { data } = await supabase.from('rounds').select('*').eq('game_id', gameId).order('order', { ascending: true })
+      return (data ?? []).map((r: any) => ({
+        order: r.order,
+        win_type: r.win_type,
+        riichi: r.riichi ?? [false, false, false, false],
+        ron_winner: r.ron_winner,
+        ron_loser: r.ron_loser,
+        ron_points: r.ron_points,
+        tsumo_winner: r.tsumo_winner,
+        tsumo_points: r.tsumo_points,
+        tenpai: r.tenpai,
+      }))
+    }
+
+    function loadDraftToForm(d: StoredRound) {
+      form.winType = d.win_type
+      form.riichi = [...(d.riichi ?? [false, false, false, false])]
+      if (d.win_type === 'ron') {
+        form.winner = seatIndexOfSafe(d.ron_winner)
+        form.loser = seatIndexOfSafe(d.ron_loser)
+        form.ronPoints = d.ron_points
+      } else if (d.win_type === 'tsumo') {
+        form.winner = seatIndexOfSafe(d.tsumo_winner)
+        form.tsumoSplit = d.tsumo_points ? [...d.tsumo_points] : null
+      } else if (d.win_type === 'draw') {
+        form.tenpai = d.tenpai ? [...d.tenpai] : null
+      }
+    }
+
+    function seatIndexOfSafe(s: string | null): number | null {
+      if (s == null) return null
+      const i = ['东', '南', '西', '北'].indexOf(s)
+      return i >= 0 ? i : null
+    }
+
+    // ---------- 倒推 ----------
+    function renderRoundsList(container: HTMLElement, readonly: boolean) {
+      if (!rep) return
+      const box = el('div', 'rounds-list')
+      box.appendChild(el('h3', '', '已录小局' + (readonly ? '' : '（点击可倒推修改）')))
+      const table = el('table')
+      const thead = el('thead')
+      const htr = el('tr')
+      ;['序', '局', '结果', '打点', '供托'].forEach((h) => htr.appendChild(el('th', '', h)))
+      thead.appendChild(htr)
+      table.appendChild(thead)
+      const tbody = el('tbody')
+      rep.history.forEach((h) => {
+        const tr = el('tr', 'settled')
+        tr.appendChild(el('td', '', String(h.order)))
+        tr.appendChild(el('td', '', roundLabel(h.round)))
+        tr.appendChild(el('td', '', resultText(h.result)))
+        tr.appendChild(el('td', '', pointsText(h.result)))
+        tr.appendChild(el('td', '', String(h.pool)))
+        if (!readonly) {
+          tr.addEventListener('click', () => {
+            editRound(h.order)
+          })
+        }
+        tbody.appendChild(tr)
+      })
+      if (rep.current.draft) {
+        const tr = el('tr')
+        tr.appendChild(el('td', '', String(rep.current.draft.order)))
+        tr.appendChild(el('td', 'draft-badge', roundLabel(rep.current.round) + '（草稿）'))
+        tr.appendChild(el('td', 'draft-badge', '未完成'))
+        tr.appendChild(el('td', '', ''))
+        tr.appendChild(el('td', '', ''))
+        tbody.appendChild(tr)
+      }
+      table.appendChild(tbody)
+      box.appendChild(table)
+      container.appendChild(box)
+    }
+
+    function resultText(r: RoundResult): string {
+      if (r.winType === 'ron') return `${seatLabelOf(r.winner!)}荣和${seatLabelOf(r.loser!)}`
+      if (r.winType === 'tsumo') return `${seatLabelOf(r.winner!)}自摸`
+      const n = (r.tenpai ?? []).filter(Boolean).length
+      return n === 0 ? '流局(无人听)' : `流局(听牌${n})`
+    }
+
+    function pointsText(r: RoundResult): string {
+      if (r.winType === 'ron') return String(r.ronPoints)
+      if (r.winType === 'tsumo') {
+        const pays = r.tsumoPayments!.filter((x) => x > 0)
+        return pays.join('/')
+      }
+      return ''
+    }
+
+    function editRound(order: number) {
+      const stored = rounds.find((r) => r.order === order)
+      if (!stored || !stored.win_type) return
+      editingOrder = order
+      form.winType = stored.win_type
+      form.riichi = [...stored.riichi]
+      if (stored.win_type === 'ron') {
+        form.winner = seatIndexOfSafe(stored.ron_winner)
+        form.loser = seatIndexOfSafe(stored.ron_loser)
+        form.ronPoints = stored.ron_points
+        form.tsumoSplit = null
+      } else if (stored.win_type === 'tsumo') {
+        form.winner = seatIndexOfSafe(stored.tsumo_winner)
+        form.tsumoSplit = stored.tsumo_points ? [...stored.tsumo_points] : null
+        form.ronPoints = null
+      } else {
+        form.tenpai = stored.tenpai ? [...stored.tenpai] : null
+      }
+      form.selKey = null
+      render()
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    }
+
+    // ---------- 提交 ----------
+    async function submitGame() {
+      if (!gameId || !rep) return
+      clearErr()
+      if (rep.current.draft) {
+        // 弃置未完成草稿（比赛按已录小局结算）
+        await supabase.from('rounds').delete().eq('game_id', gameId).is('win_type', null)
+        rep = replayGame(await fetchRounds())
+      }
+      if (rep.settled === 0) { showErr('尚无已录小局，无法提交'); return }
+      const scores = rep.current.scores
+      const ranks = rankScores(scores)
+      const seats = (game.seats ?? []).map((s: any, i: number) => ({
+        seat: s.seat,
+        team: s.team,
+        player: s.player,
+        rank: ranks[i],
+        points: scores[i],
+      }))
+      const { data, error } = await supabase.rpc('finish_game', { p_game_id: gameId, p_seats: seats })
+      if (error) { showErr('提交失败：' + error.message); return }
+      showErr('赛果已提交！')
+      location.href = base + 'match/?id=' + encodeURIComponent(gameId)
+    }
+
+    load()
+  </script>
+</BaseLayout>

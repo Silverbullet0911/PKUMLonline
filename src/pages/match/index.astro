@@ -1,0 +1,229 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro'
+---
+<BaseLayout title="对局详情">
+  <h1>对局详情</h1>
+  <p id="match-err" class="admin-err"></p>
+  <div id="match-root">
+    <p class="empty">加载中…</p>
+  </div>
+  <style>
+    .md-seats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 12px 0; }
+    .md-seat { border-radius: 8px; padding: 8px 10px; color: #fff; font-weight: 700; }
+    .md-seat .s { font-size: 12px; opacity: .8; }
+    .md-seat .t { font-size: 15px; }
+    .md-seat .p { font-size: 13px; font-weight: 400; opacity: .9; }
+    .md-stats { overflow-x: auto; margin: 12px 0; }
+    .md-stats td { padding: 6px 10px; }
+    .md-chart { background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 12px; margin: 12px 0; overflow-x: auto; }
+    .md-chart svg { min-width: 520px; }
+    @media (max-width: 720px) { .md-seats { grid-template-columns: repeat(2, 1fr); } }
+  </style>
+  <script>
+    import { supabase } from '../lib/supabase'
+    import { replayGame, roundLabel } from '../lib/replay'
+    import teamsRaw from '../../../data/teams.json'
+
+    const base = import.meta.env.BASE_URL
+    const errEl = document.getElementById('match-err')!
+    const root = document.getElementById('match-root')!
+    const showErr = (m: string) => { errEl.textContent = m }
+
+    const params = new URLSearchParams(location.search)
+    const gameId = params.get('id')
+    if (!gameId) {
+      root.innerHTML = '<p class="empty">缺少对局 id（?id=…）</p>'
+    }
+
+    function el(tag: string, cls = '', text = ''): HTMLElement {
+      const n = document.createElement(tag)
+      if (cls) n.className = cls
+      if (text) n.textContent = text
+      return n
+    }
+
+    const teamColor = (name: string) => teamsRaw.teams.find((t: any) => t.name === name)?.color ?? '#9ca3af'
+
+    ;(async () => {
+      if (!gameId) return
+      const { data: game, error } = await supabase.from('games').select('*').eq('id', gameId).single()
+      if (error || !game) { showErr('加载对局失败：' + (error?.message ?? 'not found')); root.innerHTML = '<p class="empty">对局不存在。</p>'; return }
+      if (game.status !== 'finished') {
+        root.innerHTML = '<p class="empty">该半庄尚未开始/未提交赛果。</p>'
+        return
+      }
+      const { data: rs } = await supabase.from('rounds').select('*').eq('game_id', gameId).order('order', { ascending: true })
+      const rounds = (rs ?? []).map((r: any) => ({
+        order: r.order,
+        win_type: r.win_type,
+        riichi: r.riichi ?? [false, false, false, false],
+        ron_winner: r.ron_winner,
+        ron_loser: r.ron_loser,
+        ron_points: r.ron_points,
+        tsumo_winner: r.tsumo_winner,
+        tsumo_points: r.tsumo_points,
+        tenpai: r.tenpai,
+      }))
+      const rep = replayGame(rounds)
+      const seats = game.seats ?? []
+
+      root.innerHTML = ''
+      const h = el('h2', '', `${game.stage}${game.round ? ' ' + game.round : ''} · ${game.date}${game.time ? ' ' + game.time : ''}`)
+      root.appendChild(h)
+
+      // 座位卡
+      const grid = el('div', 'md-seats')
+      seats.forEach((s: any) => {
+        const card = el('div', 'md-seat')
+        card.style.background = teamColor(s.team)
+        card.append(el('div', 's', s.seat), el('div', 't', s.team), el('div', 'p', s.player ?? ''))
+        grid.appendChild(card)
+      })
+      root.appendChild(grid)
+
+      // 总表（8 行 × 5 列）
+      const stats = el('div', 'table-wrap md-stats')
+      const table = el('table')
+      const trHead = el('tr')
+      trHead.appendChild(el('th', '', ''))
+      seats.forEach((s: any) => trHead.appendChild(el('th', '', s.seat)))
+      table.appendChild(trHead)
+
+      const row = (label: string, fn: (s: any, i: number) => string) => {
+        const tr = el('tr')
+        tr.appendChild(el('td', '', label))
+        seats.forEach((s: any, i: number) => tr.appendChild(el('td', 'num', fn(s, i))))
+        table.appendChild(tr)
+      }
+      row('队伍', (s: any) => s.team)
+      row('选手', (s: any, i: number) => s.player ?? '')
+      row('立直', (_: any, i: number) => String(rounds.filter((r: any) => r.riichi?.[i]).length))
+      row('荣和', (_: any, i: number) => String(rounds.filter((r: any) => r.win_type === 'ron' && seatIndexOf(r.ron_winner) === i).length))
+      row('自摸', (_: any, i: number) => String(rounds.filter((r: any) => r.win_type === 'tsumo' && seatIndexOf(r.tsumo_winner) === i).length))
+      row('放铳', (_: any, i: number) => String(rounds.filter((r: any) => r.win_type === 'ron' && seatIndexOf(r.ron_loser) === i).length))
+      row('积分', (s: any, i: number) => String(s.points ?? rep.current.scores[i]))
+      row('顺位', (s: any) => (s.rank ? s.rank + '位' : '-'))
+      stats.appendChild(table)
+      root.appendChild(stats)
+
+      // 阶段表
+      const stageBox = el('div', 'table-wrap md-stats')
+      const st = el('table')
+      const sh = el('tr')
+      sh.appendChild(el('th', '', '局'))
+      seats.forEach((s: any, i: number) => sh.appendChild(el('th', '', `${s.seat} ${s.player ?? ''}`)))
+      sh.appendChild(el('th', '', '结果'))
+      sh.appendChild(el('th', '', '打点'))
+      sh.appendChild(el('th', '', '供托'))
+      st.appendChild(sh)
+      rep.history.forEach((h) => {
+        const tr = el('tr')
+        tr.appendChild(el('td', '', roundLabel(h.round)))
+        h.scores.forEach((v) => tr.appendChild(el('td', 'num', String(v))))
+        tr.appendChild(el('td', '', resultText(h.result)))
+        tr.appendChild(el('td', 'num', pointsText(h.result)))
+        tr.appendChild(el('td', 'num', String(h.pool)))
+        st.appendChild(tr)
+      })
+      stageBox.appendChild(st)
+      root.appendChild(stageBox)
+
+      // 折线图（自绘 SVG）
+      root.appendChild(renderChart(rep.history.map((h) => h.scores), seats.map((s: any) => ({ name: s.player ?? s.team, color: teamColor(s.team) }))))
+    })()
+
+    function seatIndexOf(s: string | null): number {
+      if (s == null) return -1
+      return ['东', '南', '西', '北'].indexOf(s)
+    }
+
+    function resultText(r: { win_type: string; ron_winner: string | null; ron_loser: string | null; tsumo_winner: string | null; tenpai: boolean[] | null }): string {
+      if (r.win_type === 'ron') return `${r.ron_winner}荣和${r.ron_loser}`
+      if (r.win_type === 'tsumo') return `${r.tsumo_winner}自摸`
+      const n = (r.tenpai ?? []).filter(Boolean).length
+      return n === 0 ? '流局(无人听)' : `流局(听牌${n})`
+    }
+
+    function pointsText(r: { win_type: string; ron_points: number | null; tsumo_points: number[] | null }): string {
+      if (r.win_type === 'ron') return String(r.ron_points)
+      if (r.win_type === 'tsumo') return (r.tsumo_points ?? []).join('/')
+      return ''
+    }
+
+    function renderChart(series: number[][], players: { name: string; color: string }[]): HTMLElement {
+      const W = 640
+      const H = 260
+      const PAD = { top: 16, right: 16, bottom: 32, left: 48 }
+      const iw = W - PAD.left - PAD.right
+      const ih = H - PAD.top - PAD.bottom
+      const n = series.length
+      const all = series.flat()
+      let min = Math.min(...all)
+      let max = Math.max(...all)
+      if (min === max) { min -= 1000; max += 1000 }
+      const span = max - min
+      const x = (i: number) => PAD.left + (n <= 1 ? iw / 2 : (i * iw) / (n - 1))
+      const y = (v: number) => PAD.top + ih - ((v - min) / span) * ih
+
+      const svgNS = 'http://www.w3.org/2000/svg'
+      const svg = document.createElementNS(svgNS, 'svg')
+      svg.setAttribute('viewBox', `0 0 ${W} ${H}`)
+      svg.setAttribute('width', '100%')
+
+      // 网格线
+      for (let g = 0; g <= 4; g++) {
+        const gy = PAD.top + (ih * g) / 4
+        const line = document.createElementNS(svgNS, 'line')
+        line.setAttribute('x1', String(PAD.left)); line.setAttribute('x2', String(W - PAD.right))
+        line.setAttribute('y1', String(gy)); line.setAttribute('y2', String(gy))
+        line.setAttribute('stroke', '#e5e7eb')
+        svg.appendChild(line)
+        const val = Math.round(max - (span * g) / 4)
+        const txt = document.createElementNS(svgNS, 'text')
+        txt.setAttribute('x', String(PAD.left - 6)); txt.setAttribute('y', String(gy + 4))
+        txt.setAttribute('text-anchor', 'end'); txt.setAttribute('font-size', '11'); txt.setAttribute('fill', '#6b7280')
+        txt.textContent = String(val)
+        svg.appendChild(txt)
+      }
+
+      // 折线
+      series.forEach((s, si) => {
+        const poly = document.createElementNS(svgNS, 'polyline')
+        poly.setAttribute('fill', 'none')
+        poly.setAttribute('stroke', players[si]?.color ?? '#9ca3af')
+        poly.setAttribute('stroke-width', '2.5')
+        poly.setAttribute('points', s.map((v, i) => `${x(i)},${y(v)}`).join(' '))
+        svg.appendChild(poly)
+      })
+
+      // x 轴标签：局序（东1、东2…），用 roundLabel 简化为 局名
+      const labels = ['东1', '东2', '东3', '东4', '南1', '南2', '南3', '南4']
+      series.forEach((_, i) => {
+        const txt = document.createElementNS(svgNS, 'text')
+        txt.setAttribute('x', String(x(i))); txt.setAttribute('y', String(H - 10))
+        txt.setAttribute('text-anchor', 'middle'); txt.setAttribute('font-size', '11'); txt.setAttribute('fill', '#6b7280')
+        txt.textContent = labels[i] ?? String(i + 1)
+        svg.appendChild(txt)
+      })
+
+      // 图例
+      players.forEach((p, i) => {
+        const ly = 12 + i * 16
+        const rect = document.createElementNS(svgNS, 'rect')
+        rect.setAttribute('x', String(W - PAD.right - 150)); rect.setAttribute('y', String(ly))
+        rect.setAttribute('width', '10'); rect.setAttribute('height', '10')
+        rect.setAttribute('fill', p.color)
+        svg.appendChild(rect)
+        const txt = document.createElementNS(svgNS, 'text')
+        txt.setAttribute('x', String(W - PAD.right - 136)); txt.setAttribute('y', String(ly + 10))
+        txt.setAttribute('font-size', '12'); txt.setAttribute('fill', '#1f2328')
+        txt.textContent = p.name
+        svg.appendChild(txt)
+      })
+
+      const box = el('div', 'md-chart')
+      box.appendChild(svg)
+      return box
+    }
+  </script>
+</BaseLayout>

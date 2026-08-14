@@ -110,35 +110,41 @@
 
 **原因**：裁判角色无 `games` 表写权限（RLS 仅 admin 可写 games），而提交赛果需写回 `seats` 最终分/排名并把 `status` 置为 `finished`。需要一个 security-definer 函数让裁判提交，同时做全量校验。
 
-- [ ] **Step 1:** 在 `supabase/schema.sql` 追加：
-  - `finish_game(p_game_id uuid)`：校验该半庄所有已录 rounds 点数平衡 → 计算四家最终分与排名 → 写回 `games.seats`（rank/points）→ `status='finished'`。仅 `referee`/`admin` 可调；`upcoming` 才可提交（南四锁定规则在客户端强制）。
+- [x] **Step 1:** 在 `supabase/schema.sql` 追加：
+  - `finish_game(p_game_id uuid, p_seats jsonb)`：赛果由录入页客户端用 `scoring.ts` 现算后传入；SQL 侧校验 4 座位完整、总分 = 100000、位次为 1-4 排列、至少 1 小局、`upcoming` 才可提交。仅 `referee`/`admin` 可调。
   - 追加 `unfinish_game`（仅 admin）：将 finished 半庄退回 upcoming 以便修正后重新提交。
   - `grant execute ... to authenticated`。
 - [ ] **Step 2:** 用户整段重跑 `supabase/schema.sql`（全部 `create or replace` / `drop ... create`，可重复执行）。
 - [ ] **Step 3:** 验证函数存在（REST 端点非 404）+ 提交。
 
-### Task 1.4: 对局录入页 `/admin/match/[id]`（referee/admin）
+> 实现说明：`finish_game`/`unfinish_game` 已写入 `supabase/schema.sql` 末尾（等待用户在 Supabase SQL Editor 整段执行）。同时将 `rounds.tsumo_points` 由 int 改为 jsonb（存自摸支付拆分 [子付,亲付]/[各付]，回放需要精确拆分），含旧库 ALTER 迁移。**评审点**：SQL 信任客户端算好的 seats（总分校验兜底），如希望 SQL 全量重算需另行实现。**待用户执行**：Step 2 重跑 schema.sql。
 
-- [ ] **Step 1:** 路由：从 `/admin/schedule` 的 upcoming 半庄行进入录入页；仅 `seats` 四座位选手填齐的半庄可录入。
-- [ ] **Step 2:** 交互（原生 JS + fetch，不引入框架）：
+### Task 1.4: 对局录入页（referee/admin）
+
+- [x] **Step 1:** 路由：从 `/admin/schedule` 的 upcoming 半庄行「录入」入口进入；仅 `seats` 四座位选手填齐的半庄可录入（录入页校验）。
+- [x] **Step 2:** 交互（原生 JS + fetch，不引入框架）：
   - 从第 1 小局（东一局 0 本场，亲家=东起）开始，`scoring.ts` 推导下一局局名/本场/亲家
   - 每小局录：结果（荣和：谁荣和谁+点数；自摸：谁自摸+点数；荒牌流局：四家听牌）+ 四家是否立直
   - 点数通过**可点击点数表**选择（按赢家是否亲家自动切换子/亲视图）；表无命中时允许手动输入基础点数
   - **保存草稿**：随时可存未完成局（字段不完整也允许），刷新/重进后从断点继续
-  - **倒推**：可回改之前小局，改动后由 `scoring.ts` 全量重算后续局名/本场/供托/累计点数
+  - **倒推**：点击已录小局行回改，改动后由 `scoring.ts` 全量重算后续局名/本场/供托/累计点数（删除其后小局）
   - **南四锁定**：南四局结果为「亲家听牌流局」或「亲家和牌」时才可继续「下一局」；否则只能「提交」
   - **提交**：调 `finish_game` → 写回 seats 最终分/排名 → `status=finished` → 赛果即生成
-  - 半庄提交后裁判不可再改；admin 可经 `unfinish_game` 退回修改，保存后全量重算并刷新赛果
-- [ ] **Step 3:** 草稿数据存 `rounds` 表（字段不完整允许），完整性/平衡校验在「下一局」/「提交」时执行。
+  - 半庄提交后裁判只读；admin 可经「退回修改」调 `unfinish_game` 后修改并重新提交
+- [x] **Step 3:** 草稿数据存 `rounds` 表（字段不完整允许），完整性/平衡校验在「下一局」/「提交」时执行。
 
-### Task 1.5: 对局详情页 `/match/[id]`（公开）
+> 实现说明：静态托管无法构建动态路由，录入页路由为 **`/admin/match/?id=<uuid>`**（`src/pages/admin/match/index.astro`），提交后跳转详情页。回放逻辑 `src/lib/replay.ts`（`replayGame`/`roundLabel`/`rankScores`，11 用例测试）。
 
-- [ ] **Step 1:** 路由 `/match/[id]`，标题 = 时间 + 半庄信息。
-- [ ] **Step 2:** 总表（8 行 × 5 列）：队伍/选手/立直/荣和/自摸/放铳/积分；队伍单元格底色 = 队伍色。
-- [ ] **Step 3:** 阶段表（每小局一行）：局名/本场/四家累计点数/对局结果/打点/供托。
-- [ ] **Step 4:** 折线图：Chart.js（x=局序/局名，y=累计点数，4 条线按选手队伍色，悬浮提示）。
-- [ ] **Step 5:** 赛程页「赛果」卡片与首页「最新赛果」链接到本页。
-- [ ] **Step 6:** 引入 `chart.js` 依赖（npm install 由用户手动执行，或确认后执行）。
+### Task 1.5: 对局详情页（公开）
+
+- [x] **Step 1:** 路由 **`/match/?id=<uuid>`**（静态托管替代 `/match/[id]`），标题 = 时间 + 半庄信息。
+- [x] **Step 2:** 总表（8 行 × 5 列）：队伍/选手/立直/荣和/自摸/放铳/积分/顺位；队伍单元格底色 = 队伍色。
+- [x] **Step 3:** 阶段表（每小局一行）：局名/本场/四家累计点数/对局结果/打点/供托。
+- [x] **Step 4:** 折线图：**自绘 SVG**（免依赖，替代 Chart.js；x=局序，y=累计点数，4 条线按队伍色 + 图例）。
+- [x] **Step 5:** 赛程页「赛果」卡片链接到本页（`/schedule` 客户端渲染 + `/admin/schedule` 赛果入口）。
+- [x] **Step 6:** ~~引入 `chart.js` 依赖~~ → 改为自绘 SVG，无新依赖。
+
+> 实现说明：`src/pages/match/index.astro`。**评审点**：如仍想用 Chart.js（悬浮提示更丰富），后续可替换。
 
 ---
 

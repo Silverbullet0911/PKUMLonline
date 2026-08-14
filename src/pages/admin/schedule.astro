@@ -36,6 +36,7 @@ import AdminShell from '../../components/admin/AdminShell.astro'
     const form = document.getElementById('game-form') as HTMLFormElement
     const submitBtn = document.getElementById('game-submit') as HTMLButtonElement
     const errEl = document.getElementById('game-err')!
+    const base = import.meta.env.BASE_URL
     let editingId: string | null = null
     let teamsCache: string[] = []
     const showErr = (m: string) => { errEl.textContent = m }
@@ -69,7 +70,21 @@ import AdminShell from '../../components/admin/AdminShell.astro'
         const ops = document.createElement('td')
         const eb = document.createElement('button'); eb.textContent = '改'; eb.dataset.edit = g.id
         const db = document.createElement('button'); db.textContent = '删'; db.dataset.del = g.id
-        ops.append(eb, db); tr.appendChild(ops)
+        ops.append(eb, db)
+        if (g.status === 'upcoming') {
+          const link = document.createElement('a')
+          link.href = base + 'admin/match/?id=' + encodeURIComponent(g.id)
+          link.textContent = '录入'
+          link.style.marginLeft = '8px'
+          ops.appendChild(link)
+        } else {
+          const link = document.createElement('a')
+          link.href = base + 'match/?id=' + encodeURIComponent(g.id)
+          link.textContent = '赛果'
+          link.style.marginLeft = '8px'
+          ops.appendChild(link)
+        }
+        tr.appendChild(ops)
         list.appendChild(tr)
       }
     }

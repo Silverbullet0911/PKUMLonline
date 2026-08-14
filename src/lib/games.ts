@@ -1,4 +1,8 @@
-const SEAT_ORDER = ['东', '南', '西', '北'] as const
+export const SEAT_ORDER = ['东', '南', '西', '北'] as const
+
+export function seatIndexOf(seat: string): number {
+  return SEAT_ORDER.indexOf(seat as (typeof SEAT_ORDER)[number])
+}
 
 export interface GameSeatInput {
   seat: string

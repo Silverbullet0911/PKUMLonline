@@ -47,10 +47,14 @@ create table if not exists public.rounds (
   ron_loser text,
   ron_points int,
   tsumo_winner text,
-  tsumo_points int,
+  -- 自摸支付拆分：子家自摸 [子付, 亲付]，亲家自摸 [各付]（回放需要精确拆分，故用 jsonb）
+  tsumo_points jsonb,
   tenpai jsonb,
   unique (game_id, "order")
 );
+
+-- 旧安装迁移：tsumo_points 原为 int，改为 jsonb（测试数据可丢弃）
+alter table public.rounds alter column tsumo_points type jsonb using null;
 
 alter table public.rounds enable row level security;
 
@@ -199,3 +203,69 @@ end;
 $$;
 
 grant execute on function public.assign_player to authenticated;
+
+-- ============ 提交赛果 / 退回修改 ============
+-- 裁判角色无 games 写权限（RLS 仅 admin 可写 games），提交赛果经此 security-definer 函数。
+-- 赛果由录入页客户端用 scoring.ts 现算后传入；SQL 侧校验 4 座位、总分 100000、位次为 1-4 排列。
+create or replace function public.finish_game(p_game_id uuid, p_seats jsonb)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_role text;
+  v_game record;
+  v_sum int;
+  v_ranks int[];
+begin
+  select role into v_role from public.profiles where id = auth.uid();
+  if v_role is null or v_role not in ('referee','admin') then
+    raise exception 'forbidden';
+  end if;
+  select * into v_game from public.games where id = p_game_id;
+  if v_game.id is null then raise exception 'game not found'; end if;
+  if v_game.status <> 'upcoming' then raise exception 'game already finished'; end if;
+  if not exists (select 1 from public.rounds where game_id = p_game_id) then
+    raise exception 'no rounds recorded';
+  end if;
+  if jsonb_array_length(p_seats) <> 4 then raise exception 'seats must be 4'; end if;
+
+  v_sum := 0;
+  v_ranks := '{}'::int[];
+  for i in 0..3 loop
+    if p_seats->i->>'seat' is null or p_seats->i->>'team' is null
+       or p_seats->i->>'player' is null or p_seats->i->>'rank' is null
+       or p_seats->i->>'points' is null then
+      raise exception 'seat % incomplete', i;
+    end if;
+    v_sum := v_sum + (p_seats->i->>'points')::int;
+    v_ranks := v_ranks || (p_seats->i->>'rank')::int;
+  end loop;
+  if v_sum <> 100000 then raise exception 'points total must be 100000, got %', v_sum; end if;
+  if (select array_agg(x order by x) from unnest(v_ranks) as x) <> array[1,2,3,4] then
+    raise exception 'ranks must be a permutation of 1-4';
+  end if;
+
+  update public.games set seats = p_seats, status = 'finished' where id = p_game_id;
+  return p_seats;
+end;
+$$;
+
+-- 管理员将已完结半庄退回 upcoming，以便修正 rounds 后重新提交
+create or replace function public.unfinish_game(p_game_id uuid)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_role text;
+begin
+  select role into v_role from public.profiles where id = auth.uid();
+  if v_role is null or v_role <> 'admin' then raise exception 'forbidden'; end if;
+  update public.games set status = 'upcoming' where id = p_game_id;
+end;
+$$;
+
+grant execute on function public.finish_game, public.unfinish_game to authenticated;

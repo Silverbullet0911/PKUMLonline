@@ -81,6 +81,7 @@ export interface GameSeat {
 }
 
 export interface Game {
+  id?: string
   stage: string
   date: string
   round?: string

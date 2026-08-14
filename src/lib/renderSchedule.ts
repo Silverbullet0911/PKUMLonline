@@ -21,6 +21,7 @@ export interface DbGame {
 
 export function mapDbGame(g: DbGame): Game {
   return {
+    id: g.id,
     stage: g.stage,
     date: g.date,
     time: g.time ?? undefined,
