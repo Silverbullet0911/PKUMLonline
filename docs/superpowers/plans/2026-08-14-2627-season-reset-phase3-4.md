@@ -148,7 +148,7 @@
 - [x] **Step 2:** `aggregatePlayerBoard`：按选手聚合 points（含 penalty 扣分明细，判罚数据来源待定：初始由 admin 在 DB 记录或经 rounds 外字段） / rawPoints / wins / maxScore。
 - [x] **Step 3:** 测试：跨半庄聚合、持越折半、位次统计、空输入返回空数组。
 
-> 实现说明（`src/lib/aggregate.ts`，2026-08-14）：API 为 `aggregateTeamBoard(games, carryOf?)` / `aggregatePlayerBoard(games, penaltyOf?)` / `stageTeamTotals(games)` / `carryFrom(totals)`——阶段过滤由调用方完成（传该阶段全部完赛对局），持越/判罚经回调注入，便于浏览器端 DB 现算复用。**计分约定待确认**：单场素点 = (最终得分−30000)/1000；单场积分 = 素点 + 顺位加棒，加棒暂按 M.LEAGUE 惯例 +50/+10/−10/−30（`UMA` 常量，章程未规定，如赛事组另有数值改一处即可）。
+> 实现说明（`src/lib/aggregate.ts`，2026-08-14）：API 为 `aggregateTeamBoard(games, carryOf?)` / `aggregatePlayerBoard(games, penaltyOf?)` / `stageTeamTotals(games)` / `carryFrom(totals)`——阶段过滤由调用方完成（传该阶段全部完赛对局），持越/判罚经回调注入，便于浏览器端 DB 现算复用。**计分约定（赛事组已确认）**：起手 25000 点，单场素点 = (最终得分−25000)/1000；单场积分 = 素点 + 顺位点；顺位点 1位 +45 / 2位 +5 / 3位 −15 / 4位 −35（和为 0，每场总分归零）；持越 = 上阶段总积分折半。
 
 ### Task 2.2: `/standings` 客户端现算
 
