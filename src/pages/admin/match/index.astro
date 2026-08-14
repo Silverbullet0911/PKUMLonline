@@ -291,13 +291,14 @@ import AdminShell from '../../../components/admin/AdminShell.astro'
       actions.append(saveBtn, nextBtn, viewBtn)
       wrap.appendChild(actions)
 
-      // 南四锁定提示：录完本局后半庄结束，点「下一局」保存后去「查看结果」提交
+      // 南四锁定：非连庄结果后半庄即终了，禁用「下一局」，由「查看结果」自动保存当前局并提交
       if (rep && form.winType && formComplete()) {
         const prospective = nextRound(rep.current.round, buildResultFromForm()!)
         if (rep.current.round.wind === '南' && rep.current.round.number === 4 && !prospective) {
-          const note = el('p', 'sel-info', '南四局：录完本局后点「下一局」保存（本局结束后半庄即终了），随后「查看结果」提交。')
+          const note = el('p', 'sel-info', '南四局：录完本局后点「查看结果」（会自动保存本局）提交，本局后半庄即终了。')
           note.style.color = '#b45309'
           wrap.appendChild(note)
+          nextBtn.disabled = true
         } else if (rep.current.round.wind === '南' && rep.current.round.number === 4) {
           const note = el('p', 'sel-info', '南四局：亲家和牌/亲家听牌流局可继续「下一局」。')
           wrap.appendChild(note)
