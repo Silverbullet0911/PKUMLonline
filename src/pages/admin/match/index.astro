@@ -12,39 +12,40 @@ import AdminShell from '../../../components/admin/AdminShell.astro'
   </AdminShell>
   <style>
     .match-root { min-width: 0; }
-    .match-seats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 12px 0; }
-    .match-seat { border-radius: 8px; padding: 8px 10px; color: #fff; font-weight: 700; }
-    .match-seat .ms-seat { font-size: 12px; opacity: .8; }
-    .match-seat .ms-team { font-size: 15px; }
-    .match-seat .ms-player { font-size: 13px; font-weight: 400; opacity: .9; }
-    .match-scores { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 12px 0; }
-    .match-score { background: #fff; border: 1px solid var(--line); border-radius: 8px; padding: 6px 10px; text-align: center; }
-    .match-score .ms-label { font-size: 11px; color: var(--muted); }
-    .match-score .ms-value { font-size: 20px; font-variant-numeric: tabular-nums; }
-    .match-round-title { font-size: 18px; font-weight: 800; margin: 8px 0; }
-    .field-row { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; margin: 8px 0; }
-    .field-row label { display: flex; align-items: center; gap: 4px; font-size: 14px; }
-    .points-table { display: grid; grid-template-columns: 44px repeat(11, minmax(74px, 1fr)); gap: 2px; margin: 10px 0; max-width: 100%; overflow-x: auto; }
-    .pt-cell { padding: 6px 2px; text-align: center; font-size: 12px; border-radius: 4px; background: var(--accent-soft); cursor: pointer; font-variant-numeric: tabular-nums; }
-    .pt-cell:hover { background: var(--accent); color: #fff; }
-    .pt-cell.blank { background: transparent; cursor: default; }
-    .pt-cell.sel { background: var(--accent); color: #fff; outline: 2px solid #ffd700; }
-    .pt-head { font-weight: 700; background: var(--card); text-align: center; align-self: center; }
-    .pt-tiers { display: flex; gap: 6px; flex-wrap: wrap; margin: 8px 0; }
-    .pt-tier { padding: 8px 12px; border-radius: 999px; border: 1px solid var(--line); background: var(--card); cursor: pointer; font-size: 13px; }
+    /* 勾选与按键放大到约 3 倍，填写框约 2 倍 */
+    input[type='checkbox'], input[type='radio'] { transform: scale(3); margin: 0 16px; }
+    .field-row { display: flex; gap: 16px; flex-wrap: wrap; align-items: center; margin: 12px 0; }
+    .field-row label { display: flex; align-items: center; gap: 8px; font-size: 26px; }
+    .field-row input[type='number'] { font-size: 28px; padding: 6px 10px; }
+    .field-row input[type='text'] { font-size: 28px; padding: 6px 10px; }
+    .match-scores { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 12px 0; }
+    .match-score { background: #fff; border: 1px solid var(--line); border-radius: 8px; padding: 8px 12px; text-align: center; }
+    .match-score .ms-label { font-size: 15px; color: var(--muted); }
+    .match-score .ms-value { font-size: 30px; font-variant-numeric: tabular-nums; font-weight: 700; }
+    .match-round-title { font-size: 26px; font-weight: 800; margin: 10px 0; }
+    .points-picker { margin: 10px 0; }
+    .pt-group { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: 10px 0; }
+    .pt-group-label { font-size: 28px; font-weight: 800; min-width: 64px; }
+    .pt-btn { font-size: 24px; padding: 10px 16px; border-radius: 10px; border: 1px solid var(--line); background: var(--accent-soft); cursor: pointer; font-variant-numeric: tabular-nums; }
+    .pt-btn:hover { background: var(--accent); color: #fff; }
+    .pt-btn.sel { background: var(--accent); color: #fff; outline: 3px solid #ffd700; }
+    .pt-tiers { display: flex; gap: 10px; flex-wrap: wrap; margin: 12px 0; }
+    .pt-tier { padding: 14px 24px; border-radius: 999px; border: 1px solid var(--line); background: var(--card); cursor: pointer; font-size: 26px; }
     .pt-tier.sel { background: var(--accent); color: #fff; border-color: var(--accent); }
-    .match-actions { display: flex; gap: 10px; margin: 14px 0; }
-    .match-actions button { padding: 8px 18px; border-radius: 8px; border: 1px solid var(--line); background: var(--card); cursor: pointer; font-size: 14px; }
+    .match-actions { display: flex; gap: 14px; margin: 18px 0; flex-wrap: wrap; }
+    .match-actions button { padding: 14px 30px; border-radius: 10px; border: 1px solid var(--line); background: var(--card); cursor: pointer; font-size: 30px; }
     .match-actions button.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
     .match-actions button[disabled] { opacity: .45; cursor: not-allowed; }
-    .sel-info { font-size: 13px; color: var(--muted); min-height: 20px; }
+    .sel-info { font-size: 20px; color: var(--muted); min-height: 24px; }
     .rounds-list { margin-top: 20px; }
-    .rounds-list table { font-size: 12px; }
+    .rounds-list table { font-size: 18px; }
+    .rounds-list button { font-size: 20px; padding: 8px 16px; border-radius: 8px; border: 1px solid var(--line); background: var(--card); cursor: pointer; }
     .rounds-list tr.settled { cursor: pointer; }
     .rounds-list tr.settled:hover { background: var(--accent-soft); }
     .draft-badge { color: #b45309; font-weight: 700; }
+    .manual-panel { margin-top: 12px; padding: 14px; border: 1px dashed var(--line); border-radius: 8px; }
     @media (max-width: 720px) {
-      .match-seats, .match-scores { grid-template-columns: repeat(2, 1fr); }
+      .match-scores { grid-template-columns: repeat(2, 1fr); }
     }
   </style>
   <script>
@@ -54,11 +55,9 @@ import AdminShell from '../../../components/admin/AdminShell.astro'
     import type { RoundResult } from '../../../lib/scoring'
     import type { StoredRound } from '../../../lib/replay'
     import pointsRaw from '../../../../data/points_table.json'
-    import teamsRaw from '../../../../data/teams.json'
     import type { PointsTable } from '../../../lib/types'
 
     const points = pointsRaw as PointsTable
-    const teamColorOf = (name: string) => teamsRaw.teams.find((t: any) => t.name === name)?.color ?? '#9ca3af'
     const base = import.meta.env.BASE_URL
     const errEl = document.getElementById('match-err')!
     const root = document.getElementById('match-root')!
@@ -157,17 +156,6 @@ import AdminShell from '../../../components/admin/AdminShell.astro'
 
     function renderSummary(container: HTMLElement) {
       const seats = game.seats ?? []
-      const grid = el('div', 'match-seats')
-      seats.forEach((s: any, i: number) => {
-        const card = el('div', 'match-seat')
-        card.style.background = teamColor(s.team)
-        const seat = el('div', 'ms-seat', s.seat ?? seatLabelOf(i))
-        const team = el('div', 'ms-team', s.team)
-        const player = el('div', 'ms-player', s.player ?? s.name ?? '')
-        card.append(seat, team, player)
-        grid.appendChild(card)
-      })
-      container.appendChild(grid)
       if (rep) {
         const scores = el('div', 'match-scores')
         seats.forEach((s: any, i: number) => {
@@ -188,20 +176,6 @@ import AdminShell from '../../../components/admin/AdminShell.astro'
       root.innerHTML = ''
       const seats = game.seats ?? []
 
-      // 座位卡
-      const grid = el('div', 'match-seats')
-      seats.forEach((s: any) => {
-        const card = el('div', 'match-seat')
-        card.style.background = teamColor(s.team)
-        card.append(
-          el('div', 'ms-seat', s.seat),
-          el('div', 'ms-team', s.team),
-          el('div', 'ms-player', s.player ?? ''),
-        )
-        grid.appendChild(card)
-      })
-      root.appendChild(grid)
-
       // 当前累计分
       const scores = el('div', 'match-scores')
       seats.forEach((s: any, i: number) => {
@@ -216,7 +190,7 @@ import AdminShell from '../../../components/admin/AdminShell.astro'
 
       // 局标题
       const roundTitle = el('div', 'match-round-title')
-      roundTitle.textContent = `${roundLabel(rep.current.round)}　亲家：${seatLabelOf(dealerSeat(rep.current.round))}　供托：${rep.current.pool}本`
+      roundTitle.textContent = `${roundLabel(rep.current.round)}　亲家：${seatLabelOf(dealerSeat(rep.current.round))}　供托：${rep.current.pool * 1000}点`
       root.appendChild(roundTitle)
 
       if (rep.current.draft && !draftLoaded) {
@@ -241,10 +215,6 @@ import AdminShell from '../../../components/admin/AdminShell.astro'
 
       renderForm(root)
       renderRoundsList(root, false)
-    }
-
-    function teamColor(name: string): string {
-      return teamColorOf(name)
     }
 
     // ---------- 表单 ----------
@@ -358,7 +328,7 @@ import AdminShell from '../../../components/admin/AdminShell.astro'
       return row
     }
 
-    // ---------- 点数选择 ----------
+    // ---------- 点数选择（按键式，按番分组） ----------
     function renderPointsPicker(container: HTMLElement) {
       const v = view()
       const isRon = form.winType === 'ron'
@@ -367,20 +337,16 @@ import AdminShell from '../../../components/admin/AdminShell.astro'
       const head = el('div', 'sel-info', `点数表：${v === 'dealer' ? '亲家' : '子家'}视图（${isRon ? '荣和' : '自摸'}）`)
       box.appendChild(head)
 
-      // 网格
-      const grid = el('div', 'points-table')
-      const corner = el('div', 'pt-head', '番＼符')
-      grid.appendChild(corner)
-      FU.forEach((f) => { const h = el('div', 'pt-head', f); grid.appendChild(h) })
+      // 1-4 番按键组（满贯格不设按键，由下方高番档选择）
       HAN.forEach((h) => {
-        grid.appendChild(el('div', 'pt-head', `${h}番`))
+        const group = el('div', 'pt-group')
+        group.appendChild(el('span', 'pt-group-label', `${h}番`))
         FU.forEach((f) => {
           const cell = points.grid[v][h]?.[f]
-          if (!cell) {
-            grid.appendChild(el('div', 'pt-cell blank', ''))
-            return
-          }
-          const btn = el('div', 'pt-cell')
+          if (!cell) return
+          const btn = document.createElement('button')
+          btn.type = 'button'
+          btn.className = 'pt-btn'
           btn.textContent = isRon ? String(cell.ron) : cell.tsumo.join('/')
           btn.title = `${h}番${f}符`
           const key = `cell:${v}:${h}:${f}`
@@ -391,15 +357,17 @@ import AdminShell from '../../../components/admin/AdminShell.astro'
             else { form.tsumoSplit = [...cell.tsumo]; form.ronPoints = null }
             render()
           })
-          grid.appendChild(btn)
+          group.appendChild(btn)
         })
+        box.appendChild(group)
       })
-      box.appendChild(grid)
 
       // 高番档
       const tiers = el('div', 'pt-tiers')
       TIERS.forEach((t) => {
-        const btn = el('button', 'pt-tier')
+        const btn = document.createElement('button')
+        btn.type = 'button'
+        btn.className = 'pt-tier'
         const val = v === 'dealer' ? (isRon ? t.dealerRon : t.dealerTsumo[0]) : (isRon ? t.childRon : `${t.childTsumo[0]}/${t.childTsumo[1]}`)
         btn.textContent = `${t.label} ${val}`
         const key = `tier:${t.key}`
@@ -497,8 +465,8 @@ import AdminShell from '../../../components/admin/AdminShell.astro'
         return { winType: 'tsumo', riichi, winner: form.winner, tsumoPayments: pays }
       }
       if (form.winType === 'draw') {
-        if (!form.tenpai) return null
-        return { winType: 'draw', riichi, tenpai: form.tenpai }
+        // 四家都不听牌（不勾任何听牌）也是合法流局，缺省按全不听牌处理
+        return { winType: 'draw', riichi, tenpai: form.tenpai ?? [false, false, false, false] }
       }
       return null
     }
@@ -556,7 +524,7 @@ import AdminShell from '../../../components/admin/AdminShell.astro'
         ron_points: form.winType === 'ron' ? form.ronPoints : null,
         tsumo_winner: form.winType === 'tsumo' ? seatLabelOf(form.winner!) : null,
         tsumo_points: form.winType === 'tsumo' ? form.tsumoSplit : null,
-        tenpai: form.winType === 'draw' ? form.tenpai : null,
+        tenpai: form.winType === 'draw' ? (form.tenpai ?? [false, false, false, false]) : null,
         override: null, // 重新按输入自动生成时清除手动覆盖
       }
       const { error } = await supabase.from('rounds').upsert(payload, { onConflict: 'game_id,order' })
@@ -649,7 +617,7 @@ import AdminShell from '../../../components/admin/AdminShell.astro'
         tr.appendChild(el('td', '', roundLabel(h.round)))
         tr.appendChild(el('td', '', h.override?.result ?? resultText(h.result)))
         tr.appendChild(el('td', 'num', h.override?.points != null ? String(h.override.points) : pointsText(h.result)))
-        tr.appendChild(el('td', 'num', String(h.pool)))
+        tr.appendChild(el('td', 'num', String(h.pool * 1000)))
         const deltasTd = el('td', 'num', h.deltas.join('/'))
         if (h.override?.deltas) deltasTd.classList.add('draft-badge')
         tr.appendChild(deltasTd)
@@ -755,8 +723,11 @@ import AdminShell from '../../../components/admin/AdminShell.astro'
     function resultText(r: RoundResult): string {
       if (r.winType === 'ron') return `${seatLabelOf(r.winner!)}荣和${seatLabelOf(r.loser!)}`
       if (r.winType === 'tsumo') return `${seatLabelOf(r.winner!)}自摸`
-      const n = (r.tenpai ?? []).filter(Boolean).length
-      return n === 0 ? '流局(无人听)' : `流局(听牌${n})`
+      if (r.winType === 'draw') {
+        const n = (r.tenpai ?? []).filter(Boolean).length
+        return n === 0 ? '流局(无人听)' : `流局(听牌${n})`
+      }
+      return '?'
     }
 
     function pointsText(r: RoundResult): string {

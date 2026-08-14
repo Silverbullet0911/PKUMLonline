@@ -73,16 +73,6 @@ import BaseLayout from '../../layouts/BaseLayout.astro'
       const h = el('h2', '', `${game.stage}${game.round ? ' ' + game.round : ''} · ${game.date}${game.time ? ' ' + game.time : ''}`)
       root.appendChild(h)
 
-      // 座位卡
-      const grid = el('div', 'md-seats')
-      seats.forEach((s: any) => {
-        const card = el('div', 'md-seat')
-        card.style.background = teamColor(s.team)
-        card.append(el('div', 's', s.seat), el('div', 't', s.team), el('div', 'p', s.player ?? ''))
-        grid.appendChild(card)
-      })
-      root.appendChild(grid)
-
       // 总表（8 行 × 5 列）
       const stats = el('div', 'table-wrap md-stats')
       const table = el('table')
@@ -203,13 +193,12 @@ import BaseLayout from '../../layouts/BaseLayout.astro'
         svg.appendChild(poly)
       })
 
-      // x 轴标签：局序（东1、东2…），用 roundLabel 简化为 局名
-      const labels = ['东1', '东2', '东3', '东4', '南1', '南2', '南3', '南4']
+      // x 轴标签：按小局数（1,2,3…），不与局名绑定（连庄会产生重复局名）
       series.forEach((_, i) => {
         const txt = document.createElementNS(svgNS, 'text')
         txt.setAttribute('x', String(x(i))); txt.setAttribute('y', String(H - 10))
-        txt.setAttribute('text-anchor', 'middle'); txt.setAttribute('font-size', '11'); txt.setAttribute('fill', '#6b7280')
-        txt.textContent = labels[i] ?? String(i + 1)
+        txt.setAttribute('text-anchor', 'middle'); txt.setAttribute('font-size', '12'); txt.setAttribute('fill', '#6b7280')
+        txt.textContent = String(i + 1)
         svg.appendChild(txt)
       })
 
