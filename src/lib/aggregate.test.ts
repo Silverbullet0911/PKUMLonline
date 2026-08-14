@@ -20,12 +20,12 @@ const finishedGame = (overrides: Partial<Game> = {}): Game => ({
 })
 
 describe('rawScoreOf / gamePointsOf', () => {
-  it('素点 = (得分-30000)/1000', () => {
-    expect(rawScoreOf(42000)).toBe(12)
-    expect(rawScoreOf(21000)).toBe(-9)
-    expect(rawScoreOf(-5000)).toBe(-35)
+  it('素点 = (得分-25000)/1000', () => {
+    expect(rawScoreOf(42000)).toBe(17)
+    expect(rawScoreOf(21000)).toBe(-4)
+    expect(rawScoreOf(-5000)).toBe(-30)
   })
-  it('积分 = 素点 + uma(50/10/-10/-30)', () => {
+  it('积分 = 素点 + 顺位点(45/5/-15/-35)', () => {
     expect(gamePointsOf(1, 42000)).toBe(62)
     expect(gamePointsOf(2, 21000)).toBe(1)
     expect(gamePointsOf(3, -5000)).toBe(-45)
@@ -40,9 +40,9 @@ describe('aggregateTeamBoard', () => {
   it('单场按队伍聚合 stagePoints/stageRaw/wins', () => {
     const board = aggregateTeamBoard([finishedGame()])
     const by = new Map(board.map((r) => [r.team, r]))
-    expect(by.get('格斗')).toMatchObject({ carry: 0, stagePoints: 62, stageRaw: 12, wins: { '1': 1, '2': 0, '3': 0, '4': 0 } })
-    expect(by.get('海盗')).toMatchObject({ stagePoints: 1, stageRaw: -9, wins: { '2': 1 } })
-    expect(by.get('火山')).toMatchObject({ stagePoints: -88, stageRaw: -58, wins: { '4': 1 } })
+    expect(by.get('格斗')).toMatchObject({ carry: 0, stagePoints: 62, stageRaw: 17, wins: { '1': 1, '2': 0, '3': 0, '4': 0 } })
+    expect(by.get('海盗')).toMatchObject({ stagePoints: 1, stageRaw: -4, wins: { '2': 1 } })
+    expect(by.get('火山')).toMatchObject({ stagePoints: -88, stageRaw: -53, wins: { '4': 1 } })
   })
   it('跨多场累加积分与位次', () => {
     const g2: Game = finishedGame({
@@ -56,8 +56,8 @@ describe('aggregateTeamBoard', () => {
     })
     const board = aggregateTeamBoard([finishedGame(), g2])
     const by = new Map(board.map((r) => [r.team, r]))
-    // 格斗：62 + (素点-9 + uma10=1) = 63；raw 12 + (-9) = 3；wins {1:1, 2:1}
-    expect(by.get('格斗')).toMatchObject({ stagePoints: 63, stageRaw: 3, wins: { '1': 1, '2': 1, '3': 0, '4': 0 } })
+    // 格斗：62 + (素点-4 + 顺位点5=1) = 63；raw 17 + (-4) = 13；wins {1:1, 2:1}
+    expect(by.get('格斗')).toMatchObject({ stagePoints: 63, stageRaw: 13, wins: { '1': 1, '2': 1, '3': 0, '4': 0 } })
     // 海盗：1 + (素点16 + uma50=66) = 67；wins {1:1, 2:1}
     expect(by.get('海盗')).toMatchObject({ stagePoints: 67, wins: { '1': 1, '2': 1 } })
   })
@@ -78,8 +78,8 @@ describe('aggregatePlayerBoard', () => {
   it('按选手聚合 points/rawPoints/wins/maxScore', () => {
     const board = aggregatePlayerBoard([finishedGame()])
     const by = new Map(board.map((r) => [r.name, r]))
-    expect(by.get('忆水')).toMatchObject({ team: '格斗', points: 62, rawPoints: 12, penalty: 0, wins: { '1': 1 }, maxScore: 42000 })
-    expect(by.get('桃之11')).toMatchObject({ points: -88, rawPoints: -58, wins: { '4': 1 }, maxScore: 0 })
+    expect(by.get('忆水')).toMatchObject({ team: '格斗', points: 62, rawPoints: 17, penalty: 0, wins: { '1': 1 }, maxScore: 42000 })
+    expect(by.get('桃之11')).toMatchObject({ points: -88, rawPoints: -53, wins: { '4': 1 }, maxScore: 0 })
   })
   it('跨多场累加', () => {
     const g2: Game = finishedGame({
@@ -92,7 +92,7 @@ describe('aggregatePlayerBoard', () => {
       ],
     })
     const board = aggregatePlayerBoard([finishedGame(), g2])
-    expect(board.find((r) => r.name === '忆水')).toMatchObject({ points: 124, rawPoints: 24, wins: { '1': 2 }, maxScore: 42000 })
+    expect(board.find((r) => r.name === '忆水')).toMatchObject({ points: 124, rawPoints: 34, wins: { '1': 2 }, maxScore: 42000 })
   })
   it('penalty 计入个人积分（负值扣分）', () => {
     const board = aggregatePlayerBoard([finishedGame()], (name) => (name === '忆水' ? -20 : 0))

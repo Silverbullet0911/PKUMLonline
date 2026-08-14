@@ -5,31 +5,31 @@ import { round1 } from './standings'
  * 榜单聚合：从完赛半庄（seats 含 rank/points）聚合出队伍榜/个人榜的原始行，
  * 供浏览器端 DB 现算（前端显示模式不变：页面渲染仍走 computeTeamBoard / computePlayerBoard）。
  *
- * 计分约定（⚠️ 待赛事组确认，2026-08-14）：
- * - 单场素点 raw = (最终得分 − 30000) / 1000，保留 1 位小数
- * - 单场队伍/个人积分 = 素点 + 顺位加棒（uma）
- * - 顺位加棒暂按 M.LEAGUE 惯例 +50/+10/−10/−30；章程未规定，如赛事组采用其他数值改 UMA 即可
+ * 计分约定（已由赛事组确认，2026-08-14）：
+ * - 起手 25000 点；单场素点 raw = (最终得分 − 25000) / 1000，保留 1 位小数
+ * - 单场队伍/个人积分 = 素点 + 顺位点
+ * - 顺位点：1位 +45 / 2位 +5 / 3位 −15 / 4位 −35（和为 0，每场总分严格归零）
  * - 持越 = 上一阶段队伍总积分折半（章程第 0 条「分数折半持越」）
  * - 判罚：个人积分中扣除（penalty 为负值时相加），数据来源待定，先用 penaltyOf 回调注入
  */
 
-export const UMA: Record<'1' | '2' | '3' | '4', number> = {
-  '1': 50,
-  '2': 10,
-  '3': -10,
-  '4': -30,
+export const RANK_POINTS: Record<'1' | '2' | '3' | '4', number> = {
+  '1': 45,
+  '2': 5,
+  '3': -15,
+  '4': -35,
 }
 
-/** 单场素点：(最终得分 − 30000) / 1000 */
+/** 单场素点：(最终得分 − 25000) / 1000 */
 export function rawScoreOf(points: number): number {
-  return round1((points - 30000) / 1000)
+  return round1((points - 25000) / 1000)
 }
 
-/** 单场积分 = 素点 + 顺位加棒；rank 缺失或非法时加棒按 0 计 */
+/** 单场积分 = 素点 + 顺位点；rank 缺失或非法时顺位点按 0 计 */
 export function gamePointsOf(rank: number | undefined, points: number | undefined): number {
   if (points == null) return 0
-  const uma = rank != null ? (UMA[String(rank) as keyof typeof UMA] ?? 0) : 0
-  return round1(rawScoreOf(points) + uma)
+  const rp = rank != null ? (RANK_POINTS[String(rank) as keyof typeof RANK_POINTS] ?? 0) : 0
+  return round1(rawScoreOf(points) + rp)
 }
 
 /** 聚合队伍榜：传入某阶段全部完赛对局；carryOf 给出各队持越（默认 0） */
