@@ -154,6 +154,8 @@ grant select, insert, update, delete on public.teams, public.games to authentica
 grant select, insert, update, delete on public.rounds to authenticated;
 
 -- ============ 队长/管理员指派出场选手 ============
+-- 名单真源在 data/current_roster.json（静态），本函数不再查 DB teams 校验 roster；
+-- 名单把关由客户端静态名单承担。仅校验：角色、座位归属（队长限本队）、upcoming、选手非空。
 create or replace function public.assign_player(p_game_id uuid, p_player text)
 returns jsonb
 language plpgsql
@@ -164,15 +166,17 @@ declare
   v_role text;
   v_team text;
   v_game record;
-  v_roster jsonb;
+  v_new_seats jsonb;
   v_idx int;
   v_updated boolean := false;
-  v_new_seats jsonb;
   v_seat_team text;
 begin
   select role, team into v_role, v_team from public.profiles where id = auth.uid();
   if v_role is null or v_role not in ('captain','admin') then
     raise exception 'forbidden';
+  end if;
+  if p_player is null or p_player = '' then
+    raise exception 'player required';
   end if;
   select * into v_game from public.games where id = p_game_id;
   if v_game.id is null then raise exception 'game not found'; end if;
@@ -183,14 +187,6 @@ begin
     v_seat_team := v_new_seats->v_idx->>'team';
     if v_role = 'captain' and v_seat_team <> v_team then
       continue;
-    end if;
-    select roster into v_roster from public.teams
-      where name = v_seat_team and season = v_game.season;
-    if v_roster is null then
-      raise exception 'team % not found in season %', v_seat_team, v_game.season;
-    end if;
-    if not (v_roster @> jsonb_build_array(p_player)) then
-      raise exception 'player not in roster of %', v_seat_team;
     end if;
     v_new_seats := jsonb_set(
       v_new_seats,

@@ -45,6 +45,7 @@ import AdminShell from '../../components/admin/AdminShell.astro'
     import { supabase } from '../../lib/supabase'
     import { buildSeats } from '../../lib/games'
     import teamsRaw from '../../../data/teams.json'
+    import rosterRaw from '../../../data/current_roster.json'
     const list = document.getElementById('game-list')!
     const form = document.getElementById('game-form') as HTMLFormElement
     const submitBtn = document.getElementById('game-submit') as HTMLButtonElement
@@ -63,9 +64,8 @@ import AdminShell from '../../components/admin/AdminShell.astro'
     const seatSelects = () => [form.seat0, form.seat1, form.seat2, form.seat3]
 
     async function loadTeams() {
-      const { data, error } = await supabase.from('teams').select('name').order('name')
-      if (error) return showErr('加载队伍失败：' + error.message)
-      teamsCache = (data ?? []).map((t) => t.name)
+      // 队伍名来自静态 teams.json（名单真源 current_roster.json）
+      teamsCache = teamsRaw.teams.map((t: any) => t.name)
       for (const s of seatSelects()) {
         s.innerHTML = ''
         const opt = document.createElement('option')
@@ -77,11 +77,10 @@ import AdminShell from '../../components/admin/AdminShell.astro'
         }
       }
     }
-    async function loadRosters() {
-      const { data, error } = await supabase.from('teams').select('season, name, roster')
-      if (error) return showErr('加载名单失败：' + error.message)
+    function loadRosters() {
+      // 名单真源：data/current_roster.json（静态），按 赛季__队伍 缓存
       rosters.clear()
-      for (const t of data ?? []) rosters.set(`${t.season}__${t.name}`, t.roster ?? [])
+      for (const t of rosterRaw.teams ?? []) rosters.set(`${rosterRaw.season}__${t.name}`, t.roster ?? [])
     }
     function rosterOf(season: string, team: string): string[] {
       return rosters.get(`${season}__${team}`) ?? []

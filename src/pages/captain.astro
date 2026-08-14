@@ -11,6 +11,7 @@ import BaseLayout from '../layouts/BaseLayout.astro'
   </div>
   <script>
     import { supabase } from '../lib/supabase'
+    import rosterRaw from '../data/current_roster.json'
     const base = import.meta.env.BASE_URL
     const errEl = document.getElementById('cap-err')!
     const redirect = (p: string) => { window.location.href = base + p }
@@ -26,8 +27,9 @@ import BaseLayout from '../layouts/BaseLayout.astro'
       const team = profile.team
       document.getElementById('cap-info')!.textContent = '当前队伍：' + team
 
-      const { data: roster } = await supabase.from('teams').select('roster').eq('name', team).single()
-      const rosterList = roster?.roster ?? []
+      // 名单真源：data/current_roster.json（静态）
+      const rosterTeam = rosterRaw.teams.find((t: any) => t.name === team)
+      const rosterList: string[] = rosterTeam?.roster ?? []
 
       const { data: games, error: gErr } = await supabase
         .from('games').select('*').eq('status', 'upcoming').order('date', { ascending: true })

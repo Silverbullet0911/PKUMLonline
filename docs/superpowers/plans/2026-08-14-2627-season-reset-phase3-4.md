@@ -170,7 +170,7 @@
 ### Task 2.3: 数据交接与初始化
 
 - [x] **Step 1:** 清理 DB 中的联调测试数据（Phase 2 验证时插入的 teams/games/announcements，如「凤凰」队、测试半庄、测试公告）——提供一段清理 SQL 由用户在 Dashboard 执行。
-- [x] **Step 2:** 新赛季空表就绪：26-27 队伍名单由 admin 在 `/admin/teams` 录入（roster 来自 `current_roster.json` 待指名补齐后），赛程由 admin 在 `/admin/schedule` 建半庄，队长在 `/captain` 填出场。
+- [x] **Step 2:** 新赛季空表就绪：**队伍名单真源为 `data/current_roster.json`（静态，2026-08-14 方案 B 决策）**——后台填选手/队长选人改读静态名单，`assign_player` RPC 去掉 DB roster 校验（名单把关由客户端静态名单承担），`/admin/teams` 停用；赛程由 admin 在 `/admin/schedule` 建半庄，队长在 `/captain` 填出场。
 - [ ] **Step 3:** 端到端验收：队长选人 → 裁判录入 → 提交 → 前台赛果/榜单/公告即时更新；刷新后数据仍在。
 
 > 实现说明：清理 SQL 已写入 `supabase/cleanup_demo_data.sql`（清空 rounds/games/announcements/teams，附校验查询），由用户在确认后于 Dashboard 执行。端到端验收待用户执行清理后走查。
