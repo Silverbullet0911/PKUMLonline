@@ -41,56 +41,130 @@ const base = import.meta.env.BASE_URL
   </div>
 
   <h2>最新赛果</h2>
-  {
-    latestFinished ? (
-      <GameResult game={latestFinished} />
-    ) : (
-      <p class="empty">暂无赛果。</p>
-    )
-  }
+  <div id="home-result">
+    {
+      latestFinished ? (
+        <GameResult game={latestFinished} />
+      ) : (
+        <p class="empty">暂无赛果。</p>
+      )
+    }
+  </div>
 
   <h2>最近赛程</h2>
-  {
-    upcomingGames.length > 0 ? (
-      <FutureGames games={upcomingGames} showHeading={false} />
-    ) : (
-      <p class="empty">暂无未来赛程。</p>
-    )
-  }
+  <div id="home-schedule">
+    {
+      upcomingGames.length > 0 ? (
+        <FutureGames games={upcomingGames} showHeading={false} />
+      ) : (
+        <p class="empty">暂无未来赛程。</p>
+      )
+    }
+  </div>
 
   <h2>最新公告</h2>
-  {
-    latestNews.length > 0 ? (
-      <ul class="news-list">
-        {latestNews.map((n) => <li><time>{n.date}</time><a href={`${base}news`}>{n.title}</a></li>)}
-      </ul>
-    ) : (
-      <p class="empty">暂无公告。</p>
-    )
-  }
+  <div id="home-news">
+    {
+      latestNews.length > 0 ? (
+        <ul class="news-list">
+          {latestNews.map((n) => <li><time>{n.date}</time><a href={`${base}news`}>{n.title}</a></li>)}
+        </ul>
+      ) : (
+        <p class="empty">暂无公告。</p>
+      )
+    }
+  </div>
   <script>
     import { supabase } from '../lib/supabase'
     import { season, teams } from '../lib/data'
-    import { mapDbGame } from '../lib/renderSchedule'
+    import { mapDbGame, splitGames } from '../lib/renderSchedule'
+    import { teamStyle, esc, renderTeamTable, activeStageFromGames } from '../lib/renderStandings'
     import { aggregateTeamBoard, stageTeamTotals, carryFrom } from '../lib/aggregate'
     import { computeTeamBoard } from '../lib/standings'
-    import { renderTeamTable, activeStageFromGames } from '../lib/renderStandings'
+    import { roundNum } from '../lib/schedule'
+
+    const base = import.meta.env.BASE_URL
 
     ;(async () => {
-      const { data, error } = await supabase.from('games').select('*').eq('status', 'finished')
+      const { data, error } = await supabase.from('games').select('*').order('date', { ascending: true })
       if (error || !data || data.length === 0) return // 保留静态回退
       const games = (data as any[]).filter((g) => g.season === season.season).map(mapDbGame)
-      if (games.length === 0) return
+      const { upcoming, finished } = splitGames(games)
+
+      // 最新赛果
+      const latest = [...finished].sort((a, b) => b.date.localeCompare(a.date) || roundNum(b) - roundNum(a))[0]
+      if (latest) {
+        const box = document.getElementById('home-result')
+        if (box) {
+          box.innerHTML =
+            `<section class="game-card">` +
+            `<a href="${base}match/?id=${encodeURIComponent(latest.id!)}" style="text-decoration:none;color:inherit;display:block">` +
+            `<h2>${latest.stage}${latest.round ? ' ' + latest.round : ''} · ${latest.date}</h2>` +
+            `<div class="game-players">` +
+            latest.seats.map((s) =>
+              `<div class="game-player" style="${teamStyle(s.team, teams.teams)}">` +
+              `<span class="gp-team">${esc(s.team)}</span><span class="gp-seat">${s.seat}</span>` +
+              `<span class="gp-name">${s.name ? esc(s.name) : ''}</span>` +
+              `<span class="gp-pts">${s.points ?? 0}</span><span class="gp-rank">${s.rank ?? ''}位</span>` +
+              `</div>`).join('') +
+            `</div></a></section>`
+        }
+      }
+
+      // 最近赛程（最多 2 场）
+      const ups = [...upcoming]
+        .sort((a, b) => a.date.localeCompare(b.date) || roundNum(a) - roundNum(b))
+        .slice(0, 2)
+      if (ups.length > 0) {
+        const box = document.getElementById('home-schedule')
+        if (box) {
+          box.innerHTML = ups.map((g) =>
+            `<div class="future-row">` +
+            `<div class="future-meta">` +
+            `<div><span class="fm-date">${g.date}</span><span class="fm-rest"> · ${g.stage}${g.round ? ' ' + g.round : ''}</span></div>` +
+            `${g.time ? `<div class="fm-time">${g.time}</div>` : ''}` +
+            `</div>` +
+            `<div class="future-seats">` +
+            g.seats.map((s) =>
+              `<div class="future-seat" style="${teamStyle(s.team, teams.teams)}">` +
+              `<span class="fs-seat">${s.seat}</span><span class="fs-team">${esc(s.team)}</span>` +
+              `${s.name ? `<span class="fs-player">${esc(s.name)}</span>` : ''}` +
+              `</div>`).join('') +
+            `</div></div>`).join('')
+        }
+      }
+    })()
+
+    // 最新公告（DB 优先，静态回退由 SSR 承担）
+    ;(async () => {
+      const { data: anns } = await supabase
+        .from('announcements').select('*').order('date', { ascending: false }).limit(5)
+      if (!anns || anns.length === 0) return
+      const box = document.getElementById('home-news')
+      if (box) {
+        box.innerHTML =
+          `<ul class="news-list">` +
+          anns.map((a) => `<li><time>${a.date}</time><a href="${base}news">${esc(a.title)}</a></li>`).join('') +
+          `</ul>`
+      }
+    })()
+
+    // 首页队伍榜（DB 现算，静态回退由 SSR 承担）
+    ;(async () => {
+      const { data: fin, error: finErr } = await supabase.from('games').select('*').eq('status', 'finished')
+      if (finErr || !fin || fin.length === 0) return
+      const finished = (fin as any[]).filter((g) => g.season === season.season).map(mapDbGame)
+      if (finished.length === 0) return
       const stageNames = season.stages.map((s) => s.name)
-      const active = activeStageFromGames(games, stageNames)
+      const active = activeStageFromGames(finished, stageNames)
       if (!active) return
       const stage = season.stages.find((s) => s.name === active)
-      const regTotals = stageTeamTotals(games.filter((g) => g.stage === '常规赛'))
-      const semiTotals = stageTeamTotals(games.filter((g) => g.stage === '半决赛'))
+      const regTotals = stageTeamTotals(finished.filter((g) => g.stage === '常规赛'))
+      const semiTotals = stageTeamTotals(finished.filter((g) => g.stage === '半决赛'))
       const carryFor = (n: string) =>
         n === '常规赛' ? () => 0 : n === '半决赛' ? carryFrom(regTotals) : carryFrom(semiTotals)
       const board = computeTeamBoard(
-        aggregateTeamBoard(games.filter((g) => g.stage === active), carryFor(active)),
+        aggregateTeamBoard(finished.filter((g) => g.stage === active), carryFor(active)),
         stage?.promoteRank ?? 0,
       )
       const title = document.getElementById('home-board-title')
