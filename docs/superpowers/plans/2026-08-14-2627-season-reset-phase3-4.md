@@ -133,7 +133,7 @@
   - 半庄提交后裁判只读；admin 可经「退回修改」调 `unfinish_game` 后修改并重新提交
 - [x] **Step 3:** 草稿数据存 `rounds` 表（字段不完整允许），完整性/平衡校验在「下一局」/「提交」时执行。
 
-> 实现说明：静态托管无法构建动态路由，录入页路由为 **`/admin/match/?id=<uuid>`**（`src/pages/admin/match/index.astro`）。**录入流程（赛事组确认 2026-08-14）**：每小局自动生成阶段表行 → 可「改」手动修改该局四家增减/对局情况/打点（存 `rounds.override`）→ 录入页无提交键，录完点「查看结果」→ 结果页（`/admin/match/result/?id=`）总表可手动改各家最终分数（实时显示素点/顺位点/pt/位次，同分平分顺位点），校验总分 100000 后「提交为赛果」。回放逻辑 `src/lib/replay.ts`（`replayGame`/`roundLabel`，支持 override，12 用例测试）。
+> 实现说明：静态托管无法构建动态路由，录入页路由为 **`/admin/match/?id=<uuid>`**（`src/pages/admin/match/index.astro`）。**录入流程（赛事组确认 2026-08-14）**：每小局自动生成阶段表行 → 可「改」手动修改该局四家增减/对局情况/打点（存 `rounds.override`）→ 录入页无提交键，录完点「查看结果」→ 结果页（`/admin/match/result/?id=`）总表**直接编辑各家 pt 得分**（素点/顺位点/最终分数/位次只读实时联动，pt 合计提示），提交时把 pt 写入 `games.seats`（`seat.pt`），榜单聚合优先使用存储的 pt。回放逻辑 `src/lib/replay.ts`（`replayGame`/`roundLabel`，支持 override，12 用例测试）。
 
 ### Task 1.5: 对局详情页（公开）
 
