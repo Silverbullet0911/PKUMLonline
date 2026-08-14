@@ -101,6 +101,24 @@ describe('replayGame', () => {
     expect(current.pool).toBe(0)
   })
 
+  it('手动覆盖供托点数：展示值取 override.pool，下一局结算池仍按规则', () => {
+    const { history, current } = replayGame([
+      round({
+        order: 1,
+        win_type: 'ron',
+        riichi: [false, true, false, false],
+        ron_winner: '东',
+        ron_loser: '北',
+        ron_points: 1000,
+        override: { pool: 5000 },
+      }),
+      round({ order: 2, win_type: 'ron', ron_winner: '南', ron_loser: '东', ron_points: 1000 }),
+    ])
+    expect(history[0].pool).toBe(5000) // 展示用手动值
+    expect(history[1].pool).toBe(0) // 第2局结算池仍按规则（第1局荣和池清零）
+    expect(current.pool).toBe(0)
+  })
+
   it('南4 子家和牌后半庄结束：不再有下一局', () => {
     const dealers = [0, 1, 2, 3, 0, 1, 2, 3] // 东1-4、南1-4 的亲家座位
     const winners = [1, 0, 3, 0, 2, 3, 0, 1] // 每局由子家（非亲家）和牌 → 全部推进

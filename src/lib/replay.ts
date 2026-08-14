@@ -24,6 +24,8 @@ export interface RoundOverride {
   result?: string
   /** 手动设定的打点 */
   points?: number
+  /** 手动设定的供托（点数） */
+  pool?: number
 }
 
 export interface RoundHistory {
@@ -116,7 +118,7 @@ export function replayGame(rounds: StoredRound[], startScore = 25000): ReplayRes
       round: { ...state },
       result,
       scores: [...scores],
-      pool,
+      pool: r.override?.pool ?? auto.poolAfter, // 供托展示值：手动覆盖优先
       deltas,
       override: r.override,
     })

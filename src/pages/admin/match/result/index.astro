@@ -11,19 +11,24 @@ import AdminShell from '../../../../components/admin/AdminShell.astro'
     </div>
   </AdminShell>
   <style is:global>
-    .res-table input { width: 90px; text-align: right; font-variant-numeric: tabular-nums; font-size: 20px; padding: 6px 8px; }
-    .res-table select { font-size: 18px; padding: 6px 8px; }
+    .res-table input { width: 90px; text-align: right; font-variant-numeric: tabular-nums; font-size: 18px; padding: 4px 6px; }
+    .res-table select { font-size: 16px; padding: 4px 6px; }
+    .res-table { font-size: 15px; }
     .res-sum { font-size: 15px; margin: 10px 0; }
     .res-sum.bad { color: #b91c1c; font-weight: 700; }
+    .res-stages { margin-top: 18px; }
+    .res-stages h3 { font-size: 18px; }
+    .res-stages input { width: 84px; font-size: 15px; padding: 3px 6px; text-align: right; font-variant-numeric: tabular-nums; }
+    .res-stages input[type='text'] { width: 140px; text-align: left; }
     .res-actions { display: flex; gap: 10px; margin: 14px 0; }
-    .res-actions button { padding: 10px 22px; border-radius: 8px; border: 1px solid var(--line); background: var(--card); cursor: pointer; font-size: 18px; }
-    .res-actions button.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
-    .res-table { font-size: 15px; }
+    .res-actions button, .res-stages button { padding: 10px 22px; border-radius: 8px; border: 1px solid var(--line); background: var(--card); cursor: pointer; font-size: 18px; }
+    .res-actions button.primary, .res-stages button.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
   </style>
   <script>
     import { supabase } from '../../../../lib/supabase'
-    import { replayGame } from '../../../../lib/replay'
+    import { replayGame, roundLabel, seatLabel } from '../../../../lib/replay'
     import { rawScoreOf, rankPointsForScores, competitionRanks } from '../../../../lib/aggregate'
+    import type { RoundResult } from '../../../../lib/scoring'
 
     const base = import.meta.env.BASE_URL
     const errEl = document.getElementById('res-err')!
@@ -46,11 +51,29 @@ import AdminShell from '../../../../components/admin/AdminShell.astro'
 
     let game: any = null
     let role: string | null = null
+    let rep: ReturnType<typeof replayGame> | null = null
     let finalScores: number[] = []
+    let scoreInputs: HTMLInputElement[] = []
+    let ptInputs: HTMLInputElement[] = []
+    let rankSelects: HTMLSelectElement[] = []
+    let penInputs: HTMLInputElement[] = []
+    // 阶段表行编辑引用
+    let roundEdits: { order: number; resultInput: HTMLInputElement; pointsInput: HTMLInputElement; poolInput: HTMLInputElement; deltaInputs: HTMLInputElement[] }[] = []
 
     async function loadRounds(): Promise<any[]> {
       const { data } = await supabase.from('rounds').select('*').eq('game_id', gameId).order('order', { ascending: true })
-      return data ?? []
+      return (data ?? []).map((r: any) => ({
+        order: r.order,
+        win_type: r.win_type,
+        riichi: r.riichi ?? [false, false, false, false],
+        ron_winner: r.ron_winner,
+        ron_loser: r.ron_loser,
+        ron_points: r.ron_points,
+        tsumo_winner: r.tsumo_winner,
+        tsumo_points: r.tsumo_points,
+        tenpai: r.tenpai,
+        override: r.override,
+      }))
     }
 
     async function load() {
@@ -66,8 +89,12 @@ import AdminShell from '../../../../components/admin/AdminShell.astro'
       game = g
       if (g.status === 'finished') {
         if (role === 'admin') {
-          // 管理员可修改已提交的赛果并重新提交（以已存 seats 为准）
-          renderFromSeats()
+          // 管理员可修改已提交赛果并重新提交（总表以已存 seats 为准）
+          const rounds = await loadRounds()
+          rep = replayGame(rounds)
+          const seats = game.seats ?? []
+          finalScores = seats.map((s: any) => s.points ?? 25000)
+          renderAll(true)
         } else {
           root.innerHTML = ''
           root.appendChild(el('p', 'sel-info', '该半庄已提交为赛果（裁判不可修改，仅管理员可改）。'))
@@ -80,79 +107,64 @@ import AdminShell from '../../../../components/admin/AdminShell.astro'
       render()
     }
 
-    // 已提交半庄：以 games.seats 中已存的最终分数/pt/位次/判罚为初值
-    function renderFromSeats() {
-      clearErr()
-      root.innerHTML = ''
-      const seats = game.seats ?? []
-      finalScores = seats.map((s: any) => s.points ?? 25000)
-      renderTable(finalScores, {
-        pts: seats.map((s: any) => (s.pt != null ? s.pt : null)),
-        ranks: seats.map((s: any) => (s.rank != null ? s.rank : null)),
-        pens: seats.map((s: any) => (s.penalty != null ? s.penalty : 0)),
-      })
-    }
-
     function render() {
       clearErr()
       root.innerHTML = ''
-      renderAsync()
+      ;(async () => {
+        const rounds = await loadRounds()
+        rep = replayGame(rounds)
+        finalScores = [...rep.current.scores]
+        renderAll(false)
+      })()
     }
 
-    async function renderAsync() {
-      if (!gameId) return
-      const rs = await loadRounds()
-      const rounds = rs.map((r: any) => ({
-        order: r.order,
-        win_type: r.win_type,
-        riichi: r.riichi ?? [false, false, false, false],
-        ron_winner: r.ron_winner,
-        ron_loser: r.ron_loser,
-        ron_points: r.ron_points,
-        tsumo_winner: r.tsumo_winner,
-        tsumo_points: r.tsumo_points,
-        tenpai: r.tenpai,
-        override: r.override,
-      }))
-      const rep = replayGame(rounds)
-      finalScores = [...rep.current.scores]
-      renderTable(finalScores)
-    }
-
-    function renderTable(initial: number[], init?: { pts?: (number | null)[]; ranks?: (number | null)[]; pens?: (number | null)[] }) {
+    // ---------- 总表 ----------
+    function renderAll(fromSeats: boolean) {
+      clearErr()
+      root.innerHTML = ''
       const seats = game.seats ?? []
-      const ptInputs: HTMLInputElement[] = []
-      const rankSelects: HTMLSelectElement[] = []
-      const penInputs: HTMLInputElement[] = []
-      // 初始分数（回放结果，只读）与自动 pt / 位次
-      const scoreArr = [...initial]
+      scoreInputs = []
+      ptInputs = []
+      rankSelects = []
+      penInputs = []
+      roundEdits = []
+
+      const scoreArr = [...finalScores]
       const autoRp = rankPointsForScores(scoreArr)
       const autoPt = scoreArr.map((v, i) => Math.round((rawScoreOf(v) + autoRp[i]) * 10) / 10)
       const autoRanks = competitionRanks(scoreArr)
 
-      const box = el('div', 'table-wrap')
+      // 总表
+      const box = el('div', 'table-wrap res-table-wrap')
       const table = el('table')
+      table.className = 'res-table'
       const thead = el('thead')
       const htr = el('tr')
-      ;['座位', '队伍', '选手', 'pt(可改)', '素点', '顺位点', '最终分数', '位次(可改)', '判罚(可改)'].forEach((h) => htr.appendChild(el('th', '', h)))
+      ;['座位', '队伍', '选手', '最终分数(可改)', '素点', '顺位点', 'pt(可改)', '位次(可改)', '判罚(可改)'].forEach((h) => htr.appendChild(el('th', '', h)))
       thead.appendChild(htr)
       table.appendChild(thead)
       const tbody = el('tbody')
 
+      const sumScoreEl = el('p', 'res-sum', '')
+      const sumPtEl = el('p', 'res-sum', '')
+
       function refresh() {
+        const scores = scoreInputs.map((x) => Number(x.value))
         const pts = ptInputs.map((x) => Number(x.value))
         const rows = tbody.querySelectorAll('tr')
         rows.forEach((tr, i) => {
           const tds = tr.querySelectorAll('td')
-          const raw = rawScoreOf(scoreArr[i])
+          const raw = rawScoreOf(scores[i])
           const rp = Math.round((pts[i] - raw) * 10) / 10
           tds[4].textContent = String(raw)
           tds[5].textContent = String(rp)
-          tds[6].textContent = String(scoreArr[i])
         })
-        const sum = pts.reduce((a, b) => a + (Number.isFinite(b) ? b : 0), 0)
-        sumEl.textContent = `pt 合计：${sum}（自动结算通常为 0；判罚另计，不计入素点/场次 pt）`
-        sumEl.classList.toggle('bad', Math.abs(sum) > 0.001)
+        const sSum = scores.reduce((a, b) => a + (Number.isFinite(b) ? b : 0), 0)
+        sumScoreEl.textContent = `最终分数合计：${sSum}（须为 100000）`
+        sumScoreEl.classList.toggle('bad', sSum !== 100000)
+        const pSum = pts.reduce((a, b) => a + (Number.isFinite(b) ? b : 0), 0)
+        sumPtEl.textContent = `pt 合计：${pSum}（自动结算通常为 0；判罚另计）`
+        sumPtEl.classList.toggle('bad', Math.abs(pSum) > 0.001)
       }
 
       seats.forEach((s: any, i: number) => {
@@ -160,18 +172,25 @@ import AdminShell from '../../../../components/admin/AdminShell.astro'
         tr.appendChild(el('td', '', s.seat))
         tr.appendChild(el('td', '', s.team))
         tr.appendChild(el('td', '', s.player ?? ''))
+        const tdScore = el('td')
+        const scoreInput = document.createElement('input')
+        scoreInput.type = 'number'
+        scoreInput.value = String(scoreArr[i])
+        scoreInput.addEventListener('input', refresh)
+        scoreInputs.push(scoreInput)
+        tdScore.appendChild(scoreInput)
+        tr.appendChild(tdScore)
+        tr.appendChild(el('td', 'num', ''))
+        tr.appendChild(el('td', 'num', ''))
         const tdPt = el('td')
         const ptInput = document.createElement('input')
         ptInput.type = 'number'
         ptInput.step = '0.1'
-        ptInput.value = String(init?.pts?.[i] ?? autoPt[i])
+        ptInput.value = String(fromSeats && s.pt != null ? s.pt : autoPt[i])
         ptInput.addEventListener('input', refresh)
         ptInputs.push(ptInput)
         tdPt.appendChild(ptInput)
         tr.appendChild(tdPt)
-        tr.appendChild(el('td', 'num', ''))
-        tr.appendChild(el('td', 'num', ''))
-        tr.appendChild(el('td', 'num', ''))
         const tdRank = el('td')
         const rankSel = document.createElement('select')
         for (let r = 1; r <= 4; r++) {
@@ -180,7 +199,7 @@ import AdminShell from '../../../../components/admin/AdminShell.astro'
           opt.textContent = r + '位'
           rankSel.appendChild(opt)
         }
-        rankSel.value = String(init?.ranks?.[i] ?? autoRanks[i])
+        rankSel.value = String(fromSeats && s.rank != null ? s.rank : autoRanks[i])
         rankSelects.push(rankSel)
         tdRank.appendChild(rankSel)
         tr.appendChild(tdRank)
@@ -188,7 +207,7 @@ import AdminShell from '../../../../components/admin/AdminShell.astro'
         const penInput = document.createElement('input')
         penInput.type = 'number'
         penInput.step = '0.1'
-        penInput.value = String(init?.pens?.[i] ?? 0)
+        penInput.value = String(fromSeats && s.penalty != null ? s.penalty : 0)
         penInputs.push(penInput)
         tdPen.appendChild(penInput)
         tr.appendChild(tdPen)
@@ -197,10 +216,88 @@ import AdminShell from '../../../../components/admin/AdminShell.astro'
       table.appendChild(tbody)
       box.appendChild(table)
       root.appendChild(box)
+      root.appendChild(sumScoreEl)
+      root.appendChild(sumPtEl)
 
-      const sumEl = el('p', 'res-sum', '')
-      root.appendChild(sumEl)
+      renderRoundsTable()
+      renderActions()
+      refresh()
+    }
 
+    // ---------- 阶段对局表（每格可改） ----------
+    function renderRoundsTable() {
+      if (!rep) return
+      const box = el('div', 'table-wrap res-stages')
+      box.appendChild(el('h3', '', '阶段对局表（管理员可修改每一格：结果/打点/供托/四家增减）'))
+      const table = el('table')
+      const thead = el('thead')
+      const htr = el('tr')
+      ;['局', '结果', '打点', '供托', '东', '南', '西', '北'].forEach((h) => htr.appendChild(el('th', '', h)))
+      thead.appendChild(htr)
+      table.appendChild(thead)
+      const tbody = el('tbody')
+      const wrapTd = (node: HTMLElement) => { const td = el('td'); td.appendChild(node); return td }
+
+      rep.history.forEach((h) => {
+        const tr = el('tr')
+        tr.appendChild(el('td', '', roundLabel(h.round)))
+        const resultInput = document.createElement('input')
+        resultInput.type = 'text'
+        resultInput.value = h.override?.result ?? resultText(h.result)
+        const pointsInput = document.createElement('input')
+        pointsInput.type = 'number'
+        pointsInput.value = String(h.override?.points ?? pointsNum(h.result))
+        const poolInput = document.createElement('input')
+        poolInput.type = 'number'
+        poolInput.value = String(h.pool)
+        const deltaInputs = [0, 1, 2, 3].map((i) => {
+          const inp = document.createElement('input')
+          inp.type = 'number'
+          inp.value = String(h.deltas[i])
+          return inp
+        })
+        tr.appendChild(wrapTd(resultInput))
+        tr.appendChild(wrapTd(pointsInput))
+        tr.appendChild(wrapTd(poolInput))
+        deltaInputs.forEach((di) => tr.appendChild(wrapTd(di)))
+        roundEdits.push({ order: h.order, resultInput, pointsInput, poolInput, deltaInputs })
+        tbody.appendChild(tr)
+      })
+      table.appendChild(tbody)
+      box.appendChild(table)
+      const saveBtn = el('button', 'primary', '保存阶段表修改')
+      saveBtn.addEventListener('click', saveRoundsOverrides)
+      box.appendChild(saveBtn)
+      root.appendChild(box)
+    }
+
+    async function persistRoundsOverrides(): Promise<boolean> {
+      if (!gameId) return false
+      for (const e of roundEdits) {
+        const deltas = e.deltaInputs.map((x) => Number(x.value))
+        if (deltas.some((x) => !Number.isFinite(x))) { showErr('第' + e.order + '局四家增减须为数字'); return false }
+        const override: Record<string, unknown> = { deltas }
+        if (e.resultInput.value.trim()) override.result = e.resultInput.value.trim()
+        if (e.pointsInput.value !== '') override.points = Number(e.pointsInput.value)
+        if (e.poolInput.value !== '') override.pool = Number(e.poolInput.value)
+        const { error } = await supabase.from('rounds').upsert({ game_id: gameId, order: e.order, override }, { onConflict: 'game_id,order' })
+        if (error) { showErr('保存失败：' + error.message); return false }
+      }
+      return true
+    }
+
+    async function saveRoundsOverrides() {
+      const ok = await persistRoundsOverrides()
+      if (!ok) return
+      // 回放重算（总表最终分数默认值随增减覆盖联动）
+      const rounds = await loadRounds()
+      rep = replayGame(rounds)
+      if (game.status !== 'finished') finalScores = [...rep.current.scores]
+      renderAll(game.status === 'finished')
+      showErr('阶段表修改已保存。')
+    }
+
+    function renderActions() {
       const actions = el('div', 'res-actions')
       const backBtn = el('button', '', '返回录入')
       backBtn.addEventListener('click', () => {
@@ -210,25 +307,22 @@ import AdminShell from '../../../../components/admin/AdminShell.astro'
       submitBtn.addEventListener('click', () => submit(submitBtn))
       actions.append(backBtn, submitBtn)
       root.appendChild(actions)
-
-      refresh()
     }
 
     async function submit(btn: HTMLButtonElement) {
       if (!gameId) return
       clearErr()
-      const inputs = Array.from(root.querySelectorAll('input[type=number]')) as HTMLInputElement[]
-      const ptValues: number[] = []
-      const penValues: number[] = []
-      // 输入顺序：每行先 pt 后判罚
-      for (let k = 0; k < inputs.length; k += 2) ptValues.push(Number(inputs[k].value))
-      for (let k = 1; k < inputs.length; k += 2) penValues.push(Number(inputs[k].value))
-      if (ptValues.some((x) => !Number.isFinite(x)) || penValues.some((x) => !Number.isFinite(x))) {
-        showErr('pt 与判罚须为数字')
-        return
-      }
-      const rankValues = Array.from(root.querySelectorAll('select')) as HTMLSelectElement[]
-      const ranks = rankValues.map((x) => Number(x.value))
+      // 1. 静默保存阶段表修改（不重渲染，避免清掉总表正在编辑的值）
+      const saved = await persistRoundsOverrides()
+      if (!saved) return
+      // 2. 总表数据
+      const scores = scoreInputs.map((x) => Number(x.value))
+      const pts = ptInputs.map((x) => Number(x.value))
+      const pens = penInputs.map((x) => Number(x.value))
+      const ranks = rankSelects.map((x) => Number(x.value))
+      if (scores.some((x) => !Number.isInteger(x))) { showErr('最终分数须为整数'); return }
+      if (scores.reduce((a, b) => a + b, 0) !== 100000) { showErr('最终分数合计须为 100000'); return }
+      if (pts.some((x) => !Number.isFinite(x)) || pens.some((x) => !Number.isFinite(x))) { showErr('pt 与判罚须为数字'); return }
       // 弃置未完成草稿（比赛按已录小局结算）
       await supabase.from('rounds').delete().eq('game_id', gameId).is('win_type', null)
       const seats = (game.seats ?? []).map((s: any, i: number) => ({
@@ -236,13 +330,12 @@ import AdminShell from '../../../../components/admin/AdminShell.astro'
         team: s.team,
         player: s.player,
         rank: ranks[i],
-        points: finalScores[i],
-        pt: ptValues[i],
-        penalty: penValues[i],
+        points: scores[i],
+        pt: pts[i],
+        penalty: pens[i],
       }))
       btn.disabled = true
       btn.textContent = '提交中…'
-      // 已提交半庄：管理员修改后需先退回 upcoming 才能再次 finish
       if (game.status === 'finished') {
         const u = await supabase.rpc('unfinish_game', { p_game_id: gameId })
         if (u.error) { showErr('退回失败：' + u.error.message); btn.disabled = false; btn.textContent = '修改并重新提交'; return }
@@ -250,6 +343,25 @@ import AdminShell from '../../../../components/admin/AdminShell.astro'
       const { error } = await supabase.rpc('finish_game', { p_game_id: gameId, p_seats: seats })
       if (error) { showErr('提交失败：' + error.message); btn.disabled = false; btn.textContent = game.status === 'finished' ? '修改并重新提交' : '提交为赛果'; return }
       location.href = base + 'match/?id=' + encodeURIComponent(gameId)
+    }
+
+    function resultText(r: RoundResult): string {
+      if (r.winType === 'ron') return `${seatLabel(r.winner!)}荣和${seatLabel(r.loser!)}`
+      if (r.winType === 'tsumo') return `${seatLabel(r.winner!)}自摸`
+      if (r.winType === 'draw') {
+        const n = (r.tenpai ?? []).filter(Boolean).length
+        return n === 0 ? '流局(无人听)' : `流局(听牌${n})`
+      }
+      return '?'
+    }
+
+    function pointsNum(r: RoundResult): number | null {
+      if (r.winType === 'ron') return r.ronPoints ?? null
+      if (r.winType === 'tsumo') {
+        const pays = (r.tsumoPayments ?? []).filter((x) => x > 0)
+        return pays.reduce((a, b) => a + b, 0) || null
+      }
+      return null
     }
 
     load()
