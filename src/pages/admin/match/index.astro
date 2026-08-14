@@ -10,36 +10,36 @@ import AdminShell from '../../../components/admin/AdminShell.astro'
       <p class="empty">加载中…</p>
     </div>
   </AdminShell>
-  <style>
+  <style is:global>
     .match-root { min-width: 0; }
-    /* 勾选与按键放大到约 3 倍，填写框约 2 倍 */
-    input[type='checkbox'], input[type='radio'] { transform: scale(3); margin: 0 16px; }
-    .field-row { display: flex; gap: 16px; flex-wrap: wrap; align-items: center; margin: 12px 0; }
-    .field-row label { display: flex; align-items: center; gap: 8px; font-size: 26px; }
-    .field-row input[type='number'] { font-size: 28px; padding: 6px 10px; }
-    .field-row input[type='text'] { font-size: 28px; padding: 6px 10px; }
+    /* 勾选与按键放大（约 3-4 倍），填写框约 2 倍；JS 动态创建，故用全局样式 */
+    input[type='checkbox'], input[type='radio'] { transform: scale(4); margin: 0 18px; }
+    .field-row { display: flex; gap: 16px; flex-wrap: wrap; align-items: center; margin: 14px 0; }
+    .field-row label { display: flex; align-items: center; gap: 10px; font-size: 30px; }
+    .field-row input[type='number'] { font-size: 30px; padding: 8px 12px; }
+    .field-row input[type='text'] { font-size: 30px; padding: 8px 12px; }
     .match-scores { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 12px 0; }
     .match-score { background: #fff; border: 1px solid var(--line); border-radius: 8px; padding: 8px 12px; text-align: center; }
-    .match-score .ms-label { font-size: 15px; color: var(--muted); }
-    .match-score .ms-value { font-size: 30px; font-variant-numeric: tabular-nums; font-weight: 700; }
-    .match-round-title { font-size: 26px; font-weight: 800; margin: 10px 0; }
+    .match-score .ms-label { font-size: 16px; color: var(--muted); }
+    .match-score .ms-value { font-size: 32px; font-variant-numeric: tabular-nums; font-weight: 700; }
+    .match-round-title { font-size: 28px; font-weight: 800; margin: 10px 0; }
     .points-picker { margin: 10px 0; }
-    .pt-group { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: 10px 0; }
-    .pt-group-label { font-size: 28px; font-weight: 800; min-width: 64px; }
-    .pt-btn { font-size: 24px; padding: 10px 16px; border-radius: 10px; border: 1px solid var(--line); background: var(--accent-soft); cursor: pointer; font-variant-numeric: tabular-nums; }
+    .pt-group { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin: 12px 0; }
+    .pt-group-label { font-size: 32px; font-weight: 800; min-width: 72px; }
+    .pt-btn { font-size: 28px; padding: 14px 20px; border-radius: 12px; border: 1px solid var(--line); background: var(--accent-soft); cursor: pointer; font-variant-numeric: tabular-nums; }
     .pt-btn:hover { background: var(--accent); color: #fff; }
-    .pt-btn.sel { background: var(--accent); color: #fff; outline: 3px solid #ffd700; }
-    .pt-tiers { display: flex; gap: 10px; flex-wrap: wrap; margin: 12px 0; }
-    .pt-tier { padding: 14px 24px; border-radius: 999px; border: 1px solid var(--line); background: var(--card); cursor: pointer; font-size: 26px; }
+    .pt-btn.sel { background: var(--accent); color: #fff; outline: 4px solid #ffd700; }
+    .pt-tiers { display: flex; gap: 12px; flex-wrap: wrap; margin: 14px 0; }
+    .pt-tier { padding: 16px 28px; border-radius: 999px; border: 1px solid var(--line); background: var(--card); cursor: pointer; font-size: 30px; }
     .pt-tier.sel { background: var(--accent); color: #fff; border-color: var(--accent); }
-    .match-actions { display: flex; gap: 14px; margin: 18px 0; flex-wrap: wrap; }
-    .match-actions button { padding: 14px 30px; border-radius: 10px; border: 1px solid var(--line); background: var(--card); cursor: pointer; font-size: 30px; }
+    .match-actions { display: flex; gap: 16px; margin: 20px 0; flex-wrap: wrap; }
+    .match-actions button { padding: 16px 34px; border-radius: 12px; border: 1px solid var(--line); background: var(--card); cursor: pointer; font-size: 34px; }
     .match-actions button.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
     .match-actions button[disabled] { opacity: .45; cursor: not-allowed; }
-    .sel-info { font-size: 20px; color: var(--muted); min-height: 24px; }
+    .sel-info { font-size: 22px; color: var(--muted); min-height: 26px; }
     .rounds-list { margin-top: 20px; }
-    .rounds-list table { font-size: 18px; }
-    .rounds-list button { font-size: 20px; padding: 8px 16px; border-radius: 8px; border: 1px solid var(--line); background: var(--card); cursor: pointer; }
+    .rounds-list table { font-size: 20px; }
+    .rounds-list button { font-size: 22px; padding: 10px 18px; border-radius: 8px; border: 1px solid var(--line); background: var(--card); cursor: pointer; }
     .rounds-list tr.settled { cursor: pointer; }
     .rounds-list tr.settled:hover { background: var(--accent-soft); }
     .draft-badge { color: #b45309; font-weight: 700; }
@@ -337,11 +337,12 @@ import AdminShell from '../../../components/admin/AdminShell.astro'
       const head = el('div', 'sel-info', `点数表：${v === 'dealer' ? '亲家' : '子家'}视图（${isRon ? '荣和' : '自摸'}）`)
       box.appendChild(head)
 
-      // 1-4 番按键组（满贯格不设按键，由下方高番档选择）
+      // 1-4 番按键组（满贯格不设按键；荣和不存在 20 符，故荣和视图跳过 20 符）
       HAN.forEach((h) => {
         const group = el('div', 'pt-group')
         group.appendChild(el('span', 'pt-group-label', `${h}番`))
         FU.forEach((f) => {
+          if (isRon && f === '20') return
           const cell = points.grid[v][h]?.[f]
           if (!cell) return
           const btn = document.createElement('button')

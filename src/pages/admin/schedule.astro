@@ -30,15 +30,15 @@ import AdminShell from '../../components/admin/AdminShell.astro'
     </table>
     <div id="fill-panel"></div>
   </AdminShell>
-  <style>
+  <style is:global>
     .fill-panel { margin-top: 16px; padding: 14px; border: 1px solid var(--line); border-radius: 8px; background: var(--card); }
-    .fill-panel h3 { margin: 0 0 10px; font-size: 16px; }
-    .fill-seat { display: flex; align-items: center; gap: 10px; margin: 6px 0; font-size: 14px; }
+    .fill-panel h3 { margin: 0 0 10px; font-size: 18px; }
+    .fill-seat { display: flex; align-items: center; gap: 10px; margin: 8px 0; font-size: 16px; }
     .fill-seat .fs-tag { display: inline-block; width: 44px; font-weight: 700; text-align: center; border-radius: 6px; padding: 4px 0; color: #fff; }
     .fill-seat .fs-team { width: 90px; }
-    .fill-seat select { flex: 1; max-width: 240px; padding: 4px 6px; }
+    .fill-seat select { flex: 1; max-width: 240px; padding: 8px 8px; font-size: 16px; }
     .fill-actions { display: flex; gap: 10px; margin-top: 12px; }
-    .fill-actions button { padding: 6px 16px; border-radius: 6px; border: 1px solid var(--line); background: var(--card); cursor: pointer; }
+    .fill-actions button { padding: 10px 20px; border-radius: 6px; border: 1px solid var(--line); background: var(--card); cursor: pointer; font-size: 18px; }
     .fill-actions button.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
   </style>
   <script>

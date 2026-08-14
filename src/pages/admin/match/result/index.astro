@@ -10,21 +10,15 @@ import AdminShell from '../../../../components/admin/AdminShell.astro'
       <p class="empty">加载中…</p>
     </div>
   </AdminShell>
-  <style>
-    .res-seats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 12px 0; }
-    .res-seat { border-radius: 8px; padding: 8px 10px; color: #fff; font-weight: 700; }
-    .res-seat .s { font-size: 12px; opacity: .8; }
-    .res-seat .t { font-size: 15px; }
-    .res-seat .p { font-size: 13px; font-weight: 400; opacity: .9; }
-    .res-table input { width: 110px; text-align: right; font-variant-numeric: tabular-nums; font-size: 28px; padding: 6px 8px; }
-    .res-table select { font-size: 24px; padding: 6px 8px; }
-    .res-sum { font-size: 18px; margin: 10px 0; }
+  <style is:global>
+    .res-table input { width: 120px; text-align: right; font-variant-numeric: tabular-nums; font-size: 30px; padding: 8px 10px; }
+    .res-table select { font-size: 26px; padding: 8px 10px; }
+    .res-sum { font-size: 20px; margin: 10px 0; }
     .res-sum.bad { color: #b91c1c; font-weight: 700; }
     .res-actions { display: flex; gap: 14px; margin: 18px 0; }
-    .res-actions button { padding: 14px 30px; border-radius: 10px; border: 1px solid var(--line); background: var(--card); cursor: pointer; font-size: 30px; }
+    .res-actions button { padding: 16px 34px; border-radius: 12px; border: 1px solid var(--line); background: var(--card); cursor: pointer; font-size: 32px; }
     .res-actions button.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
-    .res-table { font-size: 18px; }
-    @media (max-width: 720px) { .res-seats { grid-template-columns: repeat(2, 1fr); } }
+    .res-table { font-size: 20px; }
   </style>
   <script>
     import { supabase } from '../../../../lib/supabase'
