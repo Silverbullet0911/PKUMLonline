@@ -116,6 +116,11 @@ import AdminShell from '../../components/admin/AdminShell.astro'
           link.textContent = '赛果'
           link.style.marginLeft = '8px'
           ops.appendChild(link)
+          const editLink = document.createElement('a')
+          editLink.href = base + 'admin/match/result/?id=' + encodeURIComponent(g.id)
+          editLink.textContent = '改赛果'
+          editLink.style.marginLeft = '8px'
+          ops.appendChild(editLink)
         }
         tr.appendChild(ops)
         list.appendChild(tr)
