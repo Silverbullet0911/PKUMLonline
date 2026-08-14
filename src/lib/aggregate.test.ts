@@ -38,6 +38,17 @@ describe('rawScoreOf / rankPointsForScores / seatGamePoints', () => {
   it('三人同分：平分前三位顺位点', () => {
     expect(rankPointsForScores([28000, 25000, 25000, 25000])).toEqual([45, round1((5 - 15 - 35) / 3), round1((5 - 15 - 35) / 3), round1((5 - 15 - 35) / 3)])
   })
+  it('各种同分情况：1134 / 1114 / 1222', () => {
+    // 1134：前两名同分
+    expect(competitionRanks([26000, 26000, 25000, 24000])).toEqual([1, 1, 3, 4])
+    expect(rankPointsForScores([26000, 26000, 25000, 24000])).toEqual([25, 25, -15, -35])
+    // 1114：前三名同分
+    expect(competitionRanks([26000, 26000, 26000, 24000])).toEqual([1, 1, 1, 4])
+    expect(rankPointsForScores([26000, 26000, 26000, 24000])).toEqual([round1(35 / 3), round1(35 / 3), round1(35 / 3), -35])
+    // 1222：后三名同分
+    expect(competitionRanks([26000, 25000, 25000, 25000])).toEqual([1, 2, 2, 2])
+    expect(rankPointsForScores([26000, 25000, 25000, 25000])).toEqual([45, -15, -15, -15])
+  })
   it('单场积分 = 素点 + 顺位点（同分平分）', () => {
     expect(seatGamePoints([26000, 25000, 25000, 24000], 0)).toBe(46)
     expect(seatGamePoints([26000, 25000, 25000, 24000], 1)).toBe(-5)

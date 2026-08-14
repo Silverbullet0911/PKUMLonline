@@ -117,7 +117,7 @@
 - [ ] **Step 2:** 用户整段重跑 `supabase/schema.sql`（全部 `create or replace` / `drop ... create`，可重复执行）。
 - [ ] **Step 3:** 验证函数存在（REST 端点非 404）+ 提交。
 
-> 实现说明：`finish_game`/`unfinish_game` 已写入 `supabase/schema.sql` 末尾（等待用户在 Supabase SQL Editor 整段执行）。同时将 `rounds.tsumo_points` 由 int 改为 jsonb（存自摸支付拆分 [子付,亲付]/[各付]，回放需要精确拆分），含旧库 ALTER 迁移。位次校验为**竞争位次**（同分同位，如 1,2,2,4），非 1-4 全排列。**评审点**：SQL 信任客户端算好的 seats（总分校验兜底），如希望 SQL 全量重算需另行实现。**待用户执行**：Step 2 重跑 schema.sql。
+> 实现说明：`finish_game`/`unfinish_game` 已写入 `supabase/schema.sql` 末尾（等待用户在 Supabase SQL Editor 整段执行）。同时将 `rounds.tsumo_points` 由 int 改为 jsonb（存自摸支付拆分 [子付,亲付]/[各付]，回放需要精确拆分），含旧库 ALTER 迁移。位次校验为**竞争位次**，支持任意同分组合（1,1,3,4 / 1,1,1,4 / 1,2,2,2 等，允许跳号；规则：非降、从 1 起、取值 1-4、第 i 位位次 ≤ i）。**评审点**：SQL 信任客户端算好的 seats（总分校验兜底），如希望 SQL 全量重算需另行实现。**待用户执行**：Step 2 重跑 schema.sql。
 
 ### Task 1.4: 对局录入页（referee/admin）
 
