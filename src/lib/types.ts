@@ -78,6 +78,8 @@ export interface GameSeat {
   name?: string
   rank?: number
   points?: number
+  /** 单场积分（素点+顺位点，可被录入人手动编辑）；缺省时按同分平分规则计算 */
+  pt?: number
 }
 
 export interface Game {

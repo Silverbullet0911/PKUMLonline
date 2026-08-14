@@ -53,6 +53,7 @@ import AdminShell from '../../../../components/admin/AdminShell.astro'
 
     let game: any = null
     let role: string | null = null
+    let finalScores: number[] = []
 
     async function loadRounds(): Promise<any[]> {
       const { data } = await supabase.from('rounds').select('*').eq('game_id', gameId).order('order', { ascending: true })
@@ -115,39 +116,42 @@ import AdminShell from '../../../../components/admin/AdminShell.astro'
         override: r.override,
       }))
       const rep = replayGame(rounds)
-      renderTable(rep.current.scores)
+      finalScores = [...rep.current.scores]
+      renderTable(finalScores)
     }
 
     function renderTable(initial: number[]) {
       const seats = game.seats ?? []
       const inputs: HTMLInputElement[] = []
+      // 初始分数（回放结果，只读）与自动 pt
+      const scoreArr = [...initial]
+      const autoRp = rankPointsForScores(scoreArr)
+      const autoPt = scoreArr.map((v, i) => Math.round((rawScoreOf(v) + autoRp[i]) * 10) / 10)
 
       const box = el('div', 'table-wrap')
       const table = el('table')
       const thead = el('thead')
       const htr = el('tr')
-      ;['座位', '队伍', '选手', '最终分数(可改)', '素点', '顺位点', 'pt', '位次'].forEach((h) => htr.appendChild(el('th', '', h)))
+      ;['座位', '队伍', '选手', 'pt(可改)', '素点', '顺位点', '最终分数', '位次'].forEach((h) => htr.appendChild(el('th', '', h)))
       thead.appendChild(htr)
       table.appendChild(thead)
       const tbody = el('tbody')
 
       function refresh() {
-        const cur = inputs.map((x) => Number(x.value))
-        const rp = rankPointsForScores(cur)
-        const ranks = competitionRanks(cur)
+        const pts = inputs.map((x) => Number(x.value))
         const rows = tbody.querySelectorAll('tr')
         rows.forEach((tr, i) => {
           const tds = tr.querySelectorAll('td')
-          const raw = rawScoreOf(cur[i])
-          const pt = Math.round((raw + rp[i]) * 10) / 10
+          const raw = rawScoreOf(scoreArr[i])
+          const rp = Math.round((pts[i] - raw) * 10) / 10
           tds[4].textContent = String(raw)
-          tds[5].textContent = String(rp[i])
-          tds[6].textContent = String(pt)
-          tds[7].textContent = ranks[i] + '位'
+          tds[5].textContent = String(rp)
+          tds[6].textContent = String(scoreArr[i])
+          tds[7].textContent = competitionRanks(scoreArr)[i] + '位'
         })
-        const sum = cur.reduce((a, b) => a + (Number.isFinite(b) ? b : 0), 0)
-        sumEl.textContent = `总分：${sum}（须为 100000）`
-        sumEl.classList.toggle('bad', sum !== 100000)
+        const sum = pts.reduce((a, b) => a + (Number.isFinite(b) ? b : 0), 0)
+        sumEl.textContent = `pt 合计：${sum}（自动结算通常为 0；手动调整请自行核对）`
+        sumEl.classList.toggle('bad', Math.abs(sum) > 0.001)
       }
 
       seats.forEach((s: any, i: number) => {
@@ -158,7 +162,8 @@ import AdminShell from '../../../../components/admin/AdminShell.astro'
         const tdIn = el('td')
         const input = document.createElement('input')
         input.type = 'number'
-        input.value = String(initial[i])
+        input.step = '0.1'
+        input.value = String(autoPt[i])
         input.addEventListener('input', refresh)
         inputs.push(input)
         tdIn.appendChild(input)
@@ -193,19 +198,18 @@ import AdminShell from '../../../../components/admin/AdminShell.astro'
       if (!gameId) return
       clearErr()
       const inputs = Array.from(root.querySelectorAll('input[type=number]')) as HTMLInputElement[]
-      const cur = inputs.map((x) => Number(x.value))
-      if (cur.some((x) => !Number.isInteger(x))) { showErr('最终分数须为整数'); return }
-      const sum = cur.reduce((a, b) => a + b, 0)
-      if (sum !== 100000) { showErr(`总分须为 100000，当前 ${sum}`); return }
+      const pts = inputs.map((x) => Number(x.value))
+      if (pts.some((x) => !Number.isFinite(x))) { showErr('pt 须为数字'); return }
       // 弃置未完成草稿（比赛按已录小局结算）
       await supabase.from('rounds').delete().eq('game_id', gameId).is('win_type', null)
-      const ranks = competitionRanks(cur)
+      const ranks = competitionRanks(finalScores)
       const seats = (game.seats ?? []).map((s: any, i: number) => ({
         seat: s.seat,
         team: s.team,
         player: s.player,
         rank: ranks[i],
-        points: cur[i],
+        points: finalScores[i],
+        pt: pts[i],
       }))
       btn.disabled = true
       btn.textContent = '提交中…'

@@ -22,6 +22,7 @@ import BaseLayout from '../layouts/BaseLayout.astro'
   <script>
     import { supabase } from '../lib/supabase'
     import { replayGame, roundLabel } from '../lib/replay'
+    import { rawScoreOf, rankPointsForScores } from '../lib/aggregate'
     import teamsRaw from '../../../data/teams.json'
 
     const base = import.meta.env.BASE_URL
@@ -103,6 +104,10 @@ import BaseLayout from '../layouts/BaseLayout.astro'
       row('自摸', (_: any, i: number) => String(rounds.filter((r: any) => r.win_type === 'tsumo' && seatIndexOf(r.tsumo_winner) === i).length))
       row('放铳', (_: any, i: number) => String(rounds.filter((r: any) => r.win_type === 'ron' && seatIndexOf(r.ron_loser) === i).length))
       row('积分', (s: any, i: number) => String(s.points ?? rep.current.scores[i]))
+      row('pt', (s: any, i: number) => {
+        const auto = Math.round((rawScoreOf(rep.current.scores[i]) + rankPointsForScores(rep.current.scores)[i]) * 10) / 10
+        return String(s.pt != null ? s.pt : auto)
+      })
       row('顺位', (s: any) => (s.rank ? s.rank + '位' : '-'))
       stats.appendChild(table)
       root.appendChild(stats)

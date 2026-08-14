@@ -100,6 +100,24 @@ describe('aggregateTeamBoard', () => {
     const board = aggregateTeamBoard([{ ...finishedGame(), status: 'upcoming' }])
     expect(board).toEqual([])
   })
+  it('存储的 pt 优先于自动计算，素点仍按分数推导', () => {
+    const g: Game = finishedGame({
+      seats: [
+        { seat: '东', team: '格斗', name: '忆水', rank: 1, points: 42000, pt: 100 },
+        { seat: '南', team: '海盗', name: 'Art3mis', rank: 2, points: 21000, pt: -50 },
+        { seat: '西', team: '樱花', name: '炸洋芋', rank: 3, points: -5000, pt: -30 },
+        { seat: '北', team: '火山', name: '桃之11', rank: 4, points: -28000, pt: -20 },
+      ],
+    })
+    const board = aggregateTeamBoard([g])
+    const by = new Map(board.map((r) => [r.team, r]))
+    expect(by.get('格斗')?.stagePoints).toBe(100)
+    expect(by.get('火山')?.stagePoints).toBe(-20)
+    expect(by.get('格斗')?.stageRaw).toBe(17)
+    const pb = aggregatePlayerBoard([g])
+    expect(pb.find((r) => r.name === '忆水')?.points).toBe(100)
+    expect(pb.find((r) => r.name === '桃之11')?.points).toBe(-20)
+  })
   it('空输入返回空数组', () => {
     expect(aggregateTeamBoard([])).toEqual([])
   })

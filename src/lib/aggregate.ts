@@ -88,7 +88,9 @@ export function aggregateTeamBoard(
         stageRaw: 0,
         wins: { '1': 0, '2': 0, '3': 0, '4': 0 },
       }
-      row.stagePoints = round1(row.stagePoints + rawScoreOf(scores[i]!) + rp[i])
+      // 积分：优先用录入人确认的 pt，否则按同分平分规则现算
+      const pts = s.pt != null ? s.pt : round1(rawScoreOf(scores[i]!) + rp[i])
+      row.stagePoints = round1(row.stagePoints + pts)
       row.stageRaw = round1(row.stageRaw + rawScoreOf(scores[i]!))
       const r = String(ranks[i]) as keyof Wins
       if (r in row.wins) row.wins[r]++
@@ -122,7 +124,8 @@ export function aggregatePlayerBoard(
         maxScore: 0,
       }
       row.rawPoints = round1(row.rawPoints + rawScoreOf(scores[i]!))
-      row.points = round1(row.points + rawScoreOf(scores[i]!) + rp[i])
+      const pts = s.pt != null ? s.pt : round1(rawScoreOf(scores[i]!) + rp[i])
+      row.points = round1(row.points + pts)
       const r = String(ranks[i]) as keyof Wins
       if (r in row.wins) row.wins[r]++
       if (scores[i]! > row.maxScore) row.maxScore = scores[i]!
@@ -145,7 +148,8 @@ export function stageTeamTotals(games: Game[]): Map<string, number> {
     const rp = rankPointsForScores(scores as number[])
     g.seats.forEach((s, i) => {
       if (!s.team) return
-      totals.set(s.team, round1((totals.get(s.team) ?? 0) + rawScoreOf(scores[i]!) + rp[i]))
+      const pts = s.pt != null ? s.pt : round1(rawScoreOf(scores[i]!) + rp[i])
+      totals.set(s.team, round1((totals.get(s.team) ?? 0) + pts))
     })
   }
   return totals
