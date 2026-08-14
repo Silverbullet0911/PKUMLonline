@@ -90,3 +90,28 @@ export interface Game {
   replayUrl?: string
   videoUrl?: string
 }
+
+// 点数表（data/points_table.json）：子家/亲家 × 荣和/自摸
+export interface PointsTier {
+  key: string
+  label: string
+  hanRange: string
+  childRon: number
+  childTsumo: [number, number] // [子付, 亲付]
+  dealerRon: number
+  dealerTsumo: [number] // 各付
+}
+
+export interface PointsCell {
+  ron: number
+  tsumo: number[] // 子家 [子付, 亲付]；亲家 [各付]
+}
+
+export interface PointsTable {
+  note?: string
+  tiers: PointsTier[]
+  grid: {
+    child: Record<string, Record<string, PointsCell | null>>
+    dealer: Record<string, Record<string, PointsCell | null>>
+  }
+}
