@@ -117,7 +117,7 @@
 - [ ] **Step 2:** 用户整段重跑 `supabase/schema.sql`（全部 `create or replace` / `drop ... create`，可重复执行）。
 - [ ] **Step 3:** 验证函数存在（REST 端点非 404）+ 提交。
 
-> 实现说明：`finish_game`/`unfinish_game` 已写入 `supabase/schema.sql` 末尾（等待用户在 Supabase SQL Editor 整段执行）。同时将 `rounds.tsumo_points` 由 int 改为 jsonb（存自摸支付拆分 [子付,亲付]/[各付]，回放需要精确拆分），含旧库 ALTER 迁移。位次校验为**竞争位次**，支持任意同分组合（1,1,3,4 / 1,1,1,4 / 1,2,2,2 等，允许跳号；规则：非降、从 1 起、取值 1-4、第 i 位位次 ≤ i）。**评审点**：SQL 信任客户端算好的 seats（总分校验兜底），如希望 SQL 全量重算需另行实现。**待用户执行**：Step 2 重跑 schema.sql。
+> 实现说明：`finish_game`/`unfinish_game` 已写入 `supabase/schema.sql` 末尾（等待用户在 Supabase SQL Editor 整段执行）。同时将 `rounds.tsumo_points` 由 int 改为 jsonb（存自摸支付拆分 [子付,亲付]/[各付]，回放需要精确拆分），含旧库 ALTER 迁移。位次由录入人手动选择，SQL 仅校验取值 1-4（不再限制为竞争位次序列）。**评审点**：SQL 信任客户端算好的 seats（总分校验兜底），如希望 SQL 全量重算需另行实现。**待用户执行**：Step 2 重跑 schema.sql。
 
 ### Task 1.4: 对局录入页（referee/admin）
 
@@ -133,7 +133,7 @@
   - 半庄提交后裁判只读；admin 可经「退回修改」调 `unfinish_game` 后修改并重新提交
 - [x] **Step 3:** 草稿数据存 `rounds` 表（字段不完整允许），完整性/平衡校验在「下一局」/「提交」时执行。
 
-> 实现说明：静态托管无法构建动态路由，录入页路由为 **`/admin/match/?id=<uuid>`**（`src/pages/admin/match/index.astro`）。**录入流程（赛事组确认 2026-08-14）**：每小局自动生成阶段表行 → 可「改」手动修改该局四家增减/对局情况/打点（存 `rounds.override`）→ 录入页无提交键，录完点「查看结果」→ 结果页（`/admin/match/result/?id=`）总表**直接编辑各家 pt 得分**（素点/顺位点/最终分数/位次只读实时联动，pt 合计提示），提交时把 pt 写入 `games.seats`（`seat.pt`），榜单聚合优先使用存储的 pt。回放逻辑 `src/lib/replay.ts`（`replayGame`/`roundLabel`，支持 override，12 用例测试）。
+> 实现说明：静态托管无法构建动态路由，录入页路由为 **`/admin/match/?id=<uuid>`**（`src/pages/admin/match/index.astro`）。**录入流程（赛事组确认 2026-08-14）**：每小局自动生成阶段表行 → 可「改」手动修改该局四家增减/对局情况/打点（存 `rounds.override`）→ 录入页无提交键，录完点「查看结果」→ 结果页（`/admin/match/result/?id=`）总表**直接编辑各家 pt 得分、位次（下拉）、判罚（默认 0）**（素点/顺位点/最终分数只读实时联动，pt 合计提示），提交时把 pt/rank/penalty 写入 `games.seats`；榜单聚合优先使用存储的 pt 与 rank，判罚计入个人与队伍积分、不计入素点/场次 pt。回放逻辑 `src/lib/replay.ts`（`replayGame`/`roundLabel`，支持 override，12 用例测试）。
 
 ### Task 1.5: 对局详情页（公开）
 

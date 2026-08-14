@@ -122,23 +122,26 @@ import AdminShell from '../../../../components/admin/AdminShell.astro'
 
     function renderTable(initial: number[]) {
       const seats = game.seats ?? []
-      const inputs: HTMLInputElement[] = []
-      // 初始分数（回放结果，只读）与自动 pt
+      const ptInputs: HTMLInputElement[] = []
+      const rankSelects: HTMLSelectElement[] = []
+      const penInputs: HTMLInputElement[] = []
+      // 初始分数（回放结果，只读）与自动 pt / 位次
       const scoreArr = [...initial]
       const autoRp = rankPointsForScores(scoreArr)
       const autoPt = scoreArr.map((v, i) => Math.round((rawScoreOf(v) + autoRp[i]) * 10) / 10)
+      const autoRanks = competitionRanks(scoreArr)
 
       const box = el('div', 'table-wrap')
       const table = el('table')
       const thead = el('thead')
       const htr = el('tr')
-      ;['座位', '队伍', '选手', 'pt(可改)', '素点', '顺位点', '最终分数', '位次'].forEach((h) => htr.appendChild(el('th', '', h)))
+      ;['座位', '队伍', '选手', 'pt(可改)', '素点', '顺位点', '最终分数', '位次(可改)', '判罚(可改)'].forEach((h) => htr.appendChild(el('th', '', h)))
       thead.appendChild(htr)
       table.appendChild(thead)
       const tbody = el('tbody')
 
       function refresh() {
-        const pts = inputs.map((x) => Number(x.value))
+        const pts = ptInputs.map((x) => Number(x.value))
         const rows = tbody.querySelectorAll('tr')
         rows.forEach((tr, i) => {
           const tds = tr.querySelectorAll('td')
@@ -147,10 +150,9 @@ import AdminShell from '../../../../components/admin/AdminShell.astro'
           tds[4].textContent = String(raw)
           tds[5].textContent = String(rp)
           tds[6].textContent = String(scoreArr[i])
-          tds[7].textContent = competitionRanks(scoreArr)[i] + '位'
         })
         const sum = pts.reduce((a, b) => a + (Number.isFinite(b) ? b : 0), 0)
-        sumEl.textContent = `pt 合计：${sum}（自动结算通常为 0；手动调整请自行核对）`
+        sumEl.textContent = `pt 合计：${sum}（自动结算通常为 0；判罚另计，不计入素点/场次 pt）`
         sumEl.classList.toggle('bad', Math.abs(sum) > 0.001)
       }
 
@@ -159,19 +161,38 @@ import AdminShell from '../../../../components/admin/AdminShell.astro'
         tr.appendChild(el('td', '', s.seat))
         tr.appendChild(el('td', '', s.team))
         tr.appendChild(el('td', '', s.player ?? ''))
-        const tdIn = el('td')
-        const input = document.createElement('input')
-        input.type = 'number'
-        input.step = '0.1'
-        input.value = String(autoPt[i])
-        input.addEventListener('input', refresh)
-        inputs.push(input)
-        tdIn.appendChild(input)
-        tr.appendChild(tdIn)
+        const tdPt = el('td')
+        const ptInput = document.createElement('input')
+        ptInput.type = 'number'
+        ptInput.step = '0.1'
+        ptInput.value = String(autoPt[i])
+        ptInput.addEventListener('input', refresh)
+        ptInputs.push(ptInput)
+        tdPt.appendChild(ptInput)
+        tr.appendChild(tdPt)
         tr.appendChild(el('td', 'num', ''))
         tr.appendChild(el('td', 'num', ''))
         tr.appendChild(el('td', 'num', ''))
-        tr.appendChild(el('td', '', ''))
+        const tdRank = el('td')
+        const rankSel = document.createElement('select')
+        for (let r = 1; r <= 4; r++) {
+          const opt = document.createElement('option')
+          opt.value = String(r)
+          opt.textContent = r + '位'
+          rankSel.appendChild(opt)
+        }
+        rankSel.value = String(autoRanks[i])
+        rankSelects.push(rankSel)
+        tdRank.appendChild(rankSel)
+        tr.appendChild(tdRank)
+        const tdPen = el('td')
+        const penInput = document.createElement('input')
+        penInput.type = 'number'
+        penInput.step = '0.1'
+        penInput.value = '0'
+        penInputs.push(penInput)
+        tdPen.appendChild(penInput)
+        tr.appendChild(tdPen)
         tbody.appendChild(tr)
       })
       table.appendChild(tbody)
@@ -198,18 +219,27 @@ import AdminShell from '../../../../components/admin/AdminShell.astro'
       if (!gameId) return
       clearErr()
       const inputs = Array.from(root.querySelectorAll('input[type=number]')) as HTMLInputElement[]
-      const pts = inputs.map((x) => Number(x.value))
-      if (pts.some((x) => !Number.isFinite(x))) { showErr('pt 须为数字'); return }
+      const ptValues: number[] = []
+      const penValues: number[] = []
+      // 输入顺序：每行先 pt 后判罚
+      for (let k = 0; k < inputs.length; k += 2) ptValues.push(Number(inputs[k].value))
+      for (let k = 1; k < inputs.length; k += 2) penValues.push(Number(inputs[k].value))
+      if (ptValues.some((x) => !Number.isFinite(x)) || penValues.some((x) => !Number.isFinite(x))) {
+        showErr('pt 与判罚须为数字')
+        return
+      }
+      const rankValues = Array.from(root.querySelectorAll('select')) as HTMLSelectElement[]
+      const ranks = rankValues.map((x) => Number(x.value))
       // 弃置未完成草稿（比赛按已录小局结算）
       await supabase.from('rounds').delete().eq('game_id', gameId).is('win_type', null)
-      const ranks = competitionRanks(finalScores)
       const seats = (game.seats ?? []).map((s: any, i: number) => ({
         seat: s.seat,
         team: s.team,
         player: s.player,
         rank: ranks[i],
         points: finalScores[i],
-        pt: pts[i],
+        pt: ptValues[i],
+        penalty: penValues[i],
       }))
       btn.disabled = true
       btn.textContent = '提交中…'

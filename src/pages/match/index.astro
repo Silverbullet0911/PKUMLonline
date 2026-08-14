@@ -108,6 +108,7 @@ import BaseLayout from '../layouts/BaseLayout.astro'
         const auto = Math.round((rawScoreOf(rep.current.scores[i]) + rankPointsForScores(rep.current.scores)[i]) * 10) / 10
         return String(s.pt != null ? s.pt : auto)
       })
+      row('判罚', (s: any) => (s.penalty ? String(s.penalty) : '-'))
       row('顺位', (s: any) => (s.rank ? s.rank + '位' : '-'))
       stats.appendChild(table)
       root.appendChild(stats)

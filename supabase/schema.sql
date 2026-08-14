@@ -218,7 +218,6 @@ declare
   v_game record;
   v_sum int;
   v_ranks int[];
-  v_sorted int[];
 begin
   select role into v_role from public.profiles where id = auth.uid();
   if v_role is null or v_role not in ('referee','admin') then
@@ -244,18 +243,10 @@ begin
     v_ranks := v_ranks || (p_seats->i->>'rank')::int;
   end loop;
   if v_sum <> 100000 then raise exception 'points total must be 100000, got %', v_sum; end if;
-  -- 竞争位次校验：同分同位且允许跳号（如 1,1,3,4 / 1,1,1,4 / 1,2,2,2），
-  -- 规则：非降、从 1 起、每位取值 1-4、且第 i 位的位次 ≤ i（竞争位次的天然上界）
-  v_sorted := (select array_agg(x order by x) from unnest(v_ranks) as x);
-  if v_sorted[1] is distinct from 1 then
-    raise exception 'ranks must start at 1';
-  end if;
-  for i in 1..coalesce(array_length(v_sorted, 1), 0) loop
-    if v_sorted[i] < 1 or v_sorted[i] > 4 then
+  -- 位次可被录入人手动选择（含同分同位等任意组合），仅校验取值 1-4
+  for i in 1..coalesce(array_length(v_ranks, 1), 0) loop
+    if v_ranks[i] < 1 or v_ranks[i] > 4 then
       raise exception 'rank out of range';
-    end if;
-    if i > 1 and (v_sorted[i] < v_sorted[i - 1] or v_sorted[i] > i) then
-      raise exception 'invalid rank sequence';
     end if;
   end loop;
 

@@ -80,6 +80,8 @@ export interface GameSeat {
   points?: number
   /** 单场积分（素点+顺位点，可被录入人手动编辑）；缺省时按同分平分规则计算 */
   pt?: number
+  /** 判罚（计入个人与队伍积分，不计入素点/场次 pt）；缺省 0 */
+  penalty?: number
 }
 
 export interface Game {

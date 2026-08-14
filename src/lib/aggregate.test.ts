@@ -118,6 +118,45 @@ describe('aggregateTeamBoard', () => {
     expect(pb.find((r) => r.name === '忆水')?.points).toBe(100)
     expect(pb.find((r) => r.name === '桃之11')?.points).toBe(-20)
   })
+  it('判罚计入个人与队伍积分，不计入素点；位次统计用存储 rank', () => {
+    const g: Game = finishedGame({
+      seats: [
+        { seat: '东', team: '格斗', name: '忆水', rank: 1, points: 42000, pt: 62, penalty: -20 },
+        { seat: '南', team: '海盗', name: 'Art3mis', rank: 2, points: 21000, pt: 1 },
+        { seat: '西', team: '樱花', name: '炸洋芋', rank: 3, points: -5000, pt: -45 },
+        { seat: '北', team: '火山', name: '桃之11', rank: 4, points: -28000, pt: -88, penalty: -5 },
+      ],
+    })
+    const board = aggregateTeamBoard([g])
+    const by = new Map(board.map((r) => [r.team, r]))
+    // 队伍积分含判罚：格斗 62 + (-20) = 42；素点不含判罚
+    expect(by.get('格斗')?.stagePoints).toBe(42)
+    expect(by.get('格斗')?.stageRaw).toBe(17)
+    expect(by.get('火山')?.stagePoints).toBe(-93)
+    const pb = aggregatePlayerBoard([g])
+    const 忆水 = pb.find((r) => r.name === '忆水')!
+    expect(忆水.points).toBe(42)
+    expect(忆水.rawPoints).toBe(17)
+    expect(忆水.penalty).toBe(-20)
+    const 桃之11 = pb.find((r) => r.name === '桃之11')!
+    expect(桃之11.points).toBe(-93)
+    expect(桃之11.penalty).toBe(-5)
+  })
+  it('存储的 rank 用于位次统计（手动选择优先）', () => {
+    const g: Game = finishedGame({
+      seats: [
+        { seat: '东', team: '格斗', name: '忆水', rank: 1, points: 26000 },
+        { seat: '南', team: '海盗', name: 'Art3mis', rank: 2, points: 25000 },
+        { seat: '西', team: '樱花', name: '炸洋芋', rank: 3, points: 25000 },
+        { seat: '北', team: '火山', name: '桃之11', rank: 4, points: 24000 },
+      ],
+    })
+    const board = aggregateTeamBoard([g])
+    const by = new Map(board.map((r) => [r.team, r]))
+    // 分数上 2、3 名同分（自动竞争位次 2,2），但存储 rank 为 2、3 → 按存储统计
+    expect(by.get('海盗')?.wins).toEqual({ '1': 0, '2': 1, '3': 0, '4': 0 })
+    expect(by.get('樱花')?.wins).toEqual({ '1': 0, '2': 0, '3': 1, '4': 0 })
+  })
   it('空输入返回空数组', () => {
     expect(aggregateTeamBoard([])).toEqual([])
   })

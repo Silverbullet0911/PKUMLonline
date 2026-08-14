@@ -88,11 +88,13 @@ export function aggregateTeamBoard(
         stageRaw: 0,
         wins: { '1': 0, '2': 0, '3': 0, '4': 0 },
       }
-      // 积分：优先用录入人确认的 pt，否则按同分平分规则现算
+      // 积分：优先用录入人确认的 pt，否则按同分平分规则现算；判罚并入队伍积分
       const pts = s.pt != null ? s.pt : round1(rawScoreOf(scores[i]!) + rp[i])
-      row.stagePoints = round1(row.stagePoints + pts)
+      const pen = s.penalty ?? 0
+      row.stagePoints = round1(row.stagePoints + pts + pen)
       row.stageRaw = round1(row.stageRaw + rawScoreOf(scores[i]!))
-      const r = String(ranks[i]) as keyof Wins
+      // 位次统计：优先用存储的 rank（录入人可手动选），否则按分数推导
+      const r = String(s.rank ?? ranks[i]) as keyof Wins
       if (r in row.wins) row.wins[r]++
       map.set(s.team, row)
     })
@@ -125,16 +127,19 @@ export function aggregatePlayerBoard(
       }
       row.rawPoints = round1(row.rawPoints + rawScoreOf(scores[i]!))
       const pts = s.pt != null ? s.pt : round1(rawScoreOf(scores[i]!) + rp[i])
-      row.points = round1(row.points + pts)
-      const r = String(ranks[i]) as keyof Wins
+      const pen = s.penalty ?? 0
+      row.penalty = round1(row.penalty + pen)
+      row.points = round1(row.points + pts + pen)
+      const r = String(s.rank ?? ranks[i]) as keyof Wins
       if (r in row.wins) row.wins[r]++
       if (scores[i]! > row.maxScore) row.maxScore = scores[i]!
       map.set(s.name, row)
     })
   }
   return [...map.values()].map((r) => {
-    const penalty = penaltyOf(r.name)
-    return { ...r, penalty, points: round1(r.points + penalty) }
+    // 座位级判罚（每场每选手）已累加进 r.penalty；penaltyOf 为额外的全局判罚（如赛季级）
+    const penalty = round1(r.penalty + penaltyOf(r.name))
+    return { ...r, penalty, points: round1(r.points + penaltyOf(r.name)) }
   })
 }
 
@@ -149,7 +154,8 @@ export function stageTeamTotals(games: Game[]): Map<string, number> {
     g.seats.forEach((s, i) => {
       if (!s.team) return
       const pts = s.pt != null ? s.pt : round1(rawScoreOf(scores[i]!) + rp[i])
-      totals.set(s.team, round1((totals.get(s.team) ?? 0) + pts))
+      const pen = s.penalty ?? 0
+      totals.set(s.team, round1((totals.get(s.team) ?? 0) + pts + pen))
     })
   }
   return totals
