@@ -24,19 +24,21 @@ const base = import.meta.env.BASE_URL
     <p>北京大学校内立直麻将团体赛官方网站 —— 赛程、积分、排名、规则与赛季档案一览。</p>
   </section>
 
-  <h2>{season.season}赛季{activeStage ? ` ${activeStage}` : ''}队伍榜</h2>
-  {
-    activeStage && teamRows.length > 0 ? (
-      <TeamStandingsTable
-        stage={activeStage}
-        rows={teamRows}
-        teams={teams.teams}
-        totalGames={stage?.totalGames ?? 24}
-      />
-    ) : (
-      <p class="empty">{activeStage ? '暂无数据。' : '本赛季尚未开始，排名将在第一场比赛后更新。'}</p>
-    )
-  }
+  <h2 id="home-board-title">{season.season}赛季{activeStage ? ` ${activeStage}` : ''}队伍榜</h2>
+  <div id="home-board">
+    {
+      activeStage && teamRows.length > 0 ? (
+        <TeamStandingsTable
+          stage={activeStage}
+          rows={teamRows}
+          teams={teams.teams}
+          totalGames={stage?.totalGames ?? 24}
+        />
+      ) : (
+        <p class="empty">{activeStage ? '暂无数据。' : '本赛季尚未开始，排名将在第一场比赛后更新。'}</p>
+      )
+    }
+  </div>
 
   <h2>最新赛果</h2>
   {
@@ -66,4 +68,35 @@ const base = import.meta.env.BASE_URL
       <p class="empty">暂无公告。</p>
     )
   }
+  <script>
+    import { supabase } from '../lib/supabase'
+    import { season, teams } from '../lib/data'
+    import { mapDbGame } from '../lib/renderSchedule'
+    import { aggregateTeamBoard, stageTeamTotals, carryFrom } from '../lib/aggregate'
+    import { computeTeamBoard } from '../lib/standings'
+    import { renderTeamTable, activeStageFromGames } from '../lib/renderStandings'
+
+    ;(async () => {
+      const { data, error } = await supabase.from('games').select('*').eq('status', 'finished')
+      if (error || !data || data.length === 0) return // 保留静态回退
+      const games = (data as any[]).filter((g) => g.season === season.season).map(mapDbGame)
+      if (games.length === 0) return
+      const stageNames = season.stages.map((s) => s.name)
+      const active = activeStageFromGames(games, stageNames)
+      if (!active) return
+      const stage = season.stages.find((s) => s.name === active)
+      const regTotals = stageTeamTotals(games.filter((g) => g.stage === '常规赛'))
+      const semiTotals = stageTeamTotals(games.filter((g) => g.stage === '半决赛'))
+      const carryFor = (n: string) =>
+        n === '常规赛' ? () => 0 : n === '半决赛' ? carryFrom(regTotals) : carryFrom(semiTotals)
+      const board = computeTeamBoard(
+        aggregateTeamBoard(games.filter((g) => g.stage === active), carryFor(active)),
+        stage?.promoteRank ?? 0,
+      )
+      const title = document.getElementById('home-board-title')
+      if (title) title.textContent = `${season.season}赛季 ${active}队伍榜`
+      const box = document.getElementById('home-board')
+      if (box) box.innerHTML = renderTeamTable(active, board, teams.teams, stage?.totalGames ?? 24)
+    })()
+  </script>
 </BaseLayout>

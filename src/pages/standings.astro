@@ -47,4 +47,51 @@ import { computeTeamBoard, computePlayerBoard } from '../lib/standings'
       })
     })
   </script>
+  <script>
+    import { supabase } from '../lib/supabase'
+    import { season, teams } from '../lib/data'
+    import { mapDbGame } from '../lib/renderSchedule'
+    import { aggregateTeamBoard, aggregatePlayerBoard, stageTeamTotals, carryFrom } from '../lib/aggregate'
+    import { computeTeamBoard, computePlayerBoard } from '../lib/standings'
+    import { renderTeamTable, renderPlayerTable, standingsAsOf, esc } from '../lib/renderStandings'
+
+    const base = import.meta.env.BASE_URL
+
+    ;(async () => {
+      const { data, error } = await supabase.from('games').select('*').eq('status', 'finished')
+      if (error || !data || data.length === 0) return // 保留静态回退
+      const games = (data as any[]).filter((g) => g.season === season.season).map(mapDbGame)
+      if (games.length === 0) return
+
+      const byStage = (name: string) => games.filter((g) => g.stage === name)
+      const regTotals = stageTeamTotals(byStage('常规赛'))
+      const semiTotals = stageTeamTotals(byStage('半决赛'))
+      const carryFor = (stageName: string) =>
+        stageName === '常规赛' ? () => 0 : stageName === '半决赛' ? carryFrom(regTotals) : carryFrom(semiTotals)
+
+      season.stages.forEach((stage, i) => {
+        const panel = document.getElementById(`stage-${i}`)
+        if (!panel) return
+        const g = byStage(stage.name)
+        const teamBoard = computeTeamBoard(aggregateTeamBoard(g, carryFor(stage.name)), stage.promoteRank)
+        const playerBoard = computePlayerBoard(aggregatePlayerBoard(g))
+        const asOf = standingsAsOf(g)
+        panel.innerHTML =
+          `<h2>${stage.name}</h2>` +
+          (stage.advanceLabel ? `<p class="advance-note">${esc(stage.advanceLabel)}</p>` : '') +
+          `<h3>队伍榜</h3>` +
+          renderTeamTable(stage.name, teamBoard, teams.teams, stage.totalGames) +
+          `<p class="as-of as-of-team">${asOf ?? ''}</p>` +
+          `<h3>个人榜</h3>` +
+          renderPlayerTable(playerBoard, teams.teams, base) +
+          `<p class="as-of as-of-player">${asOf ?? ''}</p>`
+      })
+
+      document.querySelectorAll('tr[data-href]').forEach((row) => {
+        row.addEventListener('click', () => {
+          window.location.href = (row as HTMLElement).dataset.href ?? ''
+        })
+      })
+    })()
+  </script>
 </BaseLayout>

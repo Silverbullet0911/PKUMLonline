@@ -11,12 +11,13 @@ export function teamStyle(name: string): string {
 
 export interface DbGame {
   id: string
+  season: string
   stage: string
   date: string
   time: string | null
   round: string | null
   status: 'upcoming' | 'finished'
-  seats: { seat: string; team: string; player: string | null; rank?: number; points?: number }[]
+  seats: { seat: string; team: string; player: string | null; rank?: number; points?: number; pt?: number; penalty?: number }[]
 }
 
 export function mapDbGame(g: DbGame): Game {
@@ -33,6 +34,8 @@ export function mapDbGame(g: DbGame): Game {
       name: s.player ?? undefined,
       rank: s.rank,
       points: s.points,
+      pt: s.pt,
+      penalty: s.penalty,
     })),
   }
 }
