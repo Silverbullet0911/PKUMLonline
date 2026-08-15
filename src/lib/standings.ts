@@ -53,12 +53,18 @@ export interface ComputedTeamRow {
   firstDiff: number | null
 }
 
-export function computeTeamBoard(rows: TeamBoardRow[], promoteRank: number): ComputedTeamRow[] {
+export function computeTeamBoard(rows: TeamBoardRow[], promoteRank: number, teamOrder?: string[]): ComputedTeamRow[] {
+  const orderIdx = new Map((teamOrder ?? []).map((t, i) => [t, i]))
   const sorted = [...rows]
     .map(r => ({ ...r, points: r.carry + r.stagePoints }))
-    .sort(
-      (a, b) => b.points - a.points || b.stageRaw - a.stageRaw || a.team.localeCompare(b.team, 'zh'),
-    )
+    .sort((a, b) => {
+      if (b.points !== a.points) return b.points - a.points
+      if (teamOrder) {
+        // 同分按固定队伍次序（海盗、格斗、樱花、火山、野兽、地球、凤凰、雷电、赤坂、AB）
+        return (orderIdx.get(a.team) ?? 999) - (orderIdx.get(b.team) ?? 999)
+      }
+      return b.stageRaw - a.stageRaw || a.team.localeCompare(b.team, 'zh')
+    })
   const linePoints = promoteRank > 0 && sorted.length >= promoteRank ? sorted[promoteRank - 1].points : null
   const firstOutPoints = promoteRank > 0 && sorted.length > promoteRank ? sorted[promoteRank].points : null
   const leader = sorted.length > 0 ? sorted[0].points : null
@@ -91,10 +97,28 @@ export interface ComputedPlayerRow extends PlayerBoardRow {
   avoidRate: number | null
 }
 
-export function computePlayerBoard(rows: PlayerBoardRow[]): ComputedPlayerRow[] {
-  const sorted = [...rows].sort(
-    (a, b) => b.points - a.points || b.rawPoints - a.rawPoints || a.name.localeCompare(b.name, 'zh'),
-  )
+export interface PlayerBoardOptions {
+  /** 固定队伍次序（同分先比队伍次序） */
+  teamOrder?: string[]
+  /** 指名顺序：选手名 -> 队内指名序号（同队同分按此排序） */
+  rosterIndex?: Map<string, number>
+}
+
+export function computePlayerBoard(rows: PlayerBoardRow[], opts?: PlayerBoardOptions): ComputedPlayerRow[] {
+  const teamIdx = new Map((opts?.teamOrder ?? []).map((t, i) => [t, i]))
+  const sorted = [...rows].sort((a, b) => {
+    if (b.points !== a.points) return b.points - a.points
+    if (opts?.teamOrder) {
+      const ti = (teamIdx.get(a.team) ?? 999) - (teamIdx.get(b.team) ?? 999)
+      if (ti !== 0) return ti
+      if (opts.rosterIndex) {
+        const ri = (opts.rosterIndex.get(a.name) ?? 999) - (opts.rosterIndex.get(b.name) ?? 999)
+        if (ri !== 0) return ri
+      }
+      return a.name.localeCompare(b.name, 'zh')
+    }
+    return b.rawPoints - a.rawPoints || a.name.localeCompare(b.name, 'zh')
+  })
   return sorted.map((r, i) => {
     const games = gamesPlayed(r.wins)
     return {

@@ -3,8 +3,13 @@ import BaseLayout from '../layouts/BaseLayout.astro'
 import StageTabs from '../components/StageTabs.astro'
 import TeamStandingsTable from '../components/TeamStandingsTable.astro'
 import PlayerStandingsTable from '../components/PlayerStandingsTable.astro'
-import { season, standings, teams } from '../lib/data'
+import { season, standings, teams, roster } from '../lib/data'
 import { computeTeamBoard, computePlayerBoard } from '../lib/standings'
+
+// 固定队伍次序（同分先按此排）+ 指名顺序（同队同分按此排）
+const teamNames = teams.teams.map((t) => t.name)
+const rosterIndex = new Map<string, number>()
+for (const t of roster.teams) t.roster.forEach((n, i) => rosterIndex.set(n, i))
 ---
 <BaseLayout title="积分排名">
   <h1>积分排名</h1>
@@ -15,8 +20,8 @@ import { computeTeamBoard, computePlayerBoard } from '../lib/standings'
   {
     season.stages.map((stage, i) => {
       const data = standings.stages.find((s) => s.name === stage.name)
-      const teamRows = computeTeamBoard(data?.teamBoard ?? [], stage.promoteRank)
-      const playerRows = computePlayerBoard(data?.playerBoard ?? [])
+      const teamRows = computeTeamBoard(data?.teamBoard ?? [], stage.promoteRank, teamNames)
+      const playerRows = computePlayerBoard(data?.playerBoard ?? [], { teamOrder: teamNames, rosterIndex })
       return (
         <section id={`stage-${i}`} class:list={['stage-panel', { active: i === 0 }]}>
           <h2>{stage.name}</h2>
@@ -50,12 +55,16 @@ import { computeTeamBoard, computePlayerBoard } from '../lib/standings'
   <script>
     import { supabase } from '../lib/supabase'
     import { season, teams } from '../lib/data'
+    import rosterRaw from '../../data/current_roster.json'
     import { mapDbGame } from '../lib/renderSchedule'
     import { aggregateTeamBoard, aggregatePlayerBoard, stageTeamTotals, carryFrom } from '../lib/aggregate'
     import { computeTeamBoard, computePlayerBoard } from '../lib/standings'
     import { renderTeamTable, renderPlayerTable, standingsAsOf, esc } from '../lib/renderStandings'
 
     const base = import.meta.env.BASE_URL
+    const teamNames = teams.teams.map((t) => t.name)
+    const rosterIndex = new Map<string, number>()
+    for (const t of rosterRaw.teams ?? []) t.roster.forEach((n, i) => rosterIndex.set(n, i))
 
     ;(async () => {
       const { data, error } = await supabase.from('games').select('*').eq('status', 'finished')
@@ -73,8 +82,8 @@ import { computeTeamBoard, computePlayerBoard } from '../lib/standings'
         const panel = document.getElementById(`stage-${i}`)
         if (!panel) return
         const g = byStage(stage.name)
-        const teamBoard = computeTeamBoard(aggregateTeamBoard(g, carryFor(stage.name)), stage.promoteRank)
-        const playerBoard = computePlayerBoard(aggregatePlayerBoard(g))
+        const teamBoard = computeTeamBoard(aggregateTeamBoard(g, carryFor(stage.name)), stage.promoteRank, teamNames)
+        const playerBoard = computePlayerBoard(aggregatePlayerBoard(g), { teamOrder: teamNames, rosterIndex })
         const asOf = standingsAsOf(g)
         panel.innerHTML =
           `<h2>${stage.name}</h2>` +

@@ -82,6 +82,42 @@ describe('computeTeamBoard', () => {
   })
 })
 
+describe('computeTeamBoard 固定队伍次序', () => {
+  const order = ['海盗', '格斗', '樱花', '火山', '野兽', '地球', '凤凰', '雷电', '赤坂', 'AB']
+  it('同分按固定队伍次序显示，素点不再作为同分次序依据', () => {
+    const rows: TeamBoardRow[] = [
+      { team: '樱花', carry: 0, stagePoints: 100, stageRaw: 900, wins: { '1': 1, '2': 0, '3': 0, '4': 0 } },
+      { team: '格斗', carry: 0, stagePoints: 100, stageRaw: 1200, wins: { '1': 1, '2': 0, '3': 0, '4': 0 } },
+      { team: '海盗', carry: 0, stagePoints: 100, stageRaw: 800, wins: { '1': 1, '2': 0, '3': 0, '4': 0 } },
+      { team: 'AB', carry: 0, stagePoints: 80, stageRaw: 500, wins: { '1': 0, '2': 1, '3': 0, '4': 0 } },
+    ]
+    const board = computeTeamBoard(rows, 6, order)
+    expect(board.map((r) => r.team)).toEqual(['海盗', '格斗', '樱花', 'AB'])
+  })
+  it('不传 teamOrder 时保持素点优先的旧行为', () => {
+    const rows: TeamBoardRow[] = [
+      { team: '樱花', carry: 0, stagePoints: 100, stageRaw: 900, wins: { '1': 1, '2': 0, '3': 0, '4': 0 } },
+      { team: '海盗', carry: 0, stagePoints: 100, stageRaw: 800, wins: { '1': 1, '2': 0, '3': 0, '4': 0 } },
+    ]
+    const board = computeTeamBoard(rows, 6)
+    expect(board.map((r) => r.team)).toEqual(['樱花', '海盗'])
+  })
+})
+
+describe('computePlayerBoard 指名顺序', () => {
+  const order = ['海盗', '格斗', '樱花', '火山', '野兽', '地球', '凤凰', '雷电', '赤坂', 'AB']
+  const rosterIndex = new Map([['微汐', 0], ['(1)', 1], ['(10)', 2], ['(14)', 3]])
+  it('同队同分按指名顺序；不同队同分按队伍次序', () => {
+    const rows: PlayerBoardRow[] = [
+      { team: 'AB', name: '(10)', points: 50, rawPoints: 300, penalty: 0, wins: { '1': 1, '2': 0, '3': 0, '4': 0 }, maxScore: 40000 },
+      { team: 'AB', name: '微汐', points: 50, rawPoints: 100, penalty: 0, wins: { '1': 1, '2': 0, '3': 0, '4': 0 }, maxScore: 40000 },
+      { team: '海盗', name: 'Art3mis', points: 50, rawPoints: 900, penalty: 0, wins: { '1': 1, '2': 0, '3': 0, '4': 0 }, maxScore: 40000 },
+    ]
+    const board = computePlayerBoard(rows, { teamOrder: order, rosterIndex })
+    expect(board.map((r) => r.name)).toEqual(['Art3mis', '微汐', '(10)'])
+  })
+})
+
 describe('activeStageName', () => {
   const empty = (name: string): StageStandings => ({ name, teamBoard: [], playerBoard: [] })
   const withTeam = (name: string): StageStandings => ({

@@ -4,12 +4,13 @@ import TeamStandingsTable from '../components/TeamStandingsTable.astro'
 import FutureGames from '../components/FutureGames.astro'
 import GameResult from '../components/GameResult.astro'
 import { season, standings, news, schedule, teams } from '../lib/data'
-import { activeStageName, computeTeamBoard } from '../lib/standings'
+import { computeTeamBoard } from '../lib/standings'
 
-const activeStage = activeStageName(season, standings.stages)
-const stage = season.stages.find((s) => s.name === activeStage)
-const stageData = standings.stages.find((s) => s.name === activeStage)
-const teamRows = computeTeamBoard(stageData?.teamBoard ?? [], stage?.promoteRank ?? 6)
+// 首页默认显示 26-27 常规赛队伍榜
+const regStage = season.stages.find((s) => s.name === '常规赛')
+const regData = standings.stages.find((s) => s.name === '常规赛')
+const teamNames = teams.teams.map((t) => t.name)
+const teamRows = computeTeamBoard(regData?.teamBoard ?? [], regStage?.promoteRank ?? 6, teamNames)
 const latestNews = news.items.slice(0, 5)
 const upcomingGames = schedule.games.filter((g) => g.status === 'upcoming').slice(0, 2)
 const roundNum = (g: { round?: string }) => Number(g.round?.match(/(\d+)/)?.[1] ?? 0)
@@ -24,18 +25,18 @@ const base = import.meta.env.BASE_URL
     <p>北京大学校内立直麻将团体赛官方网站 —— 赛程、积分、排名、规则与赛季档案一览。</p>
   </section>
 
-  <h2 id="home-board-title">{season.season}赛季{activeStage ? ` ${activeStage}` : ''}队伍榜</h2>
+  <h2 id="home-board-title">{season.season}赛季 常规赛队伍榜</h2>
   <div id="home-board">
     {
-      activeStage && teamRows.length > 0 ? (
+      teamRows.length > 0 ? (
         <TeamStandingsTable
-          stage={activeStage}
+          stage="常规赛"
           rows={teamRows}
           teams={teams.teams}
-          totalGames={stage?.totalGames ?? 24}
+          totalGames={regStage?.totalGames ?? 24}
         />
       ) : (
-        <p class="empty">{activeStage ? '暂无数据。' : '本赛季尚未开始，排名将在第一场比赛后更新。'}</p>
+        <p class="empty">本赛季尚未开始，排名将在第一场比赛后更新。</p>
       )
     }
   </div>
@@ -78,12 +79,13 @@ const base = import.meta.env.BASE_URL
     import { supabase } from '../lib/supabase'
     import { season, teams } from '../lib/data'
     import { mapDbGame, splitGames } from '../lib/renderSchedule'
-    import { teamStyle, esc, renderTeamTable, activeStageFromGames } from '../lib/renderStandings'
-    import { aggregateTeamBoard, stageTeamTotals, carryFrom } from '../lib/aggregate'
+    import { teamStyle, esc, renderTeamTable } from '../lib/renderStandings'
+    import { aggregateTeamBoard } from '../lib/aggregate'
     import { computeTeamBoard } from '../lib/standings'
     import { roundNum } from '../lib/schedule'
 
     const base = import.meta.env.BASE_URL
+    const teamNames = teams.teams.map((t) => t.name)
 
     ;(async () => {
       const { data, error } = await supabase.from('games').select('*').order('date', { ascending: true })
@@ -149,28 +151,21 @@ const base = import.meta.env.BASE_URL
       }
     })()
 
-    // 首页队伍榜（DB 现算，静态回退由 SSR 承担）
+    // 首页队伍榜（DB 现算 26-27 常规赛，静态回退由 SSR 承担）
     ;(async () => {
       const { data: fin, error: finErr } = await supabase.from('games').select('*').eq('status', 'finished')
       if (finErr || !fin || fin.length === 0) return
       const finished = (fin as any[]).filter((g) => g.season === season.season).map(mapDbGame)
-      if (finished.length === 0) return
-      const stageNames = season.stages.map((s) => s.name)
-      const active = activeStageFromGames(finished, stageNames)
-      if (!active) return
-      const stage = season.stages.find((s) => s.name === active)
-      const regTotals = stageTeamTotals(finished.filter((g) => g.stage === '常规赛'))
-      const semiTotals = stageTeamTotals(finished.filter((g) => g.stage === '半决赛'))
-      const carryFor = (n: string) =>
-        n === '常规赛' ? () => 0 : n === '半决赛' ? carryFrom(regTotals) : carryFrom(semiTotals)
+      const regGames = finished.filter((g) => g.stage === '常规赛')
+      if (regGames.length === 0) return
+      const stage = season.stages.find((s) => s.name === '常规赛')
       const board = computeTeamBoard(
-        aggregateTeamBoard(finished.filter((g) => g.stage === active), carryFor(active)),
-        stage?.promoteRank ?? 0,
+        aggregateTeamBoard(regGames),
+        stage?.promoteRank ?? 6,
+        teamNames,
       )
-      const title = document.getElementById('home-board-title')
-      if (title) title.textContent = `${season.season}赛季 ${active}队伍榜`
       const box = document.getElementById('home-board')
-      if (box) box.innerHTML = renderTeamTable(active, board, teams.teams, stage?.totalGames ?? 24)
+      if (box) box.innerHTML = renderTeamTable('常规赛', board, teams.teams, stage?.totalGames ?? 24)
     })()
   </script>
 </BaseLayout>
