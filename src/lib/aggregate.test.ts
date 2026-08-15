@@ -175,6 +175,19 @@ describe('aggregateTeamBoard', () => {
   it('空输入返回空数组', () => {
     expect(aggregateTeamBoard([])).toEqual([])
   })
+  it('allTeams 种子：未参赛队伍也显示，0 分参与排名', () => {
+    const board = aggregateTeamBoard([finishedGame()], () => 0, ['格斗', '海盗', '樱花', '火山', '凤凰', '雷电'])
+    const by = new Map(board.map((r) => [r.team, r]))
+    expect(board).toHaveLength(6)
+    expect(by.get('凤凰')).toMatchObject({ stagePoints: 0, stageRaw: 0, wins: { '1': 0, '2': 0, '3': 0, '4': 0 }, carry: 0 })
+    expect(by.get('格斗')?.stagePoints).toBe(62)
+  })
+  it('allTeams 种子配合 carryOf：未参赛队伍也带持越', () => {
+    const board = aggregateTeamBoard([finishedGame()], () => 31, ['格斗', '凤凰'])
+    const by = new Map(board.map((r) => [r.team, r]))
+    expect(by.get('凤凰')?.carry).toBe(31)
+    expect(by.get('凤凰')?.stagePoints).toBe(0)
+  })
 })
 
 describe('aggregatePlayerBoard', () => {
@@ -204,6 +217,21 @@ describe('aggregatePlayerBoard', () => {
   })
   it('空输入返回空数组', () => {
     expect(aggregatePlayerBoard([])).toEqual([])
+  })
+  it('allRoster 种子：未参赛选手也显示，0 分参与排名', () => {
+    const roster = [
+      { team: '格斗', name: '忆水' },
+      { team: '格斗', name: '小鹿' },
+      { team: '海盗', name: 'Art3mis' },
+      { team: '凤凰', name: '玖夜' },
+    ]
+    const board = aggregatePlayerBoard([finishedGame()], undefined, roster)
+    const by = new Map(board.map((r) => [r.name, r]))
+    // 参赛 4 人 + 种子独有 2 人 = 6
+    expect(board).toHaveLength(6)
+    expect(by.get('玖夜')).toMatchObject({ team: '凤凰', points: 0, rawPoints: 0 })
+    expect(by.get('小鹿')).toMatchObject({ team: '格斗', points: 0, rawPoints: 0 })
+    expect(by.get('忆水')?.points).toBe(62)
   })
 })
 

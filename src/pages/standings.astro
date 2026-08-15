@@ -64,7 +64,8 @@ for (const t of roster.teams) t.roster.forEach((n, i) => rosterIndex.set(n, i))
     const base = import.meta.env.BASE_URL
     const teamNames = teams.teams.map((t) => t.name)
     const rosterIndex = new Map<string, number>()
-    for (const t of rosterRaw.teams ?? []) t.roster.forEach((n, i) => rosterIndex.set(n, i))
+    const rosterPairs: { team: string; name: string }[] = []
+    for (const t of rosterRaw.teams ?? []) t.roster.forEach((n, i) => { rosterIndex.set(n, i); rosterPairs.push({ team: t.name, name: n }) })
 
     ;(async () => {
       const { data, error } = await supabase.from('games').select('*').eq('status', 'finished')
@@ -82,8 +83,9 @@ for (const t of roster.teams) t.roster.forEach((n, i) => rosterIndex.set(n, i))
         const panel = document.getElementById(`stage-${i}`)
         if (!panel) return
         const g = byStage(stage.name)
-        const teamBoard = computeTeamBoard(aggregateTeamBoard(g, carryFor(stage.name)), stage.promoteRank, teamNames)
-        const playerBoard = computePlayerBoard(aggregatePlayerBoard(g), { teamOrder: teamNames, rosterIndex })
+        // 种子：显示全部队伍/选手（未参赛 0 分参与排名）
+        const teamBoard = computeTeamBoard(aggregateTeamBoard(g, carryFor(stage.name), teamNames), stage.promoteRank, teamNames)
+        const playerBoard = computePlayerBoard(aggregatePlayerBoard(g, undefined, rosterPairs), { teamOrder: teamNames, rosterIndex })
         const asOf = standingsAsOf(g)
         panel.innerHTML =
           `<h2>${stage.name}</h2>` +

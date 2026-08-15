@@ -160,7 +160,7 @@ const base = import.meta.env.BASE_URL
       if (regGames.length === 0) return
       const stage = season.stages.find((s) => s.name === '常规赛')
       const board = computeTeamBoard(
-        aggregateTeamBoard(regGames),
+        aggregateTeamBoard(regGames, undefined, teamNames),
         stage?.promoteRank ?? 6,
         teamNames,
       )

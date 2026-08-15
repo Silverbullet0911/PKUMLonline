@@ -71,12 +71,18 @@ export function seatGamePoints(scores: number[], seat: number): number {
   return round1(rawScoreOf(scores[seat]) + rankPointsForScores(scores)[seat])
 }
 
-/** 聚合队伍榜：传入某阶段全部完赛对局；carryOf 给出各队持越（默认 0） */
+/** 聚合队伍榜：传入某阶段全部完赛对局；carryOf 给出各队持越（默认 0）；allTeams 提供种子队伍（未参赛也显示，0 分参与排名） */
 export function aggregateTeamBoard(
   games: Game[],
   carryOf: (team: string) => number = () => 0,
+  allTeams?: string[],
 ): TeamBoardRow[] {
   const map = new Map<string, TeamBoardRow>()
+  if (allTeams) {
+    for (const t of allTeams) {
+      map.set(t, { team: t, carry: 0, stagePoints: 0, stageRaw: 0, wins: { '1': 0, '2': 0, '3': 0, '4': 0 } })
+    }
+  }
   for (const g of games) {
     if (g.status !== 'finished' || g.seats.length !== 4) continue
     const scores = g.seats.map((s) => s.points)
@@ -106,12 +112,26 @@ export function aggregateTeamBoard(
   return [...map.values()].map((r) => ({ ...r, carry: round1(carryOf(r.team)) }))
 }
 
-/** 聚合个人榜：传入某阶段全部完赛对局；penaltyOf 给出各选手判罚（默认 0，负值表示扣分） */
+/** 聚合个人榜：传入某阶段全部完赛对局；penaltyOf 给出各选手判罚（默认 0，负值表示扣分）；allRoster 提供种子选手（未参赛也显示，0 分参与排名） */
 export function aggregatePlayerBoard(
   games: Game[],
   penaltyOf: (name: string) => number = () => 0,
+  allRoster?: { team: string; name: string }[],
 ): PlayerBoardRow[] {
   const map = new Map<string, PlayerBoardRow>()
+  if (allRoster) {
+    for (const p of allRoster) {
+      map.set(p.name, {
+        team: p.team,
+        name: p.name,
+        points: 0,
+        rawPoints: 0,
+        penalty: 0,
+        wins: { '1': 0, '2': 0, '3': 0, '4': 0 },
+        maxScore: 0,
+      })
+    }
+  }
   for (const g of games) {
     if (g.status !== 'finished' || g.seats.length !== 4) continue
     const scores = g.seats.map((s) => s.points)
