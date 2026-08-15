@@ -13,7 +13,7 @@ for (const t of roster.teams) t.roster.forEach((n, i) => rosterIndex.set(n, i))
 ---
 <BaseLayout title="积分排名">
   <h1>积分排名</h1>
-  {!season.hasStarted && <p class="empty">本赛季尚未开始，排名数据将在第一场比赛后公布。</p>}
+  {!season.hasStarted && <p id="season-not-started" class="empty">本赛季尚未开始，排名数据将在第一场比赛后公布。</p>}
 
   <StageTabs stages={season.stages} />
 
@@ -72,6 +72,8 @@ for (const t of roster.teams) t.roster.forEach((n, i) => rosterIndex.set(n, i))
       if (error || !data || data.length === 0) return // 保留静态回退
       const games = (data as any[]).filter((g) => g.season === season.season).map(mapDbGame)
       if (games.length === 0) return
+      // 已有赛果：隐藏「本赛季尚未开始」横幅
+      document.getElementById('season-not-started')?.remove()
 
       const byStage = (name: string) => games.filter((g) => g.stage === name)
       const regTotals = stageTeamTotals(byStage('常规赛'))
