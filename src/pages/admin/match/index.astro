@@ -171,7 +171,6 @@ import AdminShell from '../../../components/admin/AdminShell.astro'
     }
 
     function render() {
-      const scrollY = window.scrollY
       clearErr()
       if (!rep) return
       root.innerHTML = ''
@@ -216,13 +215,9 @@ import AdminShell from '../../../components/admin/AdminShell.astro'
 
       renderForm(root)
       renderRoundsList(root, false)
-      // 重建后恢复滚动位置，避免焦点丢失导致的跳到顶部
-      window.scrollTo(0, scrollY)
     }
 
     // ---------- 表单 ----------
-    // 骨架：结果类型 / 条件区 / 立直 / 动作按钮 / 信息区。
-    // 勾选只更新局部区域，不整块重建表单，避免聚焦控件被移除导致的跳到顶部。
     function renderForm(container: HTMLElement) {
       container.querySelector('.match-form')?.remove()
       const wrap = el('div', 'match-form')
@@ -237,19 +232,35 @@ import AdminShell from '../../../components/admin/AdminShell.astro'
         radio.name = 'winType'
         radio.value = t
         radio.checked = form.winType === t
-        radio.addEventListener('change', () => {
-          form.winType = t
-          renderConditional(wrap)
-          renderInfo(wrap)
-        })
+        radio.addEventListener('change', () => { form.winType = t; renderForm(container) })
         const names: Record<string, string> = { ron: '荣和', tsumo: '自摸', draw: '荒牌流局' }
         label.append(radio, document.createTextNode(names[t]))
         typeRow.appendChild(label)
       })
       wrap.appendChild(typeRow)
 
-      // 条件区（赢家/放铳/自摸家/听牌 + 点数）
-      wrap.appendChild(el('div', 'form-conditional'))
+      if (form.winType === 'ron') {
+        wrap.appendChild(seatSelectRow('赢家', form.winner, (i) => { form.winner = i; renderForm(container) }))
+        wrap.appendChild(seatSelectRow('放铳', form.loser, (i) => { form.loser = i; renderForm(container) }))
+      } else if (form.winType === 'tsumo') {
+        wrap.appendChild(seatSelectRow('自摸家', form.winner, (i) => { form.winner = i; renderForm(container) }))
+      } else if (form.winType === 'draw') {
+        const row = el('div', 'field-row')
+        row.appendChild(el('span', '', '听牌：'))
+        ;[0, 1, 2, 3].forEach((i) => {
+          const label = el('label')
+          const cb = document.createElement('input')
+          cb.type = 'checkbox'
+          cb.checked = form.tenpai?.[i] ?? false
+          cb.addEventListener('change', () => {
+            form.tenpai = form.tenpai ?? [false, false, false, false]
+            form.tenpai[i] = cb.checked
+          })
+          label.append(cb, document.createTextNode(seatLabelOf(i)))
+          row.appendChild(label)
+        })
+        wrap.appendChild(row)
+      }
 
       // 立直
       const riichiRow = el('div', 'field-row')
@@ -265,93 +276,42 @@ import AdminShell from '../../../components/admin/AdminShell.astro'
       })
       wrap.appendChild(riichiRow)
 
+      if (form.winType === 'ron' || form.winType === 'tsumo') {
+        renderPointsPicker(wrap)
+      }
+
       // 操作按钮
       const actions = el('div', 'match-actions')
       const saveBtn = el('button', '', '保存草稿')
       saveBtn.addEventListener('click', saveDraft)
       const nextBtn = el('button', '', editingOrder != null ? '保存修改' : '下一局')
-      nextBtn.id = 'match-next-btn'
       nextBtn.addEventListener('click', saveAndNext)
       const viewBtn = el('button', 'primary', '查看结果')
       viewBtn.addEventListener('click', goResult)
       actions.append(saveBtn, nextBtn, viewBtn)
       wrap.appendChild(actions)
 
-      // 信息区（南四提示 + 当前选择）
-      wrap.appendChild(el('div', 'form-info'))
-
-      // 表单始终保持在阶段表上方
-      const listEl = container.querySelector('.rounds-list')
-      if (listEl) container.insertBefore(wrap, listEl)
-      else container.appendChild(wrap)
-
-      renderConditional(wrap)
-      renderInfo(wrap)
-    }
-
-    // 条件区：按结果类型渲染 赢家/放铳/自摸家/听牌 + 点数选择器
-    function renderConditional(wrap: HTMLElement) {
-      const cond = wrap.querySelector('.form-conditional')
-      if (!cond) return
-      cond.innerHTML = ''
-      if (form.winType === 'ron') {
-        cond.appendChild(seatSelectRow('赢家', form.winner, (i) => { form.winner = i; refreshPoints(wrap) }))
-        cond.appendChild(seatSelectRow('放铳', form.loser, (i) => { form.loser = i; renderInfo(wrap) }))
-      } else if (form.winType === 'tsumo') {
-        cond.appendChild(seatSelectRow('自摸家', form.winner, (i) => { form.winner = i; refreshPoints(wrap) }))
-      } else if (form.winType === 'draw') {
-        const row = el('div', 'field-row')
-        row.appendChild(el('span', '', '听牌：'))
-        ;[0, 1, 2, 3].forEach((i) => {
-          const label = el('label')
-          const cb = document.createElement('input')
-          cb.type = 'checkbox'
-          cb.checked = form.tenpai?.[i] ?? false
-          cb.addEventListener('change', () => {
-            form.tenpai = form.tenpai ?? [false, false, false, false]
-            form.tenpai[i] = cb.checked
-            renderInfo(wrap)
-          })
-          label.append(cb, document.createTextNode(seatLabelOf(i)))
-          row.appendChild(label)
-        })
-        cond.appendChild(row)
-      }
-      refreshPoints(wrap)
-    }
-
-    // 刷新点数选择器：仅重建 .points-picker（赢家/放铳等其它控件保持不动、不丢焦点）
-    function refreshPoints(wrap: HTMLElement) {
-      const cond = wrap.querySelector('.form-conditional')
-      if (!cond) return
-      cond.querySelector('.points-picker')?.remove()
-      if (form.winType === 'ron' || form.winType === 'tsumo') {
-        cond.appendChild(buildPointsPicker(wrap))
-      }
-      renderInfo(wrap)
-    }
-
-    // 信息区：南四提示 + 当前选择摘要（随勾选实时刷新，不重建其它控件）
-    function renderInfo(wrap: HTMLElement) {
-      const info = wrap.querySelector('.form-info')
-      if (!info) return
-      info.innerHTML = ''
-      const nextBtn = wrap.querySelector<HTMLButtonElement>('#match-next-btn')
-      if (nextBtn) nextBtn.disabled = false
+      // 南四锁定：非连庄结果后半庄即终了，禁用「下一局」，由「查看结果」自动保存当前局并提交
       if (rep && form.winType && formComplete()) {
         const prospective = nextRound(rep.current.round, buildResultFromForm()!)
         if (rep.current.round.wind === '南' && rep.current.round.number === 4 && !prospective) {
           const note = el('p', 'sel-info', '南四局：录完本局后点「查看结果」（会自动保存本局）提交，本局后半庄即终了。')
           note.style.color = '#b45309'
-          info.appendChild(note)
-          if (nextBtn) nextBtn.disabled = true
+          wrap.appendChild(note)
+          nextBtn.disabled = true
         } else if (rep.current.round.wind === '南' && rep.current.round.number === 4) {
           const note = el('p', 'sel-info', '南四局：亲家和牌/亲家听牌流局可继续「下一局」。')
-          info.appendChild(note)
+          wrap.appendChild(note)
         }
       }
+
       const selInfo = el('p', 'sel-info', selectionText())
-      info.appendChild(selInfo)
+      wrap.appendChild(selInfo)
+
+      // 表单始终保持在阶段表上方（勾选/选人会重渲染表单，避免被 append 挤到阶段表下面）
+      const listEl = container.querySelector('.rounds-list')
+      if (listEl) container.insertBefore(wrap, listEl)
+      else container.appendChild(wrap)
     }
 
     function seatSelectRow(labelText: string, value: number | null, onPick: (i: number) => void): HTMLElement {
@@ -371,21 +331,14 @@ import AdminShell from '../../../components/admin/AdminShell.astro'
       return row
     }
 
-    // ---------- 点数选择（按键式，按番分组；点击只改高亮，不重建） ----------
-    function buildPointsPicker(wrap: HTMLElement): HTMLElement {
+    // ---------- 点数选择（按键式，按番分组） ----------
+    function renderPointsPicker(container: HTMLElement) {
       const v = view()
       const isRon = form.winType === 'ron'
       const box = el('div', 'points-picker')
 
       const head = el('div', 'sel-info', `点数表：${v === 'dealer' ? '亲家' : '子家'}视图（${isRon ? '荣和' : '自摸'}）`)
       box.appendChild(head)
-
-      const select = (key: string, btn: HTMLElement) => {
-        form.selKey = key
-        box.querySelectorAll('.pt-btn.sel, .pt-tier.sel').forEach((x) => x.classList.remove('sel'))
-        btn.classList.add('sel')
-        renderInfo(wrap)
-      }
 
       // 1-4 番按键组（满贯格不设按键；荣和不存在 20 符，故荣和视图跳过 20 符）
       HAN.forEach((h) => {
@@ -403,9 +356,10 @@ import AdminShell from '../../../components/admin/AdminShell.astro'
           const key = `cell:${v}:${h}:${f}`
           if (form.selKey === key) btn.classList.add('sel')
           btn.addEventListener('click', () => {
+            form.selKey = key
             if (isRon) { form.ronPoints = cell.ron; form.tsumoSplit = null }
             else { form.tsumoSplit = [...cell.tsumo]; form.ronPoints = null }
-            select(key, btn)
+            render()
           })
           group.appendChild(btn)
         })
@@ -423,6 +377,7 @@ import AdminShell from '../../../components/admin/AdminShell.astro'
         const key = `tier:${t.key}`
         if (form.selKey === key) btn.classList.add('sel')
         btn.addEventListener('click', () => {
+          form.selKey = key
           if (isRon) {
             form.ronPoints = v === 'dealer' ? t.dealerRon : t.childRon
             form.tsumoSplit = null
@@ -430,7 +385,7 @@ import AdminShell from '../../../components/admin/AdminShell.astro'
             form.tsumoSplit = v === 'dealer' ? [...t.dealerTsumo] : [...t.childTsumo]
             form.ronPoints = null
           }
-          select(key, btn)
+          render()
         })
         tiers.appendChild(btn)
       })
@@ -449,7 +404,7 @@ import AdminShell from '../../../components/admin/AdminShell.astro'
           form.ronPoints = Number(input.value) || null
           form.tsumoSplit = null
           form.selKey = null
-          renderInfo(wrap)
+          render()
         })
         manual.appendChild(input)
       } else {
@@ -473,13 +428,13 @@ import AdminShell from '../../../components/admin/AdminShell.astro'
           form.ronPoints = null
           form.selKey = null
           clearErr()
-          renderInfo(wrap)
+          render()
         })
         manual.appendChild(apply)
       }
       box.appendChild(manual)
 
-      return box
+      container.appendChild(box)
     }
 
     function selectionText(): string {
