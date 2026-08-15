@@ -539,13 +539,13 @@ import AdminShell from '../../../components/admin/AdminShell.astro'
         showErr('南四局已结束（非连庄结果），请「查看结果」并提交。')
         editingOrder = null
         resetForm()
-        rep = replayGame(await fetchRounds())
+        await refreshRounds()
         render()
         return
       }
       editingOrder = null
       resetForm()
-      rep = replayGame(await fetchRounds())
+      await refreshRounds()
       render()
     }
 
@@ -575,6 +575,11 @@ import AdminShell from '../../../components/admin/AdminShell.astro'
         tenpai: r.tenpai,
         override: r.override,
       }))
+    }
+
+    async function refreshRounds() {
+      rounds = await fetchRounds()
+      rep = replayGame(rounds)
     }
 
     function loadDraftToForm(d: StoredRound) {
@@ -706,14 +711,14 @@ import AdminShell from '../../../components/admin/AdminShell.astro'
         if (error) return showErr('保存失败：' + error.message)
         clearErr()
         manualOrder = null
-        rep = replayGame(await fetchRounds())
+        await refreshRounds()
         render()
       })
       const clear = el('button', '', '清除手动')
       clear.addEventListener('click', async () => {
         await supabase.from('rounds').upsert({ game_id: gameId, order, override: null }, { onConflict: 'game_id,order' })
         manualOrder = null
-        rep = replayGame(await fetchRounds())
+        await refreshRounds()
         render()
       })
       const cancel = el('button', '', '取消')

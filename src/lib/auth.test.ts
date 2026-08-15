@@ -9,6 +9,7 @@ describe('canAccessAdmin', () => {
     expect(canAccessAdmin('admin')).toBe(true)
     expect(canAccessAdmin('referee')).toBe(true)
     expect(canAccessAdmin('captain')).toBe(false)
+    expect(canAccessAdmin('user')).toBe(false)
   })
 })
 

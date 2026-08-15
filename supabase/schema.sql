@@ -3,7 +3,7 @@
 -- ============ 1. profiles ============
 create table if not exists public.profiles (
   id uuid primary key references auth.users(id) on delete cascade,
-  role text not null default 'referee' check (role in ('admin','referee','captain')),
+  role text not null default 'user' check (role in ('user','admin','referee','captain')),
   team text,
   display_name text
 );
@@ -55,8 +55,20 @@ create table if not exists public.rounds (
   unique (game_id, "order")
 );
 
--- 旧安装迁移：tsumo_points 原为 int，改为 jsonb（测试数据可丢弃）
-alter table public.rounds alter column tsumo_points type jsonb using null;
+-- 旧安装迁移：tsumo_points 原为 int，改为 jsonb。
+-- 仅在仍为整数类型时执行，并把旧值保留为 jsonb 数组 [旧值]，避免重复执行 schema.sql 清空数据。
+do $$
+declare
+  v_data_type text;
+begin
+  select data_type into v_data_type
+  from information_schema.columns
+  where table_schema = 'public' and table_name = 'rounds' and column_name = 'tsumo_points';
+
+  if v_data_type in ('smallint','integer','bigint','numeric') then
+    execute 'alter table public.rounds alter column tsumo_points type jsonb using jsonb_build_array(tsumo_points)';
+  end if;
+end $$;
 -- 旧安装迁移：新增 override 列（可重复执行）
 alter table public.rounds add column if not exists override jsonb;
 
@@ -90,7 +102,7 @@ security definer
 as $$
 begin
   insert into public.profiles (id, role, team, display_name)
-  values (new.id, 'referee', null, coalesce(new.raw_user_meta_data->>'display_name', new.email));
+  values (new.id, 'user', null, coalesce(new.raw_user_meta_data->>'display_name', new.email));
   return new;
 end;
 $$;
@@ -128,10 +140,11 @@ create policy "games admin write" on public.games for all using (public.current_
 drop policy if exists "rounds public read" on public.rounds;
 drop policy if exists "rounds write upcoming" on public.rounds;
 drop policy if exists "rounds admin write finished" on public.rounds;
-create policy "rounds public read" on public.rounds for select using (true);
+create policy "rounds public read" on public.rounds
+  for select using (public.game_status(game_id) = 'finished');
 create policy "rounds write upcoming" on public.rounds
-  for all using (public.game_status(game_id) = 'upcoming')
-  with check (public.game_status(game_id) = 'upcoming' and (public.current_role() in ('admin','referee')));
+  for all using (public.game_status(game_id) = 'upcoming' and public.current_role() in ('admin','referee'))
+  with check (public.game_status(game_id) = 'upcoming' and public.current_role() in ('admin','referee'));
 create policy "rounds admin write finished" on public.rounds
   for all using (public.current_role() = 'admin')
   with check (public.current_role() = 'admin');
@@ -154,8 +167,8 @@ grant select, insert, update, delete on public.teams, public.games to authentica
 grant select, insert, update, delete on public.rounds to authenticated;
 
 -- ============ 队长/管理员指派出场选手 ============
--- 名单真源在 data/current_roster.json（静态），本函数不再查 DB teams 校验 roster；
--- 名单把关由客户端静态名单承担。仅校验：角色、座位归属（队长限本队）、upcoming、选手非空。
+-- 名单真源在 data/current_roster.json（静态），本函数不在 DB 内校验 roster；
+-- 名单把关由客户端静态名单承担。服务端校验：角色、座位归属（队长限本队）、upcoming、选手非空、座位数。
 create or replace function public.assign_player(p_game_id uuid, p_player text)
 returns jsonb
 language plpgsql
@@ -181,6 +194,9 @@ begin
   select * into v_game from public.games where id = p_game_id;
   if v_game.id is null then raise exception 'game not found'; end if;
   if v_game.status <> 'upcoming' then raise exception 'game already finished'; end if;
+  if v_game.seats is null or jsonb_array_length(v_game.seats) <> 4 then
+    raise exception 'game seats must be 4';
+  end if;
 
   v_new_seats := v_game.seats;
   for v_idx in 0..jsonb_array_length(v_new_seats)-1 loop
@@ -206,7 +222,8 @@ grant execute on function public.assign_player to authenticated;
 
 -- ============ 提交赛果 / 退回修改 ============
 -- 裁判角色无 games 写权限（RLS 仅 admin 可写 games），提交赛果经此 security-definer 函数。
--- 赛果由录入页客户端用 scoring.ts 现算后传入；SQL 侧校验 4 座位、总分 100000、位次为 1-4 排列。
+-- 赛果由录入页客户端用 scoring.ts 现算后传入；SQL 侧校验 4 座位、座位/队伍/选手不得被篡改、
+-- 总分 100000、位次为 1-4 排列。
 create or replace function public.finish_game(p_game_id uuid, p_seats jsonb)
 returns jsonb
 language plpgsql
@@ -229,6 +246,9 @@ begin
   if not exists (select 1 from public.rounds where game_id = p_game_id) then
     raise exception 'no rounds recorded';
   end if;
+  if v_game.seats is null or jsonb_array_length(v_game.seats) <> 4 then
+    raise exception 'game seats must be 4';
+  end if;
   if jsonb_array_length(p_seats) <> 4 then raise exception 'seats must be 4'; end if;
 
   v_sum := 0;
@@ -238,6 +258,11 @@ begin
        or p_seats->i->>'player' is null or p_seats->i->>'rank' is null
        or p_seats->i->>'points' is null then
       raise exception 'seat % incomplete', i;
+    end if;
+    if coalesce(v_game.seats->i->>'seat', '') <> coalesce(p_seats->i->>'seat', '')
+       or coalesce(v_game.seats->i->>'team', '') <> coalesce(p_seats->i->>'team', '')
+       or coalesce(v_game.seats->i->>'player', '') <> coalesce(p_seats->i->>'player', '') then
+      raise exception 'seat % does not match original game seats', i;
     end if;
     v_sum := v_sum + (p_seats->i->>'points')::int;
     v_ranks := v_ranks || (p_seats->i->>'rank')::int;

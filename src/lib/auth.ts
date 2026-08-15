@@ -1,4 +1,4 @@
-export type Role = 'admin' | 'referee' | 'captain'
+export type Role = 'user' | 'admin' | 'referee' | 'captain'
 
 export function canAccessAdmin(role: string | null | undefined): boolean {
   return role === 'admin' || role === 'referee'

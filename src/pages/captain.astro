@@ -11,6 +11,8 @@ import BaseLayout from '../layouts/BaseLayout.astro'
   </div>
   <script>
     import { supabase } from '../lib/supabase'
+    import { season } from '../lib/data'
+    import { escHtml } from '../lib/renderSchedule'
     import rosterRaw from '../../data/current_roster.json'
     const base = import.meta.env.BASE_URL
     const errEl = document.getElementById('cap-err')!
@@ -32,7 +34,7 @@ import BaseLayout from '../layouts/BaseLayout.astro'
       const rosterList: string[] = rosterTeam?.roster ?? []
 
       const { data: games, error: gErr } = await supabase
-        .from('games').select('*').eq('status', 'upcoming').order('date', { ascending: true })
+        .from('games').select('*').eq('status', 'upcoming').eq('season', season.season).order('date', { ascending: true })
       if (gErr) { errEl.textContent = '加载赛程失败：' + gErr.message; return }
 
       const container = document.getElementById('cap-games')!
@@ -43,7 +45,7 @@ import BaseLayout from '../layouts/BaseLayout.astro'
       for (const g of myGames) {
         const row = document.createElement('div')
         row.className = 'cap-game'
-        row.innerHTML = `<div class="cap-meta">${g.date} · ${g.stage}${g.round ? ' ' + g.round : ''}</div>`
+        row.innerHTML = `<div class="cap-meta">${escHtml(g.date)} · ${escHtml(g.stage)}${g.round ? ' ' + escHtml(g.round) : ''}</div>`
         const seats = g.seats ?? []
         const mySeat = seats.find((s) => s.team === team)
         const sel = document.createElement('select')

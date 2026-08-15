@@ -101,13 +101,13 @@ const base = import.meta.env.BASE_URL
           box.innerHTML =
             `<section class="game-card">` +
             `<a href="${base}match/?id=${encodeURIComponent(latest.id!)}" style="text-decoration:none;color:inherit;display:block">` +
-            `<h2>${latest.stage}${latest.round ? ' ' + latest.round : ''} · ${latest.date}</h2>` +
+            `<h2>${esc(latest.stage)}${latest.round ? ' ' + esc(latest.round) : ''} · ${esc(latest.date)}</h2>` +
             `<div class="game-players">` +
             latest.seats.map((s) =>
               `<div class="game-player" style="${teamStyle(s.team, teams.teams)}">` +
-              `<span class="gp-team">${esc(s.team)}</span><span class="gp-seat">${s.seat}</span>` +
+              `<span class="gp-team">${esc(String(s.team ?? ''))}</span><span class="gp-seat">${esc(String(s.seat ?? ''))}</span>` +
               `<span class="gp-name">${s.name ? esc(s.name) : ''}</span>` +
-              `<span class="gp-pts">${s.points ?? 0}</span><span class="gp-rank">${s.rank ?? ''}位</span>` +
+              `<span class="gp-pts">${esc(String(s.points ?? 0))}</span><span class="gp-rank">${esc(String(s.rank ?? ''))}位</span>` +
               `</div>`).join('') +
             `</div></a></section>`
         }
@@ -123,13 +123,13 @@ const base = import.meta.env.BASE_URL
           box.innerHTML = ups.map((g) =>
             `<div class="future-row">` +
             `<div class="future-meta">` +
-            `<div><span class="fm-date">${g.date}</span><span class="fm-rest"> · ${g.stage}${g.round ? ' ' + g.round : ''}</span></div>` +
-            `${g.time ? `<div class="fm-time">${g.time}</div>` : ''}` +
+            `<div><span class="fm-date">${esc(g.date)}</span><span class="fm-rest"> · ${esc(g.stage)}${g.round ? ' ' + esc(g.round) : ''}</span></div>` +
+            `${g.time ? `<div class="fm-time">${esc(g.time)}</div>` : ''}` +
             `</div>` +
             `<div class="future-seats">` +
             g.seats.map((s) =>
               `<div class="future-seat" style="${teamStyle(s.team, teams.teams)}">` +
-              `<span class="fs-seat">${s.seat}</span><span class="fs-team">${esc(s.team)}</span>` +
+              `<span class="fs-seat">${esc(String(s.seat ?? ''))}</span><span class="fs-team">${esc(String(s.team ?? ''))}</span>` +
               `${s.name ? `<span class="fs-player">${esc(s.name)}</span>` : ''}` +
               `</div>`).join('') +
             `</div></div>`).join('')
@@ -146,7 +146,7 @@ const base = import.meta.env.BASE_URL
       if (box) {
         box.innerHTML =
           `<ul class="news-list">` +
-          anns.map((a) => `<li><time>${a.date}</time><a href="${base}news">${esc(a.title)}</a></li>`).join('') +
+          anns.map((a) => `<li><time>${esc(a.date)}</time><a href="${base}news">${esc(a.title)}</a></li>`).join('') +
           `</ul>`
       }
     })()
