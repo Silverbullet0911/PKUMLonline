@@ -18,7 +18,7 @@ import AdminShell from '../../../components/admin/AdminShell.astro'
     .field-row label { display: flex; align-items: center; gap: 6px; font-size: 20px; }
     .field-row input[type='number'] { font-size: 24px; padding: 6px 10px; }
     .field-row input[type='text'] { font-size: 24px; padding: 6px 10px; }
-    .match-scores { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 12px 0; }
+    .match-scores { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 8px 0; }
     .match-score { background: #fff; border: 1px solid var(--line); border-radius: 8px; padding: 6px 10px; text-align: center; }
     .match-score .ms-label { font-size: 13px; color: var(--muted); }
     .match-score .ms-value { font-size: 22px; font-variant-numeric: tabular-nums; font-weight: 700; }
@@ -336,9 +336,6 @@ import AdminShell from '../../../components/admin/AdminShell.astro'
       const v = view()
       const isRon = form.winType === 'ron'
       const box = el('div', 'points-picker')
-
-      const head = el('div', 'sel-info', `点数表：${v === 'dealer' ? '亲家' : '子家'}视图（${isRon ? '荣和' : '自摸'}）`)
-      box.appendChild(head)
 
       // 1-4 番按键组（满贯格不设按键；荣和不存在 20 符，故荣和视图跳过 20 符）
       HAN.forEach((h) => {

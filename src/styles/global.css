@@ -66,7 +66,7 @@ a:hover { text-decoration: underline; }
   font-size: 12px;
   border-top: 1px solid var(--line);
 }
-h1 { font-size: 24px; font-weight: 700; margin: 8px 0 20px; }
+h1 { font-size: 24px; font-weight: 700; margin: 8px 0 8px; }
 h2 { font-size: 18px; font-weight: 700; margin: 32px 0 12px; border-left: 4px solid var(--green); padding-left: 10px; }
 h3 { font-size: 15px; font-weight: 700; margin: 20px 0 8px; }
 .empty {
@@ -515,7 +515,7 @@ html { scroll-padding-top: 45vh; }
 .admin-logout { margin-left: auto; padding: 6px 14px; border-radius: 6px; border: 1px solid var(--line); background: var(--card); cursor: pointer; font-size: 14px; color: var(--text); }
 .admin-logout:hover { background: var(--accent); color: #fff; }
 .admin-main { min-width: 0; }
-.admin-err { color: #b91c1c; font-size: 14px; min-height: 20px; }
+.admin-err { color: #b91c1c; font-size: 14px; }
 .admin-links { list-style: none; padding: 0; display: flex; gap: 10px; flex-wrap: wrap; }
 .admin-links li a { display: inline-block; padding: 10px 18px; background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); color: var(--text); font-size: 15px; }
 .admin-links li a:hover { background: var(--accent-soft); text-decoration: none; }
