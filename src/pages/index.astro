@@ -79,7 +79,7 @@ const base = import.meta.env.BASE_URL
     import { supabase } from '../lib/supabase'
     import { season, teams } from '../lib/data'
     import { mapDbGame, splitGames } from '../lib/renderSchedule'
-    import { teamStyle, esc, renderTeamTable } from '../lib/renderStandings'
+    import { teamStyle, esc, renderTeamTable, standingsAsOf } from '../lib/renderStandings'
     import { aggregateTeamBoard } from '../lib/aggregate'
     import { computeTeamBoard } from '../lib/standings'
     import { roundNum } from '../lib/schedule'
@@ -165,7 +165,11 @@ const base = import.meta.env.BASE_URL
         teamNames,
       )
       const box = document.getElementById('home-board')
-      if (box) box.innerHTML = renderTeamTable('常规赛', board, teams.teams, stage?.totalGames ?? 24)
+      if (box) {
+        box.innerHTML =
+          renderTeamTable('常规赛', board, teams.teams, stage?.totalGames ?? 24) +
+          `<p class="as-of">${standingsAsOf(regGames) ?? ''}</p>`
+      }
     })()
   </script>
 </BaseLayout>
