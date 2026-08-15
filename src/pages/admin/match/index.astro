@@ -171,6 +171,7 @@ import AdminShell from '../../../components/admin/AdminShell.astro'
     }
 
     function render() {
+      const scrollY = window.scrollY
       clearErr()
       if (!rep) return
       root.innerHTML = ''
@@ -215,10 +216,14 @@ import AdminShell from '../../../components/admin/AdminShell.astro'
 
       renderForm(root)
       renderRoundsList(root, false)
+      // 重建后恢复滚动位置，避免焦点丢失导致的跳到顶部
+      window.scrollTo(0, scrollY)
     }
 
     // ---------- 表单 ----------
     function renderForm(container: HTMLElement) {
+      const scrollY = window.scrollY
+      const activeName = (document.activeElement as HTMLElement | null)?.getAttribute('name')
       container.querySelector('.match-form')?.remove()
       const wrap = el('div', 'match-form')
 
@@ -312,6 +317,12 @@ import AdminShell from '../../../components/admin/AdminShell.astro'
       const listEl = container.querySelector('.rounds-list')
       if (listEl) container.insertBefore(wrap, listEl)
       else container.appendChild(wrap)
+      // 恢复滚动位置 + 焦点（避免移除聚焦控件导致跳到顶部）
+      window.scrollTo(0, scrollY)
+      if (activeName) {
+        const target = wrap.querySelector<HTMLElement>(`input[name="${CSS.escape(activeName)}"]:checked`)
+        target?.focus()
+      }
     }
 
     function seatSelectRow(labelText: string, value: number | null, onPick: (i: number) => void): HTMLElement {
