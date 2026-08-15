@@ -85,9 +85,11 @@ for (const t of roster.teams) t.roster.forEach((n, i) => rosterIndex.set(n, i))
         const panel = document.getElementById(`stage-${i}`)
         if (!panel) return
         const g = byStage(stage.name)
-        // 种子：显示全部队伍/选手（未参赛 0 分参与排名）
-        const teamBoard = computeTeamBoard(aggregateTeamBoard(g, carryFor(stage.name), teamNames), stage.promoteRank, teamNames)
-        const playerBoard = computePlayerBoard(aggregatePlayerBoard(g, undefined, rosterPairs), { teamOrder: teamNames, rosterIndex })
+        // 常规赛：显示全部队伍/选手（未参赛 0 分参与排名）；半决赛/决赛：常规赛完结前保持空榜
+        const seedTeams = stage.name === '常规赛' ? teamNames : undefined
+        const seedRoster = stage.name === '常规赛' ? rosterPairs : undefined
+        const teamBoard = computeTeamBoard(aggregateTeamBoard(g, carryFor(stage.name), seedTeams), stage.promoteRank, teamNames)
+        const playerBoard = computePlayerBoard(aggregatePlayerBoard(g, undefined, seedRoster), { teamOrder: teamNames, rosterIndex })
         const asOf = standingsAsOf(g)
         panel.innerHTML =
           `<h2>${stage.name}</h2>` +

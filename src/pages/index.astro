@@ -168,7 +168,7 @@ const base = import.meta.env.BASE_URL
       if (box) {
         box.innerHTML =
           renderTeamTable('常规赛', board, teams.teams, stage?.totalGames ?? 24) +
-          `<p class="as-of">${standingsAsOf(regGames) ?? ''}</p>`
+          `<p class="as-of as-of-team">${standingsAsOf(regGames) ?? ''}</p>`
       }
     })()
   </script>
