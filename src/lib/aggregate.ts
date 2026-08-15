@@ -128,7 +128,7 @@ export function aggregatePlayerBoard(
         rawPoints: 0,
         penalty: 0,
         wins: { '1': 0, '2': 0, '3': 0, '4': 0 },
-        maxScore: 0,
+        maxScore: Number.NEGATIVE_INFINITY, // 未参赛标记，结束时归一为 0
       })
     }
   }
@@ -147,7 +147,7 @@ export function aggregatePlayerBoard(
         rawPoints: 0,
         penalty: 0,
         wins: { '1': 0, '2': 0, '3': 0, '4': 0 },
-        maxScore: 0,
+        maxScore: Number.NEGATIVE_INFINITY,
       }
       row.rawPoints = round1(row.rawPoints + rawScoreOf(scores[i]!))
       const pts = s.pt != null ? s.pt : round1(rawScoreOf(scores[i]!) + rp[i])
@@ -163,7 +163,13 @@ export function aggregatePlayerBoard(
   return [...map.values()].map((r) => {
     // 座位级判罚（每场每选手）已累加进 r.penalty；penaltyOf 为额外的全局判罚（如赛季级）
     const penalty = round1(r.penalty + penaltyOf(r.name))
-    return { ...r, penalty, points: round1(r.points + penaltyOf(r.name)) }
+    return {
+      ...r,
+      // 最高分 = 真实最高（可为负数）；未参赛（-Infinity）归一为 0（页面显示 -）
+      maxScore: r.maxScore === Number.NEGATIVE_INFINITY ? 0 : r.maxScore,
+      penalty,
+      points: round1(r.points + penaltyOf(r.name)),
+    }
   })
 }
 

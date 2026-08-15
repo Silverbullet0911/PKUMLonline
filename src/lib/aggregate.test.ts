@@ -195,7 +195,7 @@ describe('aggregatePlayerBoard', () => {
     const board = aggregatePlayerBoard([finishedGame()])
     const by = new Map(board.map((r) => [r.name, r]))
     expect(by.get('忆水')).toMatchObject({ team: '格斗', points: 62, rawPoints: 17, penalty: 0, wins: { '1': 1 }, maxScore: 42000 })
-    expect(by.get('桃之11')).toMatchObject({ points: -88, rawPoints: -53, wins: { '4': 1 }, maxScore: 0 })
+    expect(by.get('桃之11')).toMatchObject({ points: -88, rawPoints: -53, wins: { '4': 1 }, maxScore: -28000 })
   })
   it('跨多场累加', () => {
     const g2: Game = finishedGame({

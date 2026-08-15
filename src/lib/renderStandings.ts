@@ -142,14 +142,20 @@ export function renderPlayerTable(rows: ComputedPlayerRow[], teams: TeamInfo[], 
   return `<div class="table-wrap player-table"><table><thead>${thead}</thead><tbody>${body}</tbody></table></div>`
 }
 
-/** asOf 文案：由最新完赛日期生成「M月D日终了时点」；无完赛返回 null */
-export function standingsAsOf(games: { date: string }[]): string | null {
-  const dates = games.map((g) => g.date).sort()
-  const last = dates[dates.length - 1]
-  if (!last) return null
-  const m = Number(last.slice(5, 7))
-  const d = Number(last.slice(8, 10))
-  return `${m}月${d}日终了时点`
+/** asOf 文案：取最新完赛对局（日期+半庄号），生成「M月D日第N半庄终了时点」（无半庄号则省略）；无完赛返回 null */
+export function standingsAsOf(games: { date: string; round?: string }[]): string | null {
+  const latest = [...games].sort(
+    (a, b) => b.date.localeCompare(a.date) || roundNum(b) - roundNum(a),
+  )[0]
+  if (!latest) return null
+  const m = Number(latest.date.slice(5, 7))
+  const d = Number(latest.date.slice(8, 10))
+  const n = roundNum(latest)
+  return n > 0 ? `${m}月${d}日第${n}半庄终了时点` : `${m}月${d}日终了时点`
+}
+
+function roundNum(g: { round?: string }): number {
+  return Number(g.round?.match(/(\d+)/)?.[1] ?? 0)
 }
 
 /** 当前进行中的阶段：取最后一个有完赛对局的阶段；无则 null */

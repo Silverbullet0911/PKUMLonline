@@ -96,6 +96,12 @@ describe('standingsAsOf / activeStageFromGames', () => {
     expect(standingsAsOf([{ date: '2026-09-05' }, { date: '2026-09-12' }])).toBe('9月12日终了时点')
     expect(standingsAsOf([])).toBeNull()
   })
+  it('含半庄号：最新对局日期 + 第N半庄', () => {
+    expect(standingsAsOf([
+      { date: '2026-09-01', round: '第1半庄' },
+      { date: '2026-09-01', round: '第2半庄' },
+    ])).toBe('9月1日第2半庄终了时点')
+  })
   it('取最后一个有完赛的阶段', () => {
     const games = [{ stage: '常规赛' }, { stage: '常规赛' }, { stage: '半决赛' }]
     expect(activeStageFromGames(games, ['常规赛', '半决赛', '决赛'])).toBe('半决赛')

@@ -6,7 +6,7 @@ import AdminShell from '../../components/admin/AdminShell.astro'
   <AdminShell requireRole="admin">
     <h1>赛程管理</h1>
     <form id="game-form" class="game-form">
-      <input name="season" placeholder="赛季 (如 26-27)" required>
+      <input name="season" value="26-27" required title="赛季（默认 26-27）">
       <select name="stage">
         <option value="常规赛">常规赛</option>
         <option value="半决赛">半决赛</option>
@@ -14,7 +14,7 @@ import AdminShell from '../../components/admin/AdminShell.astro'
       </select>
       <input name="date" type="date" required>
       <input name="time" placeholder="时间 (如 14:00)">
-      <input name="round" placeholder="第几半庄">
+      <input name="round" type="number" min="1" placeholder="半庄号（数字）" title="只需填数字，如 18">
       <div class="game-seat-inputs">
         <select name="seat0" data-seat="东"></select>
         <select name="seat1" data-seat="南"></select>
@@ -211,7 +211,7 @@ import AdminShell from '../../components/admin/AdminShell.astro'
           form.stage.value = data.stage
           form.date.value = data.date
           form.time.value = data.time ?? ''
-          form.round.value = data.round ?? ''
+          form.round.value = (data.round ?? '').match(/(\d+)/)?.[1] ?? ''
           const seats = data.seats ?? []
           seatSelects().forEach((s, i) => { s.value = seats[i]?.team ?? '' })
           submitBtn.textContent = '保存'
@@ -227,7 +227,7 @@ import AdminShell from '../../components/admin/AdminShell.astro'
         stage: form.stage.value,
         date: form.date.value,
         time: form.time.value.trim() || null,
-        round: form.round.value.trim() || null,
+        round: form.round.value.trim() ? `第${form.round.value.trim()}半庄` : null,
         seats: buildSeats(teams),
       }
       if (editingId) {
