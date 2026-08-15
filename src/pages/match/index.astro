@@ -16,6 +16,10 @@ import BaseLayout from '../../layouts/BaseLayout.astro'
     .md-summary { max-width: 67%; }
     .md-summary th, .md-summary td { padding: 6px 10px; font-size: 15px; }
     .md-stage { max-width: 95%; }
+    /* 手机端：总表宽度与页面宽度一致，电脑端保持 67% */
+    @media (max-width: 720px) {
+      .md-summary { max-width: 100%; }
+    }
   </style>
   <script>
     import { supabase } from '../../lib/supabase'
