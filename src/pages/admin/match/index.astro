@@ -51,7 +51,7 @@ import AdminShell from '../../../components/admin/AdminShell.astro'
   <script>
     import { supabase } from '../../../lib/supabase'
     import { dealerSeat, nextRound, settleRound } from '../../../lib/scoring'
-    import { replayGame, roundLabel, seatLabel } from '../../../lib/replay'
+    import { replayGame, roundLabel, seatLabel, riichiText } from '../../../lib/replay'
     import type { RoundResult } from '../../../lib/scoring'
     import type { StoredRound } from '../../../lib/replay'
     import pointsRaw from '../../../../data/points_table.json'
@@ -308,7 +308,10 @@ import AdminShell from '../../../components/admin/AdminShell.astro'
       const selInfo = el('p', 'sel-info', selectionText())
       wrap.appendChild(selInfo)
 
-      container.appendChild(wrap)
+      // 表单始终保持在阶段表上方（勾选/选人会重渲染表单，避免被 append 挤到阶段表下面）
+      const listEl = container.querySelector('.rounds-list')
+      if (listEl) container.insertBefore(wrap, listEl)
+      else container.appendChild(wrap)
     }
 
     function seatSelectRow(labelText: string, value: number | null, onPick: (i: number) => void): HTMLElement {
@@ -608,7 +611,7 @@ import AdminShell from '../../../components/admin/AdminShell.astro'
       const table = el('table')
       const thead = el('thead')
       const htr = el('tr')
-      ;['序', '局', '结果', '打点', '供托', '增减', '操作'].forEach((h) => htr.appendChild(el('th', '', h)))
+      ;['序', '局', '立直家', '结果', '打点', '供托', '增减', '操作'].forEach((h) => htr.appendChild(el('th', '', h)))
       thead.appendChild(htr)
       table.appendChild(thead)
       const tbody = el('tbody')
@@ -616,6 +619,7 @@ import AdminShell from '../../../components/admin/AdminShell.astro'
         const tr = el('tr', 'settled')
         tr.appendChild(el('td', '', String(h.order)))
         tr.appendChild(el('td', '', h.override?.roundLabel ?? roundLabel(h.round)))
+        tr.appendChild(el('td', '', riichiText(h.result.riichi)))
         tr.appendChild(el('td', '', h.override?.result ?? resultText(h.result)))
         tr.appendChild(el('td', 'num', h.override?.points != null ? String(h.override.points) : pointsText(h.result)))
         tr.appendChild(el('td', 'num', String(h.pool * 1000)))
@@ -640,6 +644,7 @@ import AdminShell from '../../../components/admin/AdminShell.astro'
         const tr = el('tr')
         tr.appendChild(el('td', '', String(rep.current.draft.order)))
         tr.appendChild(el('td', 'draft-badge', roundLabel(rep.current.round) + '（草稿）'))
+        tr.appendChild(el('td', '', ''))
         tr.appendChild(el('td', 'draft-badge', '未完成'))
         tr.appendChild(el('td', '', ''))
         tr.appendChild(el('td', '', ''))
@@ -667,7 +672,7 @@ import AdminShell from '../../../components/admin/AdminShell.astro'
         const input = document.createElement('input')
         input.type = 'number'
         input.value = String(h.deltas[i])
-        input.style.width = '80px'
+        input.style.width = '120px' // 手动修改框加长 50%
         dInputs.push(input)
         label.append(document.createTextNode(seatLabelOf(i)), input)
         row.appendChild(label)

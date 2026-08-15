@@ -145,3 +145,20 @@ export function roundLabel(round: RoundState): string {
 export function seatLabel(i: number): string {
   return SEAT_ORDER[i] ?? '?'
 }
+
+/** 立直家文案：如 [true,false,false,false] -> '东'；[true,false,false,true] -> '东北'；全 false -> '' */
+export function riichiText(riichi: boolean[] | null | undefined): string {
+  return (riichi ?? [false, false, false, false])
+    .map((v, i) => (v ? SEAT_ORDER[i] : ''))
+    .join('')
+}
+
+/** 解析立直家文案（'东'/'东西'/'东南西北'/空 等）为四家布尔 */
+export function parseRiichi(text: string): boolean[] {
+  const out = [false, false, false, false]
+  for (const ch of text.trim()) {
+    const idx = SEAT_ORDER.indexOf(ch as (typeof SEAT_ORDER)[number])
+    if (idx >= 0) out[idx] = true
+  }
+  return out
+}

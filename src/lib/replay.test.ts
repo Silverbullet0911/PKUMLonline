@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { replayGame, roundLabel, seatLabel } from './replay'
+import { replayGame, roundLabel, seatLabel, riichiText, parseRiichi } from './replay'
 import type { StoredRound } from './replay'
 
 const round = (over: Partial<StoredRound>): StoredRound => ({
@@ -149,5 +149,22 @@ describe('roundLabel / seatLabel', () => {
   it('座位文案', () => {
     expect(seatLabel(0)).toBe('东')
     expect(seatLabel(3)).toBe('北')
+  })
+})
+
+describe('riichiText / parseRiichi', () => {
+  it('立直家文案：东 / 东西 / 东南西北 / 空', () => {
+    expect(riichiText([true, false, false, false])).toBe('东')
+    expect(riichiText([true, false, true, false])).toBe('东西')
+    expect(riichiText([true, true, true, true])).toBe('东南西北')
+    expect(riichiText([false, false, false, false])).toBe('')
+    expect(riichiText(null)).toBe('')
+  })
+  it('解析文案为四家布尔', () => {
+    expect(parseRiichi('东')).toEqual([true, false, false, false])
+    expect(parseRiichi('东西')).toEqual([true, false, true, false])
+    expect(parseRiichi('东南西北')).toEqual([true, true, true, true])
+    expect(parseRiichi('')).toEqual([false, false, false, false])
+    expect(parseRiichi(' 北 ')).toEqual([false, false, false, true])
   })
 })

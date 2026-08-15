@@ -19,7 +19,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro'
   </style>
   <script>
     import { supabase } from '../../lib/supabase'
-    import { replayGame, roundLabel, seatLabel } from '../../lib/replay'
+    import { replayGame, roundLabel, seatLabel, riichiText } from '../../lib/replay'
     import { rawScoreOf, rankPointsForScores } from '../../lib/aggregate'
     import type { RoundResult } from '../../lib/scoring'
     import teamsRaw from '../../../data/teams.json'
@@ -120,6 +120,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro'
       const st = el('table')
       const sh = el('tr')
       sh.appendChild(el('th', '', '局'))
+      sh.appendChild(el('th', '', '立直家'))
       seats.forEach((s: any, i: number) => sh.appendChild(el('th', '', `${s.seat} ${s.player ?? ''}`)))
       sh.appendChild(el('th', '', '结果'))
       sh.appendChild(el('th', '', '打点'))
@@ -128,6 +129,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro'
       rep.history.forEach((h) => {
         const tr = el('tr')
         tr.appendChild(el('td', '', h.override?.roundLabel ?? roundLabel(h.round)))
+        tr.appendChild(el('td', '', riichiText(h.result.riichi)))
         h.scores.forEach((v) => tr.appendChild(el('td', 'num', String(v))))
         tr.appendChild(el('td', '', h.override?.result ?? resultText(h.result)))
         tr.appendChild(el('td', 'num', h.override?.points != null ? String(h.override.points) : pointsText(h.result)))

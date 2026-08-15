@@ -30,7 +30,7 @@ import AdminShell from '../../../../components/admin/AdminShell.astro'
   </style>
   <script>
     import { supabase } from '../../../../lib/supabase'
-    import { replayGame, roundLabel, seatLabel } from '../../../../lib/replay'
+    import { replayGame, roundLabel, seatLabel, riichiText, parseRiichi } from '../../../../lib/replay'
     import { rawScoreOf, rankPointsForScores, competitionRanks } from '../../../../lib/aggregate'
     import type { RoundResult } from '../../../../lib/scoring'
 
@@ -255,20 +255,20 @@ import AdminShell from '../../../../components/admin/AdminShell.astro'
       root.appendChild(sumScoreEl)
       root.appendChild(sumPtEl)
 
-      renderRoundsTable()
       renderActions()
+      renderRoundsTable()
       refresh()
     }
 
-    // ---------- 阶段对局表（每格可改 + 任意位置插入 + 局名可改） ----------
+    // ---------- 阶段对局表（每格可改 + 任意位置插入 + 局名/立直家可改） ----------
     function renderRoundsTable() {
       if (!rep) return
       const box = el('div', 'table-wrap res-stages')
-      box.appendChild(el('h3', '', '阶段对局表（管理员可修改每一格：局/结果/打点/供托/四家增减；点「＋」在任意两行间插入一行）'))
+      box.appendChild(el('h3', '', '阶段对局表（管理员可修改每一格：局/立直家/结果/打点/供托/四家增减；点「＋」在任意两行间插入一行）'))
       const table = el('table')
       const thead = el('thead')
       const htr = el('tr')
-      ;['局', '结果', '打点', '供托', '东', '南', '西', '北', ''].forEach((h) => htr.appendChild(el('th', '', h)))
+      ;['局', '立直家', '结果', '打点', '供托', '东', '南', '西', '北', ''].forEach((h) => htr.appendChild(el('th', '', h)))
       thead.appendChild(htr)
       table.appendChild(thead)
       const tbody = el('tbody')
@@ -279,6 +279,10 @@ import AdminShell from '../../../../components/admin/AdminShell.astro'
         const roundLabelInput = document.createElement('input')
         roundLabelInput.type = 'text'
         roundLabelInput.value = h.override?.roundLabel ?? roundLabel(h.round)
+        const riichiInput = document.createElement('input')
+        riichiInput.type = 'text'
+        riichiInput.placeholder = '东/东西/…'
+        riichiInput.value = riichiText(h.result.riichi)
         const resultInput = document.createElement('input')
         resultInput.type = 'text'
         resultInput.value = h.override?.result ?? resultText(h.result)
@@ -291,10 +295,12 @@ import AdminShell from '../../../../components/admin/AdminShell.astro'
         const deltaInputs = [0, 1, 2, 3].map((i) => {
           const inp = document.createElement('input')
           inp.type = 'number'
+          inp.style.width = '126px' // 东南西北修改框加长 50%
           inp.value = String(h.deltas[i])
           return inp
         })
         tr.appendChild(wrapTd(roundLabelInput))
+        tr.appendChild(wrapTd(riichiInput))
         tr.appendChild(wrapTd(resultInput))
         tr.appendChild(wrapTd(pointsInput))
         tr.appendChild(wrapTd(poolInput))
@@ -305,7 +311,7 @@ import AdminShell from '../../../../components/admin/AdminShell.astro'
         insertBtn.title = '在此行后插入一行'
         insertBtn.addEventListener('click', () => insertAfter(h.order))
         tr.appendChild(wrapTd(insertBtn))
-        roundEdits.push({ order: h.order, roundLabelInput, resultInput, pointsInput, poolInput, deltaInputs })
+        roundEdits.push({ order: h.order, roundLabelInput, riichiInput, resultInput, pointsInput, poolInput, deltaInputs })
         tbody.appendChild(tr)
       })
       table.appendChild(tbody)
@@ -350,7 +356,9 @@ import AdminShell from '../../../../components/admin/AdminShell.astro'
         if (e.resultInput.value.trim()) override.result = e.resultInput.value.trim()
         if (e.pointsInput.value !== '') override.points = Number(e.pointsInput.value)
         if (e.poolInput.value !== '') override.pool = Number(e.poolInput.value)
-        const { error } = await supabase.from('rounds').upsert({ game_id: gameId, order: e.order, override }, { onConflict: 'game_id,order' })
+        // 立直家：直接写回 rounds.riichi（影响供托重算）
+        const riichi = parseRiichi(e.riichiInput.value)
+        const { error } = await supabase.from('rounds').upsert({ game_id: gameId, order: e.order, override, riichi }, { onConflict: 'game_id,order' })
         if (error) { showErr('保存失败：' + error.message); return false }
       }
       return true
