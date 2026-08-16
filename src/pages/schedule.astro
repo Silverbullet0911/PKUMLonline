@@ -5,13 +5,13 @@ import FutureGames from '../components/FutureGames.astro'
 import GameResult from '../components/GameResult.astro'
 import MonthIndex from '../components/MonthIndex.astro'
 import { schedule } from '../lib/data'
-import { groupByMonth, roundNum } from '../lib/schedule'
+import { groupByMonth, compareFinished } from '../lib/schedule'
 
 const upcoming = schedule.games.filter((g) => g.status === 'upcoming')
 const finished = schedule.games.filter((g) => g.status === 'finished')
 const finishedGroups = groupByMonth(finished, {
   order: 'desc',
-  within: (a, b) => roundNum(b) - roundNum(a),
+  within: compareFinished,
 })
 const finishedMonths = finishedGroups.map((mg) => mg.month)
 ---
@@ -75,6 +75,7 @@ const finishedMonths = finishedGroups.map((mg) => mg.month)
   <script>
     import { supabase } from '../lib/supabase'
     import { season } from '../lib/data'
+    import { compareUpcoming, compareFinished } from '../lib/schedule'
     import { mapDbGame, splitGames, monthGroupsOf, teamStyle, escHtml } from '../lib/renderSchedule'
 
     ;(async () => {
@@ -89,7 +90,7 @@ const finishedMonths = finishedGroups.map((mg) => mg.month)
         if (upcoming.length === 0) {
           up.innerHTML = '<p class="empty">暂无赛程。</p>'
         } else {
-          const groups = monthGroupsOf(upcoming, 'asc')
+          const groups = monthGroupsOf(upcoming, 'asc', compareUpcoming)
           up.innerHTML = groups.map((mg) => `
             <section id="sch-${mg.month}" class="month-group">
               <h2>${escHtml(mg.month)}</h2>
@@ -118,7 +119,7 @@ const finishedMonths = finishedGroups.map((mg) => mg.month)
         if (finished.length === 0) {
           res.innerHTML = '<p class="empty">暂无赛果。</p>'
         } else {
-          const groups = monthGroupsOf(finished, 'desc')
+          const groups = monthGroupsOf(finished, 'desc', compareFinished)
           res.innerHTML = groups.map((mg) => `
             <section id="res-${mg.month}" class="month-group">
               <h2>${escHtml(mg.month)}</h2>

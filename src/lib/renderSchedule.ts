@@ -49,8 +49,12 @@ export function splitGames(games: Game[]): { upcoming: Game[]; finished: Game[] 
   }
 }
 
-export function monthGroupsOf(games: Game[], order: 'asc' | 'desc'): ReturnType<typeof groupByMonth<Game>> {
-  return groupByMonth(games, { order })
+export function monthGroupsOf(
+  games: Game[],
+  order: 'asc' | 'desc',
+  within?: (a: Game, b: Game) => number,
+): ReturnType<typeof groupByMonth<Game>> {
+  return groupByMonth(games, { order, within })
 }
 
 export function escHtml(s: string): string {

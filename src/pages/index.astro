@@ -4,6 +4,7 @@ import TeamStandingsTable from '../components/TeamStandingsTable.astro'
 import FutureGames from '../components/FutureGames.astro'
 import GameResult from '../components/GameResult.astro'
 import { season, standings, news, schedule, teams } from '../lib/data'
+import { compareUpcoming, compareFinished } from '../lib/schedule'
 import { computeTeamBoard } from '../lib/standings'
 
 // 首页默认显示 26-27 常规赛队伍榜
@@ -12,11 +13,8 @@ const regData = standings.stages.find((s) => s.name === '常规赛')
 const teamNames = teams.teams.map((t) => t.name)
 const teamRows = computeTeamBoard(regData?.teamBoard ?? [], regStage?.promoteRank ?? 6, teamNames)
 const latestNews = news.items.slice(0, 5)
-const upcomingGames = schedule.games.filter((g) => g.status === 'upcoming').slice(0, 2)
-const roundNum = (g: { round?: string }) => Number(g.round?.match(/(\d+)/)?.[1] ?? 0)
-const latestFinished = schedule.games
-  .filter((g) => g.status === 'finished')
-  .sort((a, b) => b.date.localeCompare(a.date) || roundNum(b) - roundNum(a))[0]
+const upcomingGames = schedule.games.filter((g) => g.status === 'upcoming').sort(compareUpcoming).slice(0, 2)
+const latestFinished = schedule.games.filter((g) => g.status === 'finished').sort(compareFinished)[0]
 const base = import.meta.env.BASE_URL
 ---
 <BaseLayout title="首页">
@@ -78,11 +76,11 @@ const base = import.meta.env.BASE_URL
   <script>
     import { supabase } from '../lib/supabase'
     import { season, teams } from '../lib/data'
+    import { compareUpcoming, compareFinished } from '../lib/schedule'
     import { mapDbGame, splitGames } from '../lib/renderSchedule'
     import { teamStyle, esc, renderTeamTable, standingsAsOf } from '../lib/renderStandings'
     import { aggregateTeamBoard } from '../lib/aggregate'
     import { computeTeamBoard } from '../lib/standings'
-    import { roundNum } from '../lib/schedule'
 
     const base = import.meta.env.BASE_URL
     const teamNames = teams.teams.map((t) => t.name)
@@ -94,7 +92,7 @@ const base = import.meta.env.BASE_URL
       const { upcoming, finished } = splitGames(games)
 
       // 最新赛果
-      const latest = [...finished].sort((a, b) => b.date.localeCompare(a.date) || roundNum(b) - roundNum(a))[0]
+      const latest = [...finished].sort(compareFinished)[0]
       if (latest) {
         const box = document.getElementById('home-result')
         if (box) {
@@ -115,7 +113,7 @@ const base = import.meta.env.BASE_URL
 
       // 最近赛程（最多 2 场）
       const ups = [...upcoming]
-        .sort((a, b) => a.date.localeCompare(b.date) || roundNum(a) - roundNum(b))
+        .sort(compareUpcoming)
         .slice(0, 2)
       if (ups.length > 0) {
         const box = document.getElementById('home-schedule')

@@ -1,7 +1,7 @@
 ---
 import MonthIndex from './MonthIndex.astro'
 import { teams, teamText } from '../lib/data'
-import { groupByMonth } from '../lib/schedule'
+import { groupByMonth, compareUpcoming } from '../lib/schedule'
 import type { Game } from '../lib/types'
 
 interface Props {
@@ -12,7 +12,7 @@ interface Props {
 }
 
 const { games, showGuide = false, showHeading = true, prefix = 'sch' } = Astro.props
-const groups = groupByMonth(games, { order: 'asc' })
+const groups = groupByMonth(games, { order: 'asc', within: compareUpcoming })
 const months = groups.map((g) => g.month)
 
 const colorOf = (name: string) => teams.teams.find((t) => t.name === name)?.color ?? '#9ca3af'
