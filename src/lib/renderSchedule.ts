@@ -17,6 +17,7 @@ export interface DbGame {
   time: string | null
   round: string | null
   status: 'upcoming' | 'finished'
+  live_status?: string | null
   seats: { seat: string; team: string; player: string | null; rank?: number; points?: number; pt?: number; penalty?: number }[]
 }
 
@@ -27,6 +28,7 @@ export function mapDbGame(g: DbGame): Game {
     date: g.date,
     time: g.time ?? undefined,
     round: g.round ?? undefined,
+    liveStatus: g.live_status === '直播' || g.live_status === '非直播' ? g.live_status : undefined,
     status: g.status,
     seats: (g.seats ?? []).map((s) => ({
       seat: s.seat,

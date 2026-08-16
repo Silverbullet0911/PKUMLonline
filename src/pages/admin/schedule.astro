@@ -15,6 +15,11 @@ import AdminShell from '../../components/admin/AdminShell.astro'
       <input name="date" type="date" required>
       <input name="time" placeholder="时间 (如 14:00)">
       <input name="round" type="number" min="1" placeholder="半庄号（数字）" title="只需填数字，如 18">
+      <select name="live">
+        <option value="">待定</option>
+        <option value="直播">直播</option>
+        <option value="非直播">非直播</option>
+      </select>
       <div class="game-seat-inputs">
         <select name="seat0" data-seat="东"></select>
         <select name="seat1" data-seat="南"></select>
@@ -211,6 +216,7 @@ import AdminShell from '../../components/admin/AdminShell.astro'
           form.stage.value = data.stage
           form.date.value = data.date
           form.time.value = data.time ?? ''
+          form.live.value = data.live_status ?? ''
           form.round.value = (data.round ?? '').match(/(\d+)/)?.[1] ?? ''
           const seats = data.seats ?? []
           seatSelects().forEach((s, i) => { s.value = seats[i]?.team ?? '' })
@@ -228,6 +234,7 @@ import AdminShell from '../../components/admin/AdminShell.astro'
         date: form.date.value,
         time: form.time.value.trim() || null,
         round: form.round.value.trim() ? `第${form.round.value.trim()}半庄` : null,
+        live_status: form.live.value.trim() || null,
         seats: buildSeats(teams),
       }
       if (editingId) {

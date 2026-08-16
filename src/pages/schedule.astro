@@ -98,6 +98,7 @@ const finishedMonths = finishedGroups.map((mg) => mg.month)
                   <div class="future-meta">
                     <div><span class="fm-date">${escHtml(g.date)}</span><span class="fm-rest"> · ${escHtml(g.stage)}${g.round ? ' ' + escHtml(g.round) : ''}</span></div>
                     ${g.time ? `<div class="fm-time">${escHtml(g.time)}</div>` : ''}
+                    ${g.liveStatus ? `<div class="fm-time">${escHtml(g.liveStatus)}</div>` : ''}
                   </div>
                   <div class="future-seats">
                     ${g.seats.map((s) => `

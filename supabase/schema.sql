@@ -31,8 +31,12 @@ create table if not exists public.games (
   time text,
   round text,
   status text not null default 'upcoming' check (status in ('upcoming','finished')),
+  live_status text check (live_status in ('直播','非直播')),
   seats jsonb not null default '[]'::jsonb
 );
+
+-- 直播状态（null = 待定/不显示）：老库补列
+alter table public.games add column if not exists live_status text check (live_status in ('直播','非直播'));
 
 alter table public.games enable row level security;
 

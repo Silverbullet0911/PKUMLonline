@@ -31,6 +31,7 @@ const ts = (name: string) => `background:${colorOf(name)};color:${teamText(name)
                 <div class="future-meta">
                   <div><span class="fm-date">{g.date}</span><span class="fm-rest"> · {g.stage}{g.round ? ` ${g.round}` : ''}</span></div>
                   {g.time && <div class="fm-time">{g.time}</div>}
+                  {g.liveStatus && <div class="fm-time">{g.liveStatus}</div>}
                 </div>
                 <div class="future-seats">
                   {

@@ -90,6 +90,8 @@ export interface Game {
   date: string
   round?: string
   time?: string
+  /** 直播状态：'直播' / '非直播'；缺省（待定）时前台不显示 */
+  liveStatus?: '直播' | '非直播'
   status: 'finished' | 'upcoming'
   seats: GameSeat[]
   replayUrl?: string

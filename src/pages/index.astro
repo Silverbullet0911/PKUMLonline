@@ -125,6 +125,7 @@ const base = import.meta.env.BASE_URL
             `<div class="future-meta">` +
             `<div><span class="fm-date">${esc(g.date)}</span><span class="fm-rest"> · ${esc(g.stage)}${g.round ? ' ' + esc(g.round) : ''}</span></div>` +
             `${g.time ? `<div class="fm-time">${esc(g.time)}</div>` : ''}` +
+            `${g.liveStatus ? `<div class="fm-time">${esc(g.liveStatus)}</div>` : ''}` +
             `</div>` +
             `<div class="future-seats">` +
             g.seats.map((s) =>
