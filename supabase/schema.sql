@@ -224,6 +224,54 @@ $$;
 
 grant execute on function public.assign_player to authenticated;
 
+-- ============ 裁判/管理员批量填选手（一次填 4 座） ============
+-- 相当于所有队长的填人权限之和。仅允许修改 player 字段；
+-- seat/team 必须与库中原座位一致（防篡改），保留 points/rank/pt/penalty 等既有字段。
+create or replace function public.fill_players(p_game_id uuid, p_seats jsonb)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_role text;
+  v_game record;
+  v_new_seats jsonb;
+  v_idx int;
+begin
+  select role into v_role from public.profiles where id = auth.uid();
+  if v_role is null or v_role not in ('admin','referee') then
+    raise exception 'forbidden';
+  end if;
+  if p_seats is null or jsonb_array_length(p_seats) <> 4 then
+    raise exception 'seats must be 4';
+  end if;
+  select * into v_game from public.games where id = p_game_id;
+  if v_game.id is null then raise exception 'game not found'; end if;
+  if v_game.status <> 'upcoming' then raise exception 'game already finished'; end if;
+  if v_game.seats is null or jsonb_array_length(v_game.seats) <> 4 then
+    raise exception 'game seats must be 4';
+  end if;
+
+  v_new_seats := v_game.seats;
+  for v_idx in 0..3 loop
+    if coalesce(v_game.seats->v_idx->>'seat', '') <> coalesce(p_seats->v_idx->>'seat', '')
+       or coalesce(v_game.seats->v_idx->>'team', '') <> coalesce(p_seats->v_idx->>'team', '') then
+      raise exception 'seat % does not match original game seats', v_idx;
+    end if;
+    v_new_seats := jsonb_set(
+      v_new_seats,
+      array[v_idx::text],
+      v_new_seats->v_idx || jsonb_build_object('player', p_seats->v_idx->>'player')
+    );
+  end loop;
+  update public.games set seats = v_new_seats where id = p_game_id;
+  return v_new_seats;
+end;
+$$;
+
+grant execute on function public.fill_players to authenticated;
+
 -- ============ 提交赛果 / 退回修改 ============
 -- 裁判角色无 games 写权限（RLS 仅 admin 可写 games），提交赛果经此 security-definer 函数。
 -- 赛果由录入页客户端用 scoring.ts 现算后传入；SQL 侧校验 4 座位、座位/队伍/选手不得被篡改、

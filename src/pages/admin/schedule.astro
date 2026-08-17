@@ -110,11 +110,10 @@ import AdminShell from '../../components/admin/AdminShell.astro'
           ops.append(eb, db)
         }
         if (g.status === 'upcoming') {
-          if (role === 'admin') {
-            const fb = document.createElement('button'); fb.textContent = '填选手'; fb.dataset.fill = g.id
-            fb.style.marginLeft = '8px'
-            ops.appendChild(fb)
-          }
+          // 填选手：admin 与裁判均可（裁判拥有所有队长填人权限之和）
+          const fb = document.createElement('button'); fb.textContent = '填选手'; fb.dataset.fill = g.id
+          fb.style.marginLeft = '8px'
+          ops.appendChild(fb)
           const link = document.createElement('a')
           link.href = base + 'admin/match/?id=' + encodeURIComponent(g.id)
           link.textContent = '录入'
@@ -200,7 +199,7 @@ import AdminShell from '../../components/admin/AdminShell.astro'
         team: fillGame.seats[i].team,
         player: sel.value || null,
       }))
-      const { error } = await supabase.from('games').update({ seats }).eq('id', fillGame.id)
+      const { error } = await supabase.rpc('fill_players', { p_game_id: fillGame.id, p_seats: seats })
       if (error) return showErr('保存选手失败：' + error.message)
       closeFill()
       load()
