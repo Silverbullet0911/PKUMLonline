@@ -260,7 +260,7 @@ import StageTabs from '../../components/StageTabs.astro'
           submitBtn.textContent = '保存'
         }
       }
-    })
+    }
     form.addEventListener('submit', async (e) => {
       e.preventDefault()
       const teams = seatSelects().map((s) => s.value)
