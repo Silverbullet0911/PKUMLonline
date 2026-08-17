@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro'
 import AdminShell from '../../components/admin/AdminShell.astro'
+import StageTabs from '../../components/StageTabs.astro'
 ---
 <BaseLayout title="赛程管理">
   <AdminShell requireRole="admin" allowReferee>
@@ -29,10 +30,19 @@ import AdminShell from '../../components/admin/AdminShell.astro'
       <button type="submit" id="game-submit">新增</button>
     </form>
     <p id="game-err" class="admin-err"></p>
-    <table class="ann-table">
-      <thead><tr><th>日期</th><th>阶段</th><th>半庄</th><th>对阵</th><th>操作</th></tr></thead>
-      <tbody id="game-list"></tbody>
-    </table>
+    <StageTabs stages={[{ name: '赛程' }, { name: '赛果' }]} />
+    <section id="stage-0" class="stage-panel active">
+      <table class="ann-table">
+        <thead><tr><th>日期</th><th>阶段</th><th>半庄</th><th>对阵</th><th>操作</th></tr></thead>
+        <tbody id="game-list-up"></tbody>
+      </table>
+    </section>
+    <section id="stage-1" class="stage-panel">
+      <table class="ann-table">
+        <thead><tr><th>日期</th><th>阶段</th><th>半庄</th><th>对阵</th><th>操作</th></tr></thead>
+        <tbody id="game-list-fin"></tbody>
+      </table>
+    </section>
     <div id="fill-panel"></div>
   </AdminShell>
   <style is:global>
@@ -49,9 +59,11 @@ import AdminShell from '../../components/admin/AdminShell.astro'
   <script>
     import { supabase } from '../../lib/supabase'
     import { buildSeats } from '../../lib/games'
+    import { compareUpcoming, compareFinished } from '../../lib/schedule'
     import teamsRaw from '../../../data/teams.json'
     import rosterRaw from '../../../data/current_roster.json'
-    const list = document.getElementById('game-list')!
+    const upList = document.getElementById('game-list-up')!
+    const finList = document.getElementById('game-list-fin')!
     const form = document.getElementById('game-form') as HTMLFormElement
     const submitBtn = document.getElementById('game-submit') as HTMLButtonElement
     const errEl = document.getElementById('game-err')!
@@ -96,8 +108,26 @@ import AdminShell from '../../components/admin/AdminShell.astro'
       if (error) return showErr('加载失败：' + error.message)
       errEl.textContent = ''
       gamesCache = data ?? []
-      list.innerHTML = ''
-      for (const g of data) {
+      // 排序与前台一致：赛程 = 阶段正序→日期升序→半庄号升序；赛果 = 相反
+      const upcoming = (data ?? []).filter((g: any) => g.status === 'upcoming').sort(compareUpcoming)
+      const finished = (data ?? []).filter((g: any) => g.status === 'finished').sort(compareFinished)
+      renderRows(upList, upcoming, '暂无赛程。')
+      renderRows(finList, finished, '暂无赛果。')
+    }
+
+    function renderRows(tbody: HTMLElement, games: any[], emptyText: string) {
+      tbody.innerHTML = ''
+      if (games.length === 0) {
+        const tr = document.createElement('tr')
+        const td = document.createElement('td')
+        td.colSpan = 5
+        td.textContent = emptyText
+        td.style.color = 'var(--muted)'
+        tr.appendChild(td)
+        tbody.appendChild(tr)
+        return
+      }
+      for (const g of games) {
         const tr = document.createElement('tr')
         const td = (s: string) => { const x = document.createElement('td'); x.textContent = s; tr.appendChild(x) }
         td(g.date); td(g.stage); td(g.round ?? '')
@@ -134,7 +164,7 @@ import AdminShell from '../../components/admin/AdminShell.astro'
           }
         }
         tr.appendChild(ops)
-        list.appendChild(tr)
+        tbody.appendChild(tr)
       }
     }
 
@@ -204,7 +234,7 @@ import AdminShell from '../../components/admin/AdminShell.astro'
       closeFill()
       load()
     }
-    list.addEventListener('click', async (e) => {
+    const onListClick = async (e: Event) => {
       const el = e.target as HTMLElement
       const id = el.dataset.del ?? el.dataset.edit ?? ''
       if (el.dataset.del) {
@@ -253,6 +283,17 @@ import AdminShell from '../../components/admin/AdminShell.astro'
         if (error) return showErr('新增失败：' + error.message)
       }
       form.reset(); load()
+    })
+    upList.addEventListener('click', onListClick)
+    finList.addEventListener('click', onListClick)
+    // 赛程/赛果标签切换（默认显示赛程）
+    document.querySelectorAll('.stage-tab').forEach((tab) => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.stage-tab').forEach((t) => t.classList.remove('active'))
+        document.querySelectorAll('.stage-panel').forEach((p) => p.classList.remove('active'))
+        tab.classList.add('active')
+        document.getElementById(tab.dataset.target ?? '')?.classList.add('active')
+      })
     })
     ;(async () => {
       const { data: { session } } = await supabase.auth.getSession()
