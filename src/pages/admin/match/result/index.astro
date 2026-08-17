@@ -327,7 +327,7 @@ import AdminShell from '../../../../components/admin/AdminShell.astro'
       if (!gameId) return
       clearErr()
       const { data: later } = await supabase
-        .from('rounds').select('id, order').eq('game_id', gameId).gt('order', order).order('order', { ascending: false })
+        .from('rounds').select('id, "order"').eq('game_id', gameId).gt('"order"', order).order('"order"', { ascending: false })
       for (const r of later ?? []) {
         const { error } = await supabase.from('rounds').update({ order: r.order + 1 }).eq('id', r.id)
         if (error) { showErr('插入失败（重排）' + error.message); return }

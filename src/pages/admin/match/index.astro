@@ -565,7 +565,18 @@ import AdminShell from '../../../components/admin/AdminShell.astro'
       const savedOrder = editingOrder
       const savedMode = editMode
       if (editingOrder != null && editMode === 'rewind') {
-        await supabase.from('rounds').delete().eq('game_id', gameId).gt('order', editingOrder)
+        // order 为 Postgres 保留字，过滤列需加双引号，否则被 PostgREST 当作排序参数而 400
+        const del = await supabase.from('rounds').delete().eq('game_id', gameId).gt('"order"', editingOrder)
+        if (del.error) {
+          editingOrder = null
+          editMode = null
+          editState = null
+          resetForm()
+          await refreshRounds()
+          render()
+          showErr('回退失败（后续局未删除）：' + del.error.message)
+          return
+        }
       }
       editingOrder = null
       editMode = null
