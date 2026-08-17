@@ -3,7 +3,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro'
 import AdminShell from '../../components/admin/AdminShell.astro'
 ---
 <BaseLayout title="赛程管理">
-  <AdminShell requireRole="admin">
+  <AdminShell requireRole="admin" allowReferee>
     <h1>赛程管理</h1>
     <form id="game-form" class="game-form">
       <input name="season" value="26-27" required title="赛季（默认 26-27）">
@@ -58,6 +58,7 @@ import AdminShell from '../../components/admin/AdminShell.astro'
     const fillPanel = document.getElementById('fill-panel')!
     const base = import.meta.env.BASE_URL
     let editingId: string | null = null
+    let role: string | null = null
     let teamsCache: string[] = []
     let gamesCache: any[] = []
     let fillGame: any = null
@@ -102,13 +103,18 @@ import AdminShell from '../../components/admin/AdminShell.astro'
         td(g.date); td(g.stage); td(g.round ?? '')
         td((g.seats ?? []).map((s: { team: string }) => s.team).join(' / '))
         const ops = document.createElement('td')
-        const eb = document.createElement('button'); eb.textContent = '改'; eb.dataset.edit = g.id
-        const db = document.createElement('button'); db.textContent = '删'; db.dataset.del = g.id
-        ops.append(eb, db)
+        // 管理员专属操作：改 / 删（裁判不可改赛程，RLS 也会拒绝）
+        if (role === 'admin') {
+          const eb = document.createElement('button'); eb.textContent = '改'; eb.dataset.edit = g.id
+          const db = document.createElement('button'); db.textContent = '删'; db.dataset.del = g.id
+          ops.append(eb, db)
+        }
         if (g.status === 'upcoming') {
-          const fb = document.createElement('button'); fb.textContent = '填选手'; fb.dataset.fill = g.id
-          fb.style.marginLeft = '8px'
-          ops.appendChild(fb)
+          if (role === 'admin') {
+            const fb = document.createElement('button'); fb.textContent = '填选手'; fb.dataset.fill = g.id
+            fb.style.marginLeft = '8px'
+            ops.appendChild(fb)
+          }
           const link = document.createElement('a')
           link.href = base + 'admin/match/?id=' + encodeURIComponent(g.id)
           link.textContent = '录入'
@@ -120,11 +126,13 @@ import AdminShell from '../../components/admin/AdminShell.astro'
           link.textContent = '赛果'
           link.style.marginLeft = '8px'
           ops.appendChild(link)
-          const editLink = document.createElement('a')
-          editLink.href = base + 'admin/match/result/?id=' + encodeURIComponent(g.id)
-          editLink.textContent = '改赛果'
-          editLink.style.marginLeft = '8px'
-          ops.appendChild(editLink)
+          if (role === 'admin') {
+            const editLink = document.createElement('a')
+            editLink.href = base + 'admin/match/result/?id=' + encodeURIComponent(g.id)
+            editLink.textContent = '改赛果'
+            editLink.style.marginLeft = '8px'
+            ops.appendChild(editLink)
+          }
         }
         tr.appendChild(ops)
         list.appendChild(tr)
@@ -247,6 +255,16 @@ import AdminShell from '../../components/admin/AdminShell.astro'
       }
       form.reset(); load()
     })
-    loadTeams(); loadRosters(); load()
+    ;(async () => {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) return
+      const { data: profile } = await supabase.from('profiles').select('role').eq('id', session.user.id).single()
+      role = profile?.role ?? null
+      // 裁判只能查看赛程并进入录入，不能新增/编辑/删除赛程
+      if (role !== 'admin') {
+        form.style.display = 'none'
+      }
+      loadTeams(); loadRosters(); load()
+    })()
   </script>
 </BaseLayout>

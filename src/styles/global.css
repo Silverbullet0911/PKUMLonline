@@ -410,6 +410,9 @@ html { scroll-padding-top: 45vh; }
 }
 .fm-date { display: inline-block; width: 84px; text-align: center; }
 .fm-time { width: 84px; text-align: center; font-size: 14px; font-weight: 400; color: var(--muted); }
+/* 时间与直播状态同一行：时间占 84px 列，直播/非直播紧跟其后（位于"xx赛 第N半庄"正下方） */
+.fm-subrow { display: flex; align-items: center; }
+.fm-live { font-size: 14px; font-weight: 400; color: var(--muted); white-space: nowrap; padding-left: 6px; }
 .future-seats {
   display: flex;
   gap: 10px;

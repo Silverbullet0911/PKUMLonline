@@ -1,14 +1,16 @@
 ---
 interface Props {
   requireRole?: 'admin' | 'referee' | 'captain'
+  /** 允许裁判一并访问（如赛程列表，裁判可查看并进入录入） */
+  allowReferee?: boolean
 }
-const { requireRole } = Astro.props
+const { requireRole, allowReferee = false } = Astro.props
 ---
-<div class="admin-shell" data-require-role={requireRole ?? ''}>
+<div class="admin-shell" data-require-role={requireRole ?? ''} data-allow-referee={allowReferee}>
   <nav class="admin-nav">
     <a href={`${import.meta.env.BASE_URL}admin/`}>仪表盘</a>
-    {(!requireRole || requireRole === 'admin') && <a href={`${import.meta.env.BASE_URL}admin/announcements/`}>公告</a>}
-    {(!requireRole || requireRole === 'admin') && <a href={`${import.meta.env.BASE_URL}admin/schedule/`}>赛程</a>}
+    <a class="admin-only" href={`${import.meta.env.BASE_URL}admin/announcements/`}>公告</a>
+    <a href={`${import.meta.env.BASE_URL}admin/schedule/`}>赛程</a>
     <a href={`${import.meta.env.BASE_URL}schedule/`}>前台赛程</a>
     <button id="logout" class="admin-logout">退出</button>
   </nav>
@@ -31,7 +33,13 @@ const { requireRole } = Astro.props
       .from('profiles').select('role').eq('id', session.user.id).single()
     const role = profile?.role ?? null
     if (!canAccessAdmin(role)) return redirect(role === 'captain' ? 'captain/' : 'admin/login/')
-    const required = (document.querySelector('.admin-shell') as HTMLElement).dataset.requireRole as Role | ''
-    if (required && !guardByRole(role, required)) return redirect('admin/')
+    const shell = document.querySelector('.admin-shell') as HTMLElement
+    const required = shell.dataset.requireRole as Role | ''
+    const allowReferee = shell.dataset.allowReferee === 'true'
+    if (required && !guardByRole(role, required) && !(allowReferee && role === 'referee')) return redirect('admin/')
+    // 非 admin 角色隐藏仅管理员可用的导航链接
+    if (role !== 'admin') {
+      document.querySelectorAll('.admin-only').forEach((el) => { (el as HTMLElement).style.display = 'none' })
+    }
   })()
 </script>
