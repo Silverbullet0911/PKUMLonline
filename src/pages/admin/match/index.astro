@@ -24,9 +24,13 @@ import AdminShell from '../../../components/admin/AdminShell.astro'
     .match-score .ms-value { font-size: 22px; font-variant-numeric: tabular-nums; font-weight: 700; }
     .match-round-title { font-size: 20px; font-weight: 800; margin: 10px 0; }
     .points-picker { margin: 10px 0; }
-    .pt-group { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin: 8px 0; }
-    .pt-group-label { font-size: 18px; font-weight: 800; min-width: 44px; }
-    .pt-btn { font-size: 15px; padding: 8px 12px; border-radius: 8px; border: 1px solid var(--line); background: var(--accent-soft); cursor: pointer; font-variant-numeric: tabular-nums; }
+    /* 点数按键表：行=番，列=符 */
+    .pt-table-wrap { overflow-x: auto; }
+    .pt-table { border-collapse: collapse; margin: 10px 0; }
+    .pt-table th, .pt-table td { border: 1px solid var(--line); padding: 3px 5px; text-align: center; white-space: nowrap; }
+    .pt-table thead th { background: var(--accent-soft); font-weight: 700; font-size: 12px; }
+    .pt-table .pt-row-label { background: var(--accent-soft); font-weight: 700; }
+    .pt-btn { width: 100%; min-width: 80px; font-size: 13px; padding: 6px 8px; border-radius: 6px; border: 1px solid var(--line); background: var(--accent-soft); cursor: pointer; font-variant-numeric: tabular-nums; }
     .pt-btn:hover { background: var(--accent); color: #fff; }
     .pt-btn.sel { background: var(--accent); color: #fff; outline: 2px solid #ffd700; }
     .pt-tiers { display: flex; gap: 8px; flex-wrap: wrap; margin: 10px 0; }
@@ -64,7 +68,8 @@ import AdminShell from '../../../components/admin/AdminShell.astro'
     const showErr = (m: string) => { errEl.textContent = m }
     const clearErr = () => { errEl.textContent = '' }
 
-    const FU = ['20', '25', '30', '40', '50', '60', '70', '80', '90', '100', '110']
+    // 80 符及以上较罕见，不设按键，遇见面手动输入
+    const FU = ['20', '25', '30', '40', '50', '60', '70']
     const HAN = ['1', '2', '3', '4']
     const TIERS = points.tiers
 
@@ -337,31 +342,47 @@ import AdminShell from '../../../components/admin/AdminShell.astro'
       const isRon = form.winType === 'ron'
       const box = el('div', 'points-picker')
 
-      // 1-4 番按键组（满贯格不设按键；荣和不存在 20 符，故荣和视图跳过 20 符）
+      // 1-4 番 × 符 按键表（满贯格不设按键；荣和不存在 20 符，故荣和视图 20 符列为空）
+      const wrap = el('div', 'pt-table-wrap')
+      const table = el('table', 'pt-table')
+      const thead = el('thead')
+      const htr = el('tr')
+      htr.appendChild(el('th', '', ''))
+      FU.forEach((f) => htr.appendChild(el('th', '', `${f}符`)))
+      thead.appendChild(htr)
+      table.appendChild(thead)
+      const tbody = el('tbody')
       HAN.forEach((h) => {
-        const group = el('div', 'pt-group')
-        group.appendChild(el('span', 'pt-group-label', `${h}番`))
+        const tr = el('tr')
+        tr.appendChild(el('th', 'pt-row-label', `${h}番`))
         FU.forEach((f) => {
-          if (isRon && f === '20') return
-          const cell = points.grid[v][h]?.[f]
-          if (!cell) return
-          const btn = document.createElement('button')
-          btn.type = 'button'
-          btn.className = 'pt-btn'
-          btn.textContent = isRon ? String(cell.ron) : cell.tsumo.join('/')
-          btn.title = `${h}番${f}符`
-          const key = `cell:${v}:${h}:${f}`
-          if (form.selKey === key) btn.classList.add('sel')
-          btn.addEventListener('click', () => {
-            form.selKey = key
-            if (isRon) { form.ronPoints = cell.ron; form.tsumoSplit = null }
-            else { form.tsumoSplit = [...cell.tsumo]; form.ronPoints = null }
-            render()
-          })
-          group.appendChild(btn)
+          const td = el('td')
+          if (!(isRon && f === '20')) {
+            const cell = points.grid[v][h]?.[f]
+            if (cell) {
+              const btn = document.createElement('button')
+              btn.type = 'button'
+              btn.className = 'pt-btn'
+              btn.textContent = isRon ? String(cell.ron) : cell.tsumo.join('/')
+              btn.title = `${h}番${f}符`
+              const key = `cell:${v}:${h}:${f}`
+              if (form.selKey === key) btn.classList.add('sel')
+              btn.addEventListener('click', () => {
+                form.selKey = key
+                if (isRon) { form.ronPoints = cell.ron; form.tsumoSplit = null }
+                else { form.tsumoSplit = [...cell.tsumo]; form.ronPoints = null }
+                render()
+              })
+              td.appendChild(btn)
+            }
+          }
+          tr.appendChild(td)
         })
-        box.appendChild(group)
+        tbody.appendChild(tr)
       })
+      table.appendChild(tbody)
+      wrap.appendChild(table)
+      box.appendChild(wrap)
 
       // 高番档
       const tiers = el('div', 'pt-tiers')
