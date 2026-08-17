@@ -47,7 +47,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro'
     }
 
     const teamColor = (name: string) => teamsRaw.teams.find((t: any) => t.name === name)?.color ?? '#9ca3af'
-    const lightTeam = new Set(['樱花', '雷电', '赤坂', 'AB'])
+    const lightTeam = new Set(['樱花', '雷电', '赤坂'])
     const teamTextOf = (name: string) => (lightTeam.has(name) ? '#1f2328' : '#fff')
 
     ;(async () => {
