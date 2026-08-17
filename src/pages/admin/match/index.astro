@@ -47,7 +47,6 @@ import AdminShell from '../../../components/admin/AdminShell.astro'
     .rounds-list tr.settled { cursor: pointer; }
     .rounds-list tr.settled:hover { background: var(--accent-soft); }
     .draft-badge { color: #b45309; font-weight: 700; }
-    .manual-panel { margin-top: 12px; padding: 12px; border: 1px dashed var(--line); border-radius: 8px; }
     @media (max-width: 720px) {
       .match-scores { grid-template-columns: repeat(2, 1fr); }
     }
@@ -56,7 +55,7 @@ import AdminShell from '../../../components/admin/AdminShell.astro'
     import { supabase } from '../../../lib/supabase'
     import { dealerSeat, nextRound, settleRound } from '../../../lib/scoring'
     import { replayGame, roundLabel, seatLabel, riichiText } from '../../../lib/replay'
-    import type { RoundResult } from '../../../lib/scoring'
+    import type { RoundResult, RoundState } from '../../../lib/scoring'
     import type { StoredRound } from '../../../lib/replay'
     import pointsRaw from '../../../../data/points_table.json'
     import type { PointsTable } from '../../../lib/types'
@@ -84,7 +83,14 @@ import AdminShell from '../../../components/admin/AdminShell.astro'
     let rounds: StoredRound[] = []
     let rep: ReturnType<typeof replayGame> | null = null
     let editingOrder: number | null = null
+    /** 'edit'：修改本局并保留后续局自动重算；'rewind'：重录本局并删除后续局 */
+    let editMode: 'edit' | 'rewind' | null = null
+    /** 修改/回退时该局开始前的回退状态（局名本场=本局、供托/累计分=本局开始前） */
+    let editState: { round: RoundState; pool: number; scores: number[] } | null = null
     let draftLoaded = false
+
+    /** 编辑早局时取回退状态，否则取整场最新状态 */
+    const stateOf = () => (editingOrder != null && editState ? editState : rep!.current)
 
     // 表单状态
     const form: {
@@ -109,7 +115,7 @@ import AdminShell from '../../../components/admin/AdminShell.astro'
 
     function seatLabelOf(i: number): string { return seatLabel(i) }
     const view = (): 'child' | 'dealer' =>
-      form.winner != null && rep && form.winner === dealerSeat(rep.current.round) ? 'dealer' : 'child'
+      form.winner != null && rep && form.winner === dealerSeat(stateOf().round) ? 'dealer' : 'child'
 
     // ---------- 加载 ----------
     async function load() {
@@ -181,24 +187,26 @@ import AdminShell from '../../../components/admin/AdminShell.astro'
       root.innerHTML = ''
       const seats = game.seats ?? []
 
-      // 当前累计分
+      // 当前累计分（编辑早局时显示该局开始前的分数）
+      const st = stateOf()
       const scores = el('div', 'match-scores')
       seats.forEach((s: any, i: number) => {
         const box = el('div', 'match-score')
         box.append(
           el('div', 'ms-label', s.seat + (s.player ? ' ' + s.player : '')),
-          el('div', 'ms-value', String(rep!.current.scores[i])),
+          el('div', 'ms-value', String(st.scores[i])),
         )
         scores.appendChild(box)
       })
       root.appendChild(scores)
 
-      // 局标题
+      // 局标题（编辑早局时显示被编辑局自己的局名本场/亲家/供托）
       const roundTitle = el('div', 'match-round-title')
-      roundTitle.textContent = `${roundLabel(rep.current.round)}　亲家：${seatLabelOf(dealerSeat(rep.current.round))}　供托：${rep.current.pool * 1000}点`
+      roundTitle.textContent = `${roundLabel(st.round)}　亲家：${seatLabelOf(dealerSeat(st.round))}　供托：${st.pool * 1000}点` +
+        (editingOrder != null ? `　【修改第${editingOrder}局：${editMode === 'rewind' ? '回退重录（保存后删除后续局）' : '修改本局（保存后自动重算后续局）'}】` : '')
       root.appendChild(roundTitle)
 
-      if (rep.current.draft && !draftLoaded) {
+      if (editingOrder == null && rep.current.draft && !draftLoaded) {
         loadDraftToForm(rep.current.draft)
         draftLoaded = true
       }
@@ -298,13 +306,14 @@ import AdminShell from '../../../components/admin/AdminShell.astro'
 
       // 南四锁定：非连庄结果后半庄即终了，禁用「下一局」，由「查看结果」自动保存当前局并提交
       if (rep && form.winType && formComplete()) {
-        const prospective = nextRound(rep.current.round, buildResultFromForm()!)
-        if (rep.current.round.wind === '南' && rep.current.round.number === 4 && !prospective) {
+        const st = stateOf()
+        const prospective = nextRound(st.round, buildResultFromForm()!)
+        if (st.round.wind === '南' && st.round.number === 4 && !prospective) {
           const note = el('p', 'sel-info', '南四局：录完本局后点「查看结果」（会自动保存本局）提交，本局后半庄即终了。')
           note.style.color = '#b45309'
           wrap.appendChild(note)
           nextBtn.disabled = true
-        } else if (rep.current.round.wind === '南' && rep.current.round.number === 4) {
+        } else if (st.round.wind === '南' && st.round.number === 4) {
           const note = el('p', 'sel-info', '南四局：亲家和牌/亲家听牌流局可继续「下一局」。')
           wrap.appendChild(note)
         }
@@ -478,7 +487,7 @@ import AdminShell from '../../../components/admin/AdminShell.astro'
         if (form.tsumoSplit.length === 1) {
           for (let i = 0; i < 4; i++) if (i !== form.winner) pays[i] = form.tsumoSplit[0]
         } else {
-          const d = dealerSeat(rep!.current.round)
+          const d = dealerSeat(stateOf().round)
           for (let i = 0; i < 4; i++) {
             if (i === form.winner) continue
             pays[i] = i === d ? form.tsumoSplit[1] : form.tsumoSplit[0]
@@ -529,9 +538,10 @@ import AdminShell from '../../../components/admin/AdminShell.astro'
       if (!formComplete()) { showErr('请补全本小局：结果、赢家/放铳（或自摸家）、点数（或听牌）'); return }
       if (form.winType === 'ron' && form.winner === form.loser) { showErr('荣和赢家与放铳不能是同一家'); return }
       const result = buildResultFromForm()!
-      // 平衡校验（不变量恒成立，这里做完整性复核）
-      const s = settleRound(rep.current.round, result, rep.current.pool)
-      if (s.deltas.reduce((a, b) => a + b, 0) + (s.poolAfter - rep.current.pool) * 1000 !== 0) {
+      // 平衡校验（编辑早局时用该局开始前的回退状态）
+      const st = stateOf()
+      const s = settleRound(st.round, result, st.pool)
+      if (s.deltas.reduce((a, b) => a + b, 0) + (s.poolAfter - st.pool) * 1000 !== 0) {
         showErr('点数不平衡，请检查录入')
         return
       }
@@ -551,23 +561,57 @@ import AdminShell from '../../../components/admin/AdminShell.astro'
       }
       const { error } = await supabase.from('rounds').upsert(payload, { onConflict: 'game_id,order' })
       if (error) return showErr('保存失败：' + error.message)
-      // 倒推保存：删除其后小局
-      if (editingOrder != null) {
+      // 「回退」删除其后小局；「修改」保留后续局，整场重放自动更正
+      const savedOrder = editingOrder
+      const savedMode = editMode
+      if (editingOrder != null && editMode === 'rewind') {
         await supabase.from('rounds').delete().eq('game_id', gameId).gt('order', editingOrder)
       }
+      editingOrder = null
+      editMode = null
+      editState = null
       // 南四锁定：下一局为 null 时不允许继续
-      if (nextRound(rep.current.round, result) === null && editingOrder == null) {
+      if (nextRound(st.round, result) === null && savedOrder == null) {
         showErr('南四局已结束（非连庄结果），请「查看结果」并提交。')
-        editingOrder = null
         resetForm()
         await refreshRounds()
         render()
         return
       }
-      editingOrder = null
       resetForm()
       await refreshRounds()
       render()
+      // 「修改」模式：检测后续局可能受影响的情况
+      if (savedMode === 'edit' && savedOrder != null) {
+        checkEditWarnings(savedOrder)
+      }
+    }
+
+    /** 「修改」保存后的边界检测：孤儿局 / 手动覆盖冻结 / 自摸支付格式与亲家不符 */
+    function checkEditWarnings(editedOrder: number) {
+      if (!rep) return
+      const warns: string[] = []
+      const settledOrders = new Set(rep.history.map((h) => h.order))
+      const orphans = rounds.filter((r) => r.win_type && !settledOrders.has(r.order))
+      if (orphans.length > 0) {
+        warns.push(`第${orphans.map((r) => r.order).join('、')}局已超出修改后的半庄范围（仍保留在库中但未计入赛果；如需删除请用「回退」重录该局）`)
+      }
+      const frozen = rounds.filter((r) => r.order > editedOrder && r.override != null)
+      if (frozen.length > 0) {
+        warns.push(`第${frozen.map((r) => r.order).join('、')}局为手动修改状态，其四家增减保持不变（如需跟随自动重算请清除该局手动）`)
+      }
+      for (const h of rep.history) {
+        if (h.result.winType !== 'tsumo') continue
+        const stored = rounds.find((r) => r.order === h.order)
+        const split = stored?.tsumo_points
+        if (!split) continue
+        const isDealerFormat = split.length === 1
+        const winnerIsDealer = h.result.winner === dealerSeat(h.round)
+        if (isDealerFormat !== winnerIsDealer) {
+          warns.push(`第${h.order}局自摸支付格式与当前亲家不符，请核对`)
+        }
+      }
+      if (warns.length > 0) showErr(warns.join('；'))
     }
 
     function resetForm() {
@@ -624,13 +668,11 @@ import AdminShell from '../../../components/admin/AdminShell.astro'
       return i >= 0 ? i : null
     }
 
-    // ---------- 已录小局列表 + 手动修改 ----------
-    let manualOrder: number | null = null
-
+    // ---------- 已录小局列表 + 修改/回退 ----------
     function renderRoundsList(container: HTMLElement, readonly: boolean) {
       if (!rep) return
       const box = el('div', 'rounds-list')
-      box.appendChild(el('h3', '', '阶段表' + (readonly ? '' : '（点「改」手动修改本局，点行倒推重录）')))
+      box.appendChild(el('h3', '', '阶段表' + (readonly ? '' : '（点「改」修改本局并自动重算后续；点「回退」重录本局并删除后续）')))
       const table = el('table')
       const thead = el('thead')
       const htr = el('tr')
@@ -652,14 +694,14 @@ import AdminShell from '../../../components/admin/AdminShell.astro'
         if (!readonly) {
           const opsTd = el('td')
           const editBtn = el('button', '', '改')
-          editBtn.addEventListener('click', (e) => {
-            e.stopPropagation()
-            manualOrder = h.order
-            render()
-          })
-          opsTd.appendChild(editBtn)
+          editBtn.title = '修改本局，保存后自动重算后续小局'
+          editBtn.addEventListener('click', () => openEdit(h.order, 'edit'))
+          const rewindBtn = el('button', '', '回退')
+          rewindBtn.title = '重录本局，保存后删除后续小局'
+          rewindBtn.style.marginLeft = '6px'
+          rewindBtn.addEventListener('click', () => openEdit(h.order, 'rewind'))
+          opsTd.append(editBtn, rewindBtn)
           tr.appendChild(opsTd)
-          tr.addEventListener('click', () => editRound(h.order))
         }
         tbody.appendChild(tr)
       })
@@ -677,76 +719,7 @@ import AdminShell from '../../../components/admin/AdminShell.astro'
       }
       table.appendChild(tbody)
       box.appendChild(table)
-      if (manualOrder != null && !readonly) {
-        renderManualPanel(box, manualOrder)
-      }
       container.appendChild(box)
-    }
-
-    function renderManualPanel(box: HTMLElement, order: number) {
-      const h = rep?.history.find((x) => x.order === order)
-      if (!h) return
-      const panel = el('div', 'manual-panel')
-      panel.appendChild(el('h4', '', `手动修改 第${order}局（${roundLabel(h.round)}）`))
-      const dInputs: HTMLInputElement[] = []
-      const row = el('div', 'field-row')
-      ;[0, 1, 2, 3].forEach((i) => {
-        const label = el('label')
-        const input = document.createElement('input')
-        input.type = 'number'
-        input.value = String(h.deltas[i])
-        input.style.width = '120px' // 手动修改框加长 50%
-        dInputs.push(input)
-        label.append(document.createTextNode(seatLabelOf(i)), input)
-        row.appendChild(label)
-      })
-      panel.appendChild(row)
-      const resRow = el('div', 'field-row')
-      resRow.appendChild(el('span', '', '对局情况：'))
-      const resInput = document.createElement('input')
-      resInput.value = h.override?.result ?? resultText(h.result)
-      resInput.style.width = '180px'
-      resRow.appendChild(resInput)
-      panel.appendChild(resRow)
-      const ptsRow = el('div', 'field-row')
-      ptsRow.appendChild(el('span', '', '打点：'))
-      const ptsInput = document.createElement('input')
-      ptsInput.type = 'number'
-      ptsInput.value = String(h.override?.points ?? pointsNum(h.result))
-      ptsRow.appendChild(ptsInput)
-      panel.appendChild(ptsRow)
-      const btnRow = el('div', 'field-row')
-      const save = el('button', 'primary', '保存手动修改')
-      save.addEventListener('click', async () => {
-        const deltas = dInputs.map((x) => Number(x.value))
-        if (deltas.some((x) => !Number.isFinite(x))) { showErr('四家增减须为数字'); return }
-        const { error } = await supabase.from('rounds').upsert({
-          game_id: gameId,
-          order,
-          override: {
-            deltas,
-            result: resInput.value.trim() || undefined,
-            points: ptsInput.value ? Number(ptsInput.value) : undefined,
-          },
-        }, { onConflict: 'game_id,order' })
-        if (error) return showErr('保存失败：' + error.message)
-        clearErr()
-        manualOrder = null
-        await refreshRounds()
-        render()
-      })
-      const clear = el('button', '', '清除手动')
-      clear.addEventListener('click', async () => {
-        await supabase.from('rounds').upsert({ game_id: gameId, order, override: null }, { onConflict: 'game_id,order' })
-        manualOrder = null
-        await refreshRounds()
-        render()
-      })
-      const cancel = el('button', '', '取消')
-      cancel.addEventListener('click', () => { manualOrder = null; render() })
-      btnRow.append(save, clear, cancel)
-      panel.appendChild(btnRow)
-      box.appendChild(panel)
     }
 
     function resultText(r: RoundResult): string {
@@ -777,10 +750,26 @@ import AdminShell from '../../../components/admin/AdminShell.astro'
       return null
     }
 
-    function editRound(order: number) {
+    /**
+     * 打开第 order 局的录入表单（重新选择该局录入字段）。
+     * mode='edit'：保存后保留后续局，整场重放自动更正；
+     * mode='rewind'：保存后删除该局之后的全部小局。
+     * 同时计算该局开始前的回退状态，供顶部显示/点数表/校验使用。
+     */
+    function openEdit(order: number, mode: 'edit' | 'rewind') {
       const stored = rounds.find((r) => r.order === order)
       if (!stored || !stored.win_type) return
       editingOrder = order
+      editMode = mode
+      // 回退状态：局名本场 = 本局自身；供托/累计分 = 本局开始前（即上一局结算后）
+      const hist = rep?.history ?? []
+      const idx = hist.findIndex((x) => x.order === order)
+      const prev = idx > 0 ? hist[idx - 1] : null
+      editState = {
+        round: idx >= 0 ? hist[idx].round : { wind: '东', number: 1, honba: 0 },
+        pool: prev ? prev.pool : 0,
+        scores: prev ? [...prev.scores] : [25000, 25000, 25000, 25000],
+      }
       form.winType = stored.win_type
       form.riichi = [...stored.riichi]
       if (stored.win_type === 'ron') {
