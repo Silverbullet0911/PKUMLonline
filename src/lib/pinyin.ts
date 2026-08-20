@@ -5,7 +5,7 @@ const PINYIN_FIRST: Record<string, string> = {
   弦: 'X', 忆: 'Y', 才: 'C', 曰: 'Y', 树: 'S', 桃: 'T',
   椎: 'Z', 正: 'Z', 江: 'J', 没: 'M', 炸: 'Z', 玖: 'J',
   空: 'K', 立: 'L', 老: 'L', 蓝: 'L', 虹: 'H', 起: 'Q',
-  过: 'G', 追: 'Z', 雪: 'X',
+  过: 'G', 追: 'Z', 雪: 'X', 微: 'W',
 }
 
 export function firstLetter(name: string): string {
