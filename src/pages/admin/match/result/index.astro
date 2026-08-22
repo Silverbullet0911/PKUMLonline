@@ -103,8 +103,8 @@ import AdminShell from '../../../../components/admin/AdminShell.astro'
         } else {
           root.innerHTML = ''
           root.appendChild(el('p', 'sel-info', '该半庄已提交为赛果（裁判不可修改，仅管理员可改）。'))
-          const link = el('a', '', '查看赛果详情')
-          link.href = base + 'match/?id=' + encodeURIComponent(gameId)
+          const link = el('a', '', '返回赛程')
+          link.href = base + 'admin/schedule/'
           root.appendChild(link)
         }
         return
@@ -434,7 +434,7 @@ import AdminShell from '../../../../components/admin/AdminShell.astro'
       }
       const { error } = await supabase.rpc('finish_game', { p_game_id: gameId, p_seats: seats })
       if (error) { showErr('提交失败：' + error.message); btn.disabled = false; btn.textContent = game.status === 'finished' ? '修改并重新提交' : '提交为赛果'; return }
-      location.href = base + 'match/?id=' + encodeURIComponent(gameId)
+      location.href = base + 'admin/schedule/'
     }
 
     function resultText(r: RoundResult): string {

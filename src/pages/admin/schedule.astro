@@ -151,11 +151,7 @@ import StageTabs from '../../components/StageTabs.astro'
           link.style.marginLeft = '8px'
           ops.appendChild(link)
         } else {
-          const link = document.createElement('a')
-          link.href = base + 'match/?id=' + encodeURIComponent(g.id)
-          link.textContent = '赛果'
-          link.style.marginLeft = '8px'
-          ops.appendChild(link)
+          // 主分支不再生成对局详情页：已完结场次仅管理员可「改赛果」查看/修改
           if (role === 'admin') {
             const editLink = document.createElement('a')
             editLink.href = base + 'admin/match/result/?id=' + encodeURIComponent(g.id)
