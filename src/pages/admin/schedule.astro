@@ -144,11 +144,17 @@ import StageTabs from '../../components/StageTabs.astro'
           const fb = document.createElement('button'); fb.textContent = '填选手'; fb.dataset.fill = g.id
           fb.style.marginLeft = '8px'
           ops.appendChild(fb)
+          // 录赛果（简捷：直接填各家最终分数）为主入口；逐局录入保留为次级入口
           const link = document.createElement('a')
-          link.href = base + 'admin/match/?id=' + encodeURIComponent(g.id)
-          link.textContent = '录入'
+          link.href = base + 'admin/match/result/?id=' + encodeURIComponent(g.id)
+          link.textContent = '录赛果'
           link.style.marginLeft = '8px'
           ops.appendChild(link)
+          const rl = document.createElement('a')
+          rl.href = base + 'admin/match/?id=' + encodeURIComponent(g.id)
+          rl.textContent = '逐局录入'
+          rl.style.marginLeft = '8px'
+          ops.appendChild(rl)
         } else {
           const link = document.createElement('a')
           link.href = base + 'match/?id=' + encodeURIComponent(g.id)

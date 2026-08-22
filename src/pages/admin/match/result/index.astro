@@ -153,12 +153,19 @@ import AdminShell from '../../../../components/admin/AdminShell.astro'
       const sumScoreEl = el('p', 'res-sum', '')
       const sumPtEl = el('p', 'res-sum', '')
 
-      // 分数/顺位点/pt 三方联动：改任意一方，另一方自动重算（素点=由分数推导）
-      function refreshFromScore(i: number) {
-        const raw = rawScoreOf(Number(scoreInputs[i].value) || 0)
-        const rp = Number(rpInputs[i].value)
-        const pt = Math.round((raw + (Number.isFinite(rp) ? rp : 0)) * 10) / 10
-        ptInputs[i].value = String(pt)
+      // 分数/顺位点/pt 联动：最终分数为准——改任意一家最终分数，全表 顺位点/pt/位次 自动重算
+      // （重算后仍可对某一家手动改 顺位点/pt/位次 处理特殊分 pt）
+      function applyAuto() {
+        const scores = scoreInputs.map((x) => Number(x.value))
+        const autoRp = rankPointsForScores(scores)
+        const autoRanks = competitionRanks(scores)
+        scoreInputs.forEach((_, i) => {
+          const raw = rawScoreOf(scores[i])
+          const rp = autoRp[i]
+          rpInputs[i].value = String(rp)
+          ptInputs[i].value = String(Math.round((raw + rp) * 10) / 10)
+          rankSelects[i].value = String(autoRanks[i])
+        })
         refresh()
       }
       function refreshFromRp(i: number) {
@@ -204,7 +211,7 @@ import AdminShell from '../../../../components/admin/AdminShell.astro'
         const scoreInput = document.createElement('input')
         scoreInput.type = 'number'
         scoreInput.value = String(scoreArr[i])
-        scoreInput.addEventListener('input', () => refreshFromScore(i))
+        scoreInput.addEventListener('input', applyAuto)
         scoreInputs.push(scoreInput)
         tdScore.appendChild(scoreInput)
         tr.appendChild(tdScore)
@@ -263,6 +270,13 @@ import AdminShell from '../../../../components/admin/AdminShell.astro'
     // ---------- 阶段对局表（每格可改 + 任意位置插入 + 局名/立直家可改） ----------
     function renderRoundsTable() {
       if (!rep) return
+      // 未录小局：简捷模式——直接按最终分数提交（逐局录入仍可通过「返回录入」进入）
+      if (rep.history.length === 0) {
+        const hint = el('div', 'table-wrap res-stages')
+        hint.appendChild(el('p', 'sel-info', '本场未录入小局：直接填写上方「最终分数」即可提交，pt/位次自动计算；需要逐局录入请点「返回录入」。'))
+        root.appendChild(hint)
+        return
+      }
       const box = el('div', 'table-wrap res-stages')
       box.appendChild(el('h3', '', '阶段对局表（管理员可修改每一格：局/立直家/结果/打点/供托/四家增减；点「＋」在任意两行间插入一行）'))
       const table = el('table')

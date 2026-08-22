@@ -295,9 +295,7 @@ begin
   select * into v_game from public.games where id = p_game_id;
   if v_game.id is null then raise exception 'game not found'; end if;
   if v_game.status <> 'upcoming' then raise exception 'game already finished'; end if;
-  if not exists (select 1 from public.rounds where game_id = p_game_id) then
-    raise exception 'no rounds recorded';
-  end if;
+  -- 允许无小局记录直接按最终点数提交（录入人手不足时的简捷模式）；逐局录入流程不受影响
   if v_game.seats is null or jsonb_array_length(v_game.seats) <> 4 then
     raise exception 'game seats must be 4';
   end if;
