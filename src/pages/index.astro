@@ -98,7 +98,6 @@ const base = import.meta.env.BASE_URL
         if (box) {
           box.innerHTML =
             `<section class="game-card">` +
-            `<a href="${base}match/?id=${encodeURIComponent(latest.id!)}" style="text-decoration:none;color:inherit;display:block">` +
             `<h2>${esc(latest.stage)}${latest.round ? ' ' + esc(latest.round) : ''} · ${esc(latest.date)}</h2>` +
             `<div class="game-players">` +
             latest.seats.map((s) =>
@@ -107,7 +106,7 @@ const base = import.meta.env.BASE_URL
               `<span class="gp-name">${s.name ? esc(s.name) : ''}</span>` +
               `<span class="gp-pts">${esc(String(s.points ?? 0))}</span><span class="gp-rank">${esc(String(s.rank ?? ''))}位</span>` +
               `</div>`).join('') +
-            `</div></a></section>`
+            `</div></section>`
         }
       }
 

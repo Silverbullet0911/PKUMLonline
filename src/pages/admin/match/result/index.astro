@@ -391,9 +391,9 @@ import AdminShell from '../../../../components/admin/AdminShell.astro'
 
     function renderActions() {
       const actions = el('div', 'res-actions')
-      const backBtn = el('button', '', '返回录入')
+      const backBtn = el('button', '', '返回赛程')
       backBtn.addEventListener('click', () => {
-        location.href = base + 'admin/match/?id=' + encodeURIComponent(gameId)
+        location.href = base + 'admin/schedule/'
       })
       const submitBtn = el('button', 'primary', game.status === 'finished' ? '修改并重新提交' : '提交为赛果')
       submitBtn.addEventListener('click', () => submit(submitBtn))

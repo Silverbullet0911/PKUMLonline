@@ -79,7 +79,6 @@ const finishedMonths = finishedGroups.map((mg) => mg.month)
     import { mapDbGame, splitGames, monthGroupsOf, teamStyle, escHtml } from '../lib/renderSchedule'
 
     ;(async () => {
-      const base = import.meta.env.BASE_URL
       const { data, error } = await supabase.from('games').select('*').order('date', { ascending: true })
       if (error || !data || data.length === 0) return
       const games = (data as any[]).filter((g: any) => g.season === season.season).map(mapDbGame)
@@ -123,7 +122,7 @@ const finishedMonths = finishedGroups.map((mg) => mg.month)
             <section id="res-${mg.month}" class="month-group">
               <h2>${escHtml(mg.month)}</h2>
               ${mg.games.map((g) => `
-                <a class="game-card game-card-link" style="text-decoration:none;color:inherit;display:block" href="${escHtml(base)}match/?id=${encodeURIComponent(g.id)}">
+                <section class="game-card">
                   <h2>${escHtml(g.stage)}${g.round ? ' ' + escHtml(g.round) : ''} · ${escHtml(g.date)}</h2>
                   <div class="game-players">
                     ${g.seats.map((s) => `
@@ -135,7 +134,7 @@ const finishedMonths = finishedGroups.map((mg) => mg.month)
                         <span class="gp-rank">${escHtml(String(s.rank ?? ''))}位</span>
                       </div>`).join('')}
                   </div>
-                </a>`).join('')}
+                </section>`).join('')}
             </section>`).join('')
         }
       }
