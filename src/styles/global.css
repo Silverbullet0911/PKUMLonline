@@ -307,20 +307,8 @@ html { scroll-padding-top: 45vh; }
   max-width: 100%;
 }
 .player-card h3 { margin: 0 0 8px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-/* 选手档案：26-27 最新赛季行（动态数据，未开赛/未出赛有徽标标记） */
+/* 选手档案：26-27 最新赛季行（浅绿高亮，动态数据） */
 .cur-season td { border-top: 2px solid var(--green); background: #eaf6ee; }
-.cur-badge {
-  display: inline-block;
-  margin-left: 6px;
-  padding: 1px 8px;
-  border-radius: 999px;
-  font-size: 11px;
-  font-weight: 700;
-  background: var(--card);
-  color: var(--muted);
-  vertical-align: middle;
-}
-.cur-badge.warn { background: #fff3e6; color: #b45309; }
 .final-rank { padding-left: 20px; margin: 8px 0; }
 .news-meta { color: var(--muted); font-size: 13px; margin: 4px 0 8px; }
 

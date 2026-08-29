@@ -135,7 +135,6 @@ const active = 0
       const totalFinished = regGames.length + semiGames.length + finalGames.length
       rows.forEach((row) => {
         const name = row.dataset.cur ?? ''
-        const status = row.querySelector('[data-cur-status]')!
         const set = (pts: string, semi: string, fin: string, max: string, avoid: string, rank: string) => {
           row.querySelector('[data-cur-pts]')!.textContent = pts
           row.querySelector('[data-cur-semi]')!.textContent = semi
@@ -145,15 +144,13 @@ const active = 0
           row.querySelector('[data-cur-rank]')!.textContent = rank
         }
         if (totalFinished === 0) {
-          // 本赛季一场未赛：不标记，各列显示短横线
-          status.textContent = ''
+          // 本赛季一场未赛：各列显示短横线
           set('-', '-', '-', '-', '-', '-')
           return
         }
         const r = byName(regBoard, name)
         if (!played.has(name) || !r || r.games === 0) {
-          status.textContent = '尚未出赛'
-          status.classList.add('warn')
+          // 尚未出赛：数据列显示短横线，仅保留队伍名次
           const teamRk = teamRank.get(row.dataset.team ?? '')
           set('-', '-', '-', '-', '-', teamRk != null ? String(teamRk) : '-')
           return
@@ -168,7 +165,6 @@ const active = 0
           pct(r.avoidRate),
           String(teamRank.get(row.dataset.team ?? '') ?? '-'),
         )
-        status.textContent = ''
       })
     })()
   </script>
