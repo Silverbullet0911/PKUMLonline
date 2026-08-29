@@ -100,22 +100,6 @@ h3 { font-size: 15px; font-weight: 700; margin: 20px 0 8px; }
 .player-table th:nth-child(3), .player-table td:nth-child(3) {
   border-right: 1px solid #000;
 }
-/* 队伍榜竖线：积分(3)/素点或阶段积分(4) 各阶段一致；晋级线差 常规赛(6)、半决赛/决赛(7) */
-.team-table th:nth-child(3), .team-table td:nth-child(3),
-.team-table th:nth-child(4), .team-table td:nth-child(4),
-.team-table.stage-常规赛 th:nth-child(6), .team-table.stage-常规赛 td:nth-child(6),
-.team-table.stage-半决赛 th:nth-child(7), .team-table.stage-半决赛 td:nth-child(7),
-.team-table.stage-决赛 th:nth-child(7), .team-table.stage-决赛 td:nth-child(7) {
-  border-right: 1px solid #000;
-}
-/* 个人榜竖线：积分(4)/素点(5)/判罚(6)/场次(7)/4位(12) */
-.player-table th:nth-child(4), .player-table td:nth-child(4),
-.player-table th:nth-child(5), .player-table td:nth-child(5),
-.player-table th:nth-child(6), .player-table td:nth-child(6),
-.player-table th:nth-child(7), .player-table td:nth-child(7),
-.player-table th:nth-child(12), .player-table td:nth-child(12) {
-  border-right: 1px solid #000;
-}
 table { border-collapse: collapse; width: 100%; font-size: 14px; white-space: nowrap; }
 th, td { padding: 6px 10px; text-align: center; border-bottom: 1px solid var(--line); }
 thead th { background: var(--accent-soft); font-weight: 700; font-size: 13px; }
