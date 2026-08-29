@@ -87,6 +87,19 @@ h3 { font-size: 15px; font-weight: 700; margin: 20px 0 8px; }
 }
 .team-table { max-width: 720px; margin: 0 auto 16px; }
 .player-table { max-width: 1000px; margin: 0 auto 16px; }
+/* 积分排名表格：横向分隔线改细黑线 */
+.team-table th, .team-table td,
+.player-table th, .player-table td {
+  border-bottom: 1px solid #000;
+}
+/* 竖线：队伍榜「顺位/队伍」两列、个人榜「顺位/所属/选手」三列用细黑线 */
+.team-table th:nth-child(1), .team-table td:nth-child(1),
+.team-table th:nth-child(2), .team-table td:nth-child(2),
+.player-table th:nth-child(1), .player-table td:nth-child(1),
+.player-table th:nth-child(2), .player-table td:nth-child(2),
+.player-table th:nth-child(3), .player-table td:nth-child(3) {
+  border-right: 1px solid #000;
+}
 table { border-collapse: collapse; width: 100%; font-size: 14px; white-space: nowrap; }
 th, td { padding: 6px 10px; text-align: center; border-bottom: 1px solid var(--line); }
 thead th { background: var(--accent-soft); font-weight: 700; font-size: 13px; }
