@@ -2,7 +2,7 @@ import teamsRaw from '../../data/teams.json'
 import { groupByMonth } from './schedule'
 import type { Game } from './types'
 
-const LIGHT_TEAMS = new Set(['樱花', '雷电', '赤坂'])
+const LIGHT_TEAMS = new Set(['樱花', '雷电', '赤坂', '凤凰', 'AB'])
 export function teamStyle(name: string): string {
   const color = teamsRaw.teams.find((t) => t.name === name)?.color ?? '#9ca3af'
   const text = LIGHT_TEAMS.has(name) ? '#1f2328' : '#fff'
