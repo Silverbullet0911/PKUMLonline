@@ -6,14 +6,16 @@ import type { PlayerRecord } from '../lib/types'
 
 interface Props {
   player: PlayerRecord
+  /** 该选手 26-27 赛季所属队伍（现役）；null = 未入选 */
+  curTeam?: string | null
 }
 
-const { player } = Astro.props
+const { player, curTeam = null } = Astro.props
 ---
 <article class="player-card" id={`player-${player.name}`}>
   <h3>
     {player.name}
     <PlayerHonors personalHonors={player.personalHonors} teamHonors={player.teamHonors} />
   </h3>
-  <PlayerHistoryTable player={player} teams={teams.teams} />
+  <PlayerHistoryTable player={player} teams={teams.teams} curTeam={curTeam} />
 </article>
