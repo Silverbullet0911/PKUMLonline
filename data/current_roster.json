@@ -6,42 +6,42 @@
   {
    "name": "海盗",
    "captain": "Art3mis",
-   "roster": ["Art3mis", "同同", "弦宝可爱捏", "(9)"]
+   "roster": ["Art3mis", "同同", "弦宝可爱捏", "虹雀"]
   },
   {
    "name": "格斗",
    "captain": "忆水",
-   "roster": ["忆水", "小鹿", "Rexxx", "(8)"]
+   "roster": ["忆水", "小鹿", "Rexxx", "巴洛"]
   },
   {
    "name": "樱花",
    "captain": "炸洋芋",
-   "roster": ["炸洋芋", "zombie", "Spectator", "(7)"]
+   "roster": ["炸洋芋", "zombie", "Spectator", "空谷幽兰"]
   },
   {
    "name": "火山",
    "captain": "桃之11",
-   "roster": ["桃之11", "小朱", "喜之郎果冻", "(6)"]
+   "roster": ["桃之11", "小朱", "喜之郎果冻", "起韵"]
   },
   {
    "name": "野兽",
    "captain": "yfy",
-   "roster": ["yfy", "(5)", "(13)", "(16)"]
+   "roster": ["yfy", "Akeuchiyu", "Clayboom", "正弦"]
   },
   {
    "name": "地球",
    "captain": "Hachimi",
-   "roster": ["Hachimi", "94TR", "(4)", "(12)"]
+   "roster": ["Hachimi", "94TR", "母鸡", "rein"]
   },
   {
    "name": "凤凰",
    "captain": "玖夜",
-   "roster": ["玖夜", "立直里三", "bbbbhxb", "(3)"]
+   "roster": ["玖夜", "立直里三", "bbbbhxb", "mxd179"]
   },
   {
    "name": "雷电",
    "captain": "Bywj",
-   "roster": ["Bywj", "(2)", "(11)", "(15)"]
+   "roster": ["Bywj", "曰像男子", "椎名真白", "Dvalin"]
   },
   {
    "name": "赤坂",
@@ -51,8 +51,8 @@
   {
    "name": "AB",
    "captain": "微汐",
-   "roster": ["微汐", "(1)", "(10)", "(14)"]
+   "roster": ["微汐", "RIE", "春去也", "muse"]
   }
  ],
- "pendingNominations": ["muse", "曰像男子", "虹雀"]
+ "pendingNominations": []
 }
