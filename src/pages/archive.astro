@@ -129,8 +129,8 @@ const active = 0
       const finalBoard = boardOf(finalGames)
       const byName = (board: ReturnType<typeof computePlayerBoard>, name: string) => board.find((r) => r.name === name)
 
-      const fmt = (n: number | null | undefined) => (n == null ? '—' : formatScore(n))
-      const pct = (n: number | null | undefined) => (n == null ? '—' : formatPct(n))
+      const fmt = (n: number | null | undefined) => (n == null ? '-' : formatScore(n))
+      const pct = (n: number | null | undefined) => (n == null ? '-' : formatPct(n))
 
       const totalFinished = regGames.length + semiGames.length + finalGames.length
       rows.forEach((row) => {
@@ -145,10 +145,9 @@ const active = 0
           row.querySelector('[data-cur-rank]')!.textContent = rank
         }
         if (totalFinished === 0) {
-          // 本赛季一场未赛：统一标记
-          status.textContent = '赛季未开始'
-          status.classList.add('warn')
-          set('—', '—', '—', '—', '—', '—')
+          // 本赛季一场未赛：不标记，各列显示短横线
+          status.textContent = ''
+          set('-', '-', '-', '-', '-', '-')
           return
         }
         const r = byName(regBoard, name)
@@ -156,18 +155,18 @@ const active = 0
           status.textContent = '尚未出赛'
           status.classList.add('warn')
           const teamRk = teamRank.get(row.dataset.team ?? '')
-          set('—', '—', '—', '—', '—', teamRk != null ? String(teamRk) : '—')
+          set('-', '-', '-', '-', '-', teamRk != null ? String(teamRk) : '-')
           return
         }
         const semiR = byName(semiBoard, name)
         const finR = byName(finalBoard, name)
         set(
           fmt(r.points),
-          semiGames.length > 0 && semiR && semiR.games > 0 ? fmt(semiR.points) : '—',
-          finalGames.length > 0 && finR && finR.games > 0 ? fmt(finR.points) : '—',
-          r.maxScore != null && r.maxScore !== 0 ? fmt(r.maxScore) : '—',
+          semiGames.length > 0 && semiR && semiR.games > 0 ? fmt(semiR.points) : '-',
+          finalGames.length > 0 && finR && finR.games > 0 ? fmt(finR.points) : '-',
+          r.maxScore != null && r.maxScore !== 0 ? fmt(r.maxScore) : '-',
           pct(r.avoidRate),
-          String(teamRank.get(row.dataset.team ?? '') ?? '—'),
+          String(teamRank.get(row.dataset.team ?? '') ?? '-'),
         )
         status.textContent = ''
       })
