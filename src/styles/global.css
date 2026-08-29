@@ -308,7 +308,7 @@ html { scroll-padding-top: 45vh; }
 }
 .player-card h3 { margin: 0 0 8px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 /* 选手档案：26-27 最新赛季行（动态数据，未开赛/未出赛有徽标标记） */
-.cur-season td { border-top: 2px solid var(--green); background: var(--accent-soft); }
+.cur-season td { border-top: 2px solid var(--green); background: #eaf6ee; }
 .cur-badge {
   display: inline-block;
   margin-left: 6px;
@@ -507,6 +507,9 @@ html { scroll-padding-top: 45vh; }
   .history-table table { table-layout: fixed; width: 605px; }
   .history-table th:nth-child(1), .history-table td:nth-child(1) { left: 0; width: 55px; min-width: 55px; background: var(--card); }
   .history-table th:nth-child(2), .history-table td:nth-child(2) { left: 55px; width: 70px; min-width: 70px; }
+  /* 移动端吸底列保留当前赛季行高亮（覆盖上面的白底规则） */
+  .history-table tr.cur-season td:nth-child(1),
+  .history-table tr.cur-season td:nth-child(2) { background: #eaf6ee; }
 
   .player-table td.col-rank-p { background: #fff; }
   .team-table.stage-决赛 tbody tr:nth-child(2) td.rank,
