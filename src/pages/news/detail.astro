@@ -1,0 +1,56 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro'
+import { news } from '../../lib/data'
+
+const base = import.meta.env.BASE_URL
+const id = Astro.url.searchParams.get('id')
+const fallback = news.items.find((n) => n.id === id || n.title === id) ?? null
+---
+<BaseLayout title={fallback ? `${fallback.title} | 公告` : '公告详情'}>
+  <p class="back-link"><a href={`${base}news`}>← 返回公告列表</a></p>
+  <article id="ann-detail" class="charter-block">
+    {
+      fallback ? (
+        <>
+          <h1>{fallback.title}</h1>
+          <p class="news-meta"><time>{fallback.date}</time>{fallback.category ? ` · ${fallback.category}` : ''}</p>
+          <div class="news-body">{fallback.body}</div>
+        </>
+      ) : (
+        <p class="empty" id="ann-status">加载中...</p>
+      )
+    }
+  </article>
+  <script>
+    import { supabase } from '../../lib/supabase'
+    ;(async () => {
+      const params = new URLSearchParams(location.search)
+      const id = params.get('id')
+      const status = document.getElementById('ann-status')
+      const article = document.getElementById('ann-detail')
+      if (!id) {
+        if (status) status.textContent = '公告不存在。'
+        return
+      }
+
+      const { data, error } = await supabase
+        .from('announcements').select('*').eq('id', id).single()
+      if (error || !data) {
+        if (status) status.textContent = '公告不存在或已被删除。'
+        return
+      }
+
+      article.innerHTML = ''
+      const h1 = document.createElement('h1')
+      h1.textContent = data.title
+      const meta = document.createElement('p')
+      meta.className = 'news-meta'
+      meta.textContent = `${data.date}${data.category ? ` · ${data.category}` : ''}`
+      const body = document.createElement('div')
+      body.className = 'news-body'
+      body.textContent = data.body
+      article.append(h1, meta, body)
+      document.title = `${data.title} | 公告 | PKU M.LEAGUE`
+    })()
+  </script>
+</BaseLayout>

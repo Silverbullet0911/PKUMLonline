@@ -12,7 +12,7 @@ const regStage = season.stages.find((s) => s.name === '常规赛')
 const regData = standings.stages.find((s) => s.name === '常规赛')
 const teamNames = teams.teams.map((t) => t.name)
 const teamRows = computeTeamBoard(regData?.teamBoard ?? [], regStage?.promoteRank ?? 6, teamNames)
-const latestNews = news.items.slice(0, 5)
+const latestNews = [...news.items].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 2)
 const upcomingGames = schedule.games.filter((g) => g.status === 'upcoming').sort(compareUpcoming).slice(0, 2)
 const latestFinished = schedule.games.filter((g) => g.status === 'finished').sort(compareFinished)[0]
 const base = import.meta.env.BASE_URL
@@ -66,7 +66,7 @@ const base = import.meta.env.BASE_URL
     {
       latestNews.length > 0 ? (
         <ul class="news-list">
-          {latestNews.map((n) => <li><time>{n.date}</time><a href={`${base}news`}>{n.title}</a></li>)}
+          {latestNews.map((n) => <li><time>{n.date}</time><a href={`${base}news/detail?id=${encodeURIComponent(n.id ?? n.title)}`}>{n.title}</a></li>)}
         </ul>
       ) : (
         <p class="empty">暂无公告。</p>
@@ -137,13 +137,13 @@ const base = import.meta.env.BASE_URL
     // 最新公告（DB 优先，静态回退由 SSR 承担）
     ;(async () => {
       const { data: anns } = await supabase
-        .from('announcements').select('*').order('date', { ascending: false }).limit(5)
+        .from('announcements').select('*').order('date', { ascending: false }).limit(2)
       if (!anns || anns.length === 0) return
       const box = document.getElementById('home-news')
       if (box) {
         box.innerHTML =
           `<ul class="news-list">` +
-          anns.map((a) => `<li><time>${esc(a.date)}</time><a href="${base}news">${esc(a.title)}</a></li>`).join('') +
+          anns.map((a) => `<li><time>${esc(a.date)}</time><a href="${base}news/detail?id=${encodeURIComponent(a.id)}">${esc(a.title)}</a></li>`).join('') +
           `</ul>`
       }
     })()

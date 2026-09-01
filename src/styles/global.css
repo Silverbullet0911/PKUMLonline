@@ -311,6 +311,14 @@ html { scroll-padding-top: 45vh; }
 .cur-season td { border-top: 2px solid var(--green); background: #eaf6ee; }
 .final-rank { padding-left: 20px; margin: 8px 0; }
 .news-meta { color: var(--muted); font-size: 13px; margin: 4px 0 8px; }
+.news-body {
+  white-space: pre-wrap;
+  line-height: 1.7;
+  word-break: break-word;
+}
+.back-link { margin-bottom: 12px; }
+.back-link a { color: var(--accent); text-decoration: none; }
+.back-link a:hover { text-decoration: underline; }
 
 .game-players {
   display: grid;
