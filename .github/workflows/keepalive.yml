@@ -1,9 +1,9 @@
 name: supabase keepalive
 
-# 免费版 Supabase 连续 7 天无 API 请求会被自动暂停，此工作流每 3 天 ping 一次 REST API 保活。
+# 免费版 Supabase 连续 7 天无 API 请求会被自动暂停，此工作流每 6 天 ping 一次 REST API 保活。
 on:
   schedule:
-    - cron: '0 4 */3 * *' # 每月 1/4/7/10/13/... 日凌晨 4 点（UTC），约每 3 天一次
+    - cron: '0 4 */6 * *' # 每月 1/7/13/19/25/31 日凌晨 4 点（UTC），约每 6 天一次
   workflow_dispatch: {}   # 支持手动触发（仓库页 Actions → supabase keepalive → Run workflow）
 
 jobs:
