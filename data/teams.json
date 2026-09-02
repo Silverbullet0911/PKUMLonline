@@ -2,7 +2,7 @@
  "teams": [
   {
    "name": "海盗",
-   "color": "#00CCFF"
+   "color": "#14BAFC"
   },
   {
    "name": "格斗",
@@ -10,23 +10,23 @@
   },
   {
    "name": "樱花",
-   "color": "#F69ABF"
+   "color": "#FFCFFF"
   },
   {
    "name": "火山",
-   "color": "#5C5252"
+   "color": "#401816"
   },
   {
    "name": "野兽",
-   "color": "#072F79"
+   "color": "#212F9A"
   },
   {
    "name": "地球",
-   "color": "#036A45"
+   "color": "#036300"
   },
   {
    "name": "凤凰",
-   "color": "#EC8600"
+   "color": "#F0B604"
   },
   {
    "name": "雷电",
@@ -34,11 +34,11 @@
   },
   {
    "name": "赤坂",
-   "color": "#14D400"
+   "color": "#8CD24B"
   },
   {
    "name": "AB",
-   "color": "#806F42"
+   "color": "#C9B232"
   }
  ]
 }

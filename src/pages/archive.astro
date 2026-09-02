@@ -9,6 +9,9 @@ import { groupByLetter, letterAnchor } from '../lib/pinyin'
 const rosterNames = new Set(roster.teams.flatMap((t) => t.roster))
 const currentPlayers = players.players.filter((p) => rosterNames.has(p.name))
 const alumniPlayers = players.players.filter((p) => !rosterNames.has(p.name))
+// 26-27 赛季归属：选手名 -> 队伍（用于最新赛季行的动态填充）
+const curTeamOf = new Map<string, string>()
+for (const t of roster.teams) t.roster.forEach((n) => curTeamOf.set(n, t.name))
 
 const currentGroups = groupByLetter(currentPlayers)
 const alumniGroups = groupByLetter(alumniPlayers)
@@ -28,7 +31,7 @@ const active = 0
           currentGroups.map((g) => (
             <section id={`cur-${letterAnchor(g.letter)}`}>
               <h2>{g.letter}</h2>
-              {g.players.map((p) => <PlayerCard player={p} />)}
+              {g.players.map((p) => <PlayerCard player={p} curTeam={curTeamOf.get(p.name) ?? null} />)}
             </section>
           ))
         }
@@ -86,5 +89,83 @@ const active = 0
         target.scrollIntoView({ block: 'center' })
       }
     }
+  </script>
+  <script>
+    // 26-27 最新赛季行：从数据库拉已完结对局动态填充（与积分榜同源聚合）
+    import { supabase } from '../lib/supabase'
+    import { season, teams } from '../lib/data'
+    import rosterRaw from '../../data/current_roster.json'
+    import { mapDbGame } from '../lib/renderSchedule'
+    import { aggregateTeamBoard, aggregatePlayerBoard } from '../lib/aggregate'
+    import { computeTeamBoard, computePlayerBoard, formatScore, formatPct } from '../lib/standings'
+
+    const teamNames = teams.teams.map((t) => t.name)
+    const rosterPairs: { team: string; name: string }[] = []
+    for (const t of rosterRaw.teams ?? []) t.roster.forEach((n) => rosterPairs.push({ team: t.name, name: n }))
+
+    ;(async () => {
+      const rows = Array.from(document.querySelectorAll('[data-cur]')) as HTMLElement[]
+      if (rows.length === 0) return
+      const { data } = await supabase.from('games').select('*').eq('status', 'finished')
+      if (!data) return // 查询失败（无 Supabase 环境），保留静态占位
+      const games = (data as any[]).filter((g) => g.season === season.season).map(mapDbGame)
+      const regGames = games.filter((g) => g.stage === '常规赛')
+      const semiGames = games.filter((g) => g.stage === '半决赛')
+      const finalGames = games.filter((g) => g.stage === '决赛')
+
+      const played = new Set<string>()
+      const playedIn = (gs: typeof games, name: string) => gs.some((g) => (g.seats ?? []).some((s) => s.name === name))
+      for (const g of games) for (const s of g.seats ?? []) if (s.name) played.add(s.name)
+
+      const teamRank = new Map<string, number>()
+      if (regGames.length > 0) {
+        const tb = computeTeamBoard(aggregateTeamBoard(regGames, () => 0, teamNames), 6, teamNames)
+        tb.forEach((r) => teamRank.set(r.team, r.rank))
+      }
+      const boardOf = (gs: typeof games) =>
+        computePlayerBoard(aggregatePlayerBoard(gs, undefined, rosterPairs), { teamOrder: teamNames })
+      const regBoard = boardOf(regGames)
+      const semiBoard = boardOf(semiGames)
+      const finalBoard = boardOf(finalGames)
+      const byName = (board: ReturnType<typeof computePlayerBoard>, name: string) => board.find((r) => r.name === name)
+
+      const fmt = (n: number | null | undefined) => (n == null ? '-' : formatScore(n))
+      const pct = (n: number | null | undefined) => (n == null ? '-' : formatPct(n))
+
+      const totalFinished = regGames.length + semiGames.length + finalGames.length
+      rows.forEach((row) => {
+        const name = row.dataset.cur ?? ''
+        const set = (pts: string, semi: string, fin: string, max: string, avoid: string, rank: string) => {
+          row.querySelector('[data-cur-pts]')!.textContent = pts
+          row.querySelector('[data-cur-semi]')!.textContent = semi
+          row.querySelector('[data-cur-fin]')!.textContent = fin
+          row.querySelector('[data-cur-max]')!.textContent = max
+          row.querySelector('[data-cur-avoid]')!.textContent = avoid
+          row.querySelector('[data-cur-rank]')!.textContent = rank
+        }
+        if (totalFinished === 0) {
+          // 本赛季一场未赛：各列显示短横线
+          set('-', '-', '-', '-', '-', '-')
+          return
+        }
+        const r = byName(regBoard, name)
+        if (!played.has(name) || !r || r.games === 0) {
+          // 尚未出赛：数据列显示短横线，仅保留队伍名次
+          const teamRk = teamRank.get(row.dataset.team ?? '')
+          set('-', '-', '-', '-', '-', teamRk != null ? String(teamRk) : '-')
+          return
+        }
+        const semiR = byName(semiBoard, name)
+        const finR = byName(finalBoard, name)
+        set(
+          fmt(r.points),
+          semiGames.length > 0 && semiR && semiR.games > 0 ? fmt(semiR.points) : '-',
+          finalGames.length > 0 && finR && finR.games > 0 ? fmt(finR.points) : '-',
+          r.maxScore != null && r.maxScore !== 0 ? fmt(r.maxScore) : '-',
+          pct(r.avoidRate),
+          String(teamRank.get(row.dataset.team ?? '') ?? '-'),
+        )
+      })
+    })()
   </script>
 </BaseLayout>

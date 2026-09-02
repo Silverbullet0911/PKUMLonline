@@ -66,6 +66,7 @@ export interface PlayerRecord {
 }
 
 export interface NewsItem {
+  id?: string
   date: string
   title: string
   category: string

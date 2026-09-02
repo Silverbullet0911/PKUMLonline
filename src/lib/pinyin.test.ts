@@ -4,7 +4,7 @@ import { firstLetter, groupByLetter, letterAnchor } from './pinyin'
 describe('firstLetter', () => {
   it('英文名取首字母大写', () => {
     expect(firstLetter('Art3mis')).toBe('A')
-    expect(firstLetter('abandoned')).toBe('A')
+    expect(firstLetter('abd')).toBe('A')
   })
   it('中文名取拼音首字母', () => {
     expect(firstLetter('前原Nagi')).toBe('Q')

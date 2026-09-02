@@ -1,21 +1,25 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro'
 import { news } from '../lib/data'
+
+const base = import.meta.env.BASE_URL
+const sorted = [...news.items].sort((a, b) => b.date.localeCompare(a.date))
 ---
 <BaseLayout title="公告">
   <h1>公告</h1>
-  <div class="news-list">
+  <div id="news-list">
     {
-      news.items.length === 0 ? (
+      sorted.length === 0 ? (
         <p class="empty">暂无公告。</p>
       ) : (
-        news.items.map((n) => (
-          <section class="charter-block">
-            <h2>{n.title}</h2>
-            <p class="news-meta"><time>{n.date}</time> · {n.category}</p>
-            <p>{n.body}</p>
-          </section>
-        ))
+        <ul class="news-list">
+          {sorted.map((n) => (
+            <li>
+              <time>{n.date}</time>
+              <a href={`${base}news/detail?id=${encodeURIComponent(n.id ?? n.title)}`}>{n.title}</a>
+            </li>
+          ))}
+        </ul>
       )
     }
   </div>
@@ -25,22 +29,22 @@ import { news } from '../lib/data'
       const { data, error } = await supabase
         .from('announcements').select('*').order('date', { ascending: false })
       if (error || !data || data.length === 0) return // 回退到静态内容
-      const list = document.querySelector('.news-list')
-      if (!list) return
-      list.innerHTML = ''
+      const box = document.getElementById('news-list')
+      if (!box) return
+      box.innerHTML = ''
+      const ul = document.createElement('ul')
+      ul.className = 'news-list'
       for (const a of data) {
-        const sec = document.createElement('section')
-        sec.className = 'charter-block'
-        const h = document.createElement('h2')
-        h.textContent = a.title
-        const meta = document.createElement('p')
-        meta.className = 'news-meta'
-        meta.textContent = `${a.date} · ${a.category}`
-        const body = document.createElement('p')
-        body.textContent = a.body
-        sec.append(h, meta, body)
-        list.appendChild(sec)
+        const li = document.createElement('li')
+        const time = document.createElement('time')
+        time.textContent = a.date
+        const link = document.createElement('a')
+        link.href = `${import.meta.env.BASE_URL}news/detail?id=${encodeURIComponent(a.id)}`
+        link.textContent = a.title
+        li.append(time, link)
+        ul.appendChild(li)
       }
+      box.appendChild(ul)
     })()
   </script>
 </BaseLayout>

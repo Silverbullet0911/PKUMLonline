@@ -1,14 +1,16 @@
 ---
-import { formatScore } from '../lib/standings'
+import { formatScore, formatPct } from '../lib/standings'
 import { teamText } from '../lib/data'
 import type { PlayerRecord, TeamInfo } from '../lib/types'
 
 interface Props {
   player: PlayerRecord
   teams: TeamInfo[]
+  /** 该选手 26-27 赛季所属队伍（现役）；null = 未入选，不显示最新赛季行 */
+  curTeam?: string | null
 }
 
-const { player, teams } = Astro.props
+const { player, teams, curTeam = null } = Astro.props
 const colorOf = (name: string) => teams.find((t) => t.name === name)?.color ?? '#9ca3af'
 const ts = (name: string) => `background:${colorOf(name)};color:${teamText(name)}`
 const fmtPct = (n: number | null) => (n == null ? '-' : `${n.toFixed(2)}%`)
@@ -33,11 +35,21 @@ const fmtPct = (n: number | null) => (n == null ? '-' : `${n.toFixed(2)}%`)
     </thead>
     <tbody>
       {
-        player.history.length === 0 ? (
-          <tr>
-            <td colspan="8" class="empty-history">暂无往届数据（本赛季新加入队伍）</td>
+        curTeam && (
+          <tr class="cur-season" data-cur={player.name} data-team={curTeam}>
+            <td class="num">26-27</td>
+            <td class="team-col" style={ts(curTeam)}>{curTeam}</td>
+            <td class="num" data-cur-pts>-</td>
+            <td class="num" data-cur-semi>-</td>
+            <td class="num" data-cur-fin>-</td>
+            <td class="num" data-cur-max>-</td>
+            <td class="num" data-cur-avoid>-</td>
+            <td class="num" data-cur-rank>-</td>
           </tr>
-        ) : (
+        )
+      }
+      {
+        player.history.length > 0 && (
           [...player.history].reverse().map((h) => (
             <tr>
               <td class="num">{h.year}</td>

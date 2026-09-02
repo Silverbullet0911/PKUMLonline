@@ -7,7 +7,7 @@ import type { TeamInfo, Wins } from './types'
  * 复用 global.css 中已有的表格样式类。供 /standings 与首页客户端拉取 DB 后渲染。
  */
 
-const LIGHT_TEAMS = new Set(['樱花', '雷电', '赤坂'])
+const LIGHT_TEAMS = new Set(['樱花', '雷电', '赤坂', '凤凰', 'AB'])
 
 export function esc(s: string): string {
   return s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]!))
