@@ -227,6 +227,11 @@ import StageTabs from '../../components/StageTabs.astro'
             editLink.textContent = '改赛果'
             editLink.style.marginLeft = '8px'
             ops.appendChild(editLink)
+            const roundLink = document.createElement('a')
+            roundLink.href = base + 'admin/match/?id=' + encodeURIComponent(g.id)
+            roundLink.textContent = '逐局补录'
+            roundLink.style.marginLeft = '8px'
+            ops.appendChild(roundLink)
           }
         }
         tr.appendChild(ops)

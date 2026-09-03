@@ -404,6 +404,12 @@ import AdminShell from '../../../../components/admin/AdminShell.astro'
           location.href = base + 'admin/match/?id=' + encodeURIComponent(gameId!)
         })
         actions.append(roundBtn)
+      } else if (role === 'admin') {
+        const roundBtn = el('button', '', '逐局补录')
+        roundBtn.addEventListener('click', () => {
+          location.href = base + 'admin/match/?id=' + encodeURIComponent(gameId!)
+        })
+        actions.append(roundBtn)
       }
       actions.append(submitBtn)
       root.appendChild(actions)
