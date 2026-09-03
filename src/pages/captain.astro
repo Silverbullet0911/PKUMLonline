@@ -9,10 +9,40 @@ import BaseLayout from '../layouts/BaseLayout.astro'
     <div id="cap-games"></div>
     <button id="cap-logout">退出</button>
   </div>
+  <style is:global>
+    .cap-lineup {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      margin: 10px 0;
+    }
+    .cap-seat {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+      padding: 6px 4px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 700;
+      line-height: 1.3;
+      min-width: 0;
+    }
+    .cap-seat .cap-seat-label {
+      opacity: 0.85;
+      font-size: 12px;
+    }
+    @media (max-width: 420px) {
+      .cap-lineup {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+  </style>
   <script>
     import { supabase } from '../lib/supabase'
     import { season } from '../lib/data'
-    import { escHtml } from '../lib/renderSchedule'
+    import { escHtml, teamStyle } from '../lib/renderSchedule'
     import rosterRaw from '../../data/current_roster.json'
     const base = import.meta.env.BASE_URL
     const errEl = document.getElementById('cap-err')!
@@ -45,9 +75,18 @@ import BaseLayout from '../layouts/BaseLayout.astro'
       for (const g of myGames) {
         const row = document.createElement('div')
         row.className = 'cap-game'
-        row.innerHTML = `<div class="cap-meta">${escHtml(g.date)} · ${escHtml(g.stage)}${g.round ? ' ' + escHtml(g.round) : ''}</div>`
         const seats = g.seats ?? []
         const mySeat = seats.find((s) => s.team === team)
+        row.innerHTML =
+          `<div class="cap-meta">${escHtml(g.date)} · ${escHtml(g.stage)}${g.round ? ' ' + escHtml(g.round) : ''}</div>` +
+          `<div class="cap-lineup">` +
+          seats.map((s: any) =>
+            `<span class="cap-seat" style="${teamStyle(s.team)}">` +
+            `<span class="cap-seat-label">${escHtml(String(s.seat ?? ''))}</span>` +
+            `<span class="cap-seat-team">${escHtml(String(s.team ?? ''))}</span>` +
+            `</span>`
+          ).join('') +
+          `</div>`
         const sel = document.createElement('select')
         sel.dataset.game = g.id
         const emptyOpt = document.createElement('option'); emptyOpt.value = ''; emptyOpt.textContent = '未选定'
