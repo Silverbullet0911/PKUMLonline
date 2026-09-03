@@ -146,6 +146,28 @@ insert or replace into unarranged_games (id, season, stage, seq, seats) values
     sql += `insert or replace into games (id, season, stage, date, time, round, status, live_status, seats) values ('${g.id}', '26-27', '常规赛', '${g.date}', ${esc(g.time)}, ${esc(g.round)}, 'finished', ${esc(g.live_status)}, ${json(g.seats)});\n`
   }
 
+  // 一场带逐局记录的完赛半庄，用于本地查看分数走势折线图
+  const chartGameId = '00000000-0000-0000-0000-0000000000e4'
+  sql += `insert or replace into games (id, season, stage, date, time, round, status, live_status, seats) values ('${chartGameId}', '26-27', '常规赛', '2026-09-04', '14:00', '第4半庄', 'finished', '直播', ${json([
+    { seat: '东', team: '海盗', player: 'Art3mis', rank: 1, points: 40000 },
+    { seat: '南', team: '格斗', player: '忆水', rank: 2, points: 30000 },
+    { seat: '西', team: '樱花', player: '炸洋芋', rank: 3, points: 20000 },
+    { seat: '北', team: '火山', player: '桃之11', rank: 4, points: 10000 },
+  ])});\n`
+
+  const deltas = [
+    [5000, -1000, -2000, -2000],
+    [2000, 4000, -3000, -3000],
+    [5000, -2000, 0, -3000],
+    [3000, 4000, -2000, -5000],
+    [0, 0, 2000, -2000],
+  ]
+  deltas.forEach((d, idx) => {
+    const order = idx + 1
+    const roundId = `${chartGameId}-r${order}`
+    sql += `insert or replace into rounds (id, game_id, "order", win_type, riichi, ron_winner, ron_loser, ron_points, tsumo_winner, tsumo_points, tenpai, override) values ('${roundId}', '${chartGameId}', ${order}, 'draw', ${json([false, false, false, false])}, null, null, null, null, null, ${json([false, false, false, false])}, ${json({ deltas: d })});\n`
+  })
+
   const tmp = join(tmpdir(), `pkuml-seed-demo-${process.pid}.sql`)
   writeFileSync(tmp, sql, 'utf8')
   try {
