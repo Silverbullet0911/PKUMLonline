@@ -195,6 +195,16 @@ const roundId = r.data.data[0].id
 r = await call(`/rounds/${roundId}`, { method: 'PUT', token: refereeToken, body: { override: { roundLabel: '东1局 1本场' } } })
 assert(r.status === 200, `referee round update should succeed, got ${r.status}`)
 
+// Partial game/order upsert (result page save-overrides style) must not wipe win_type.
+r = await call(`/games/${gameId}/rounds`, {
+  method: 'PUT',
+  token: refereeToken,
+  body: { round: { game_id: gameId, order: 1, riichi: [false, false, false, false], override: { roundLabel: '东1局 2本场' } } },
+})
+assert(r.status === 200, `partial round upsert should succeed, got ${r.status}`)
+r = await call(`/games/${gameId}/rounds`, { token: adminToken })
+assert(r.status === 200 && r.data.data[0].win_type === 'draw', 'partial upsert must preserve win_type')
+
 // referee cannot update rounds on a finished game
 r = await call(`/games/${gameId}/finish`, {
   method: 'POST',

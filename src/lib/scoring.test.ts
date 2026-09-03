@@ -47,6 +47,10 @@ describe('isRenchan / nextRound', () => {
     const next = nextRound(r({ wind: '南', number: 4, honba: 0 }), result({ winType: 'ron', winner: 3 }))
     expect(next).toEqual({ wind: '南', number: 4, honba: 1 })
   })
+  it('南4 亲家听牌流局：连庄可继续', () => {
+    const next = nextRound(r({ wind: '南', number: 4, honba: 0 }), result({ winType: 'draw', tenpai: [false, false, false, true] }))
+    expect(next).toEqual({ wind: '南', number: 4, honba: 1 })
+  })
 })
 
 describe('honbaFeeOf', () => {

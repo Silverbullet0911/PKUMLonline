@@ -493,14 +493,7 @@ async function upsertRound(env, request, gameId) {
   const body = await readBody(request)
   const round = body.round || body
   const order = Number(round.order)
-  const id = round.id || newId()
   if (!Number.isInteger(order) || order < 1) return error('order is required')
-
-  const winType = round.win_type ?? null
-  const riichi = toJson(round.riichi ?? [false, false, false, false])
-  const tsumoPoints = toJson(round.tsumo_points ?? null)
-  const tenpai = toJson(round.tenpai ?? null)
-  const override = toJson(round.override ?? null)
 
   const existing = await env.DB.prepare(
     'select id from rounds where game_id = ?1 and "order" = ?2',
@@ -508,26 +501,34 @@ async function upsertRound(env, request, gameId) {
     .bind(gameId, order)
     .first()
   if (existing) {
+    // Partial upsert: only update fields that are present in the payload.
+    // This is important for the result page's "save overrides" call, which sends
+    // only { game_id, order, override, riichi } and must not wipe win_type etc.
+    const updates = []
+    const values = []
+    if (round.win_type !== undefined) { updates.push('win_type = ?'); values.push(round.win_type) }
+    if (round.riichi !== undefined) { updates.push('riichi = ?'); values.push(toJson(round.riichi)) }
+    if (round.ron_winner !== undefined) { updates.push('ron_winner = ?'); values.push(round.ron_winner) }
+    if (round.ron_loser !== undefined) { updates.push('ron_loser = ?'); values.push(round.ron_loser) }
+    if (round.ron_points !== undefined) { updates.push('ron_points = ?'); values.push(round.ron_points) }
+    if (round.tsumo_winner !== undefined) { updates.push('tsumo_winner = ?'); values.push(round.tsumo_winner) }
+    if (round.tsumo_points !== undefined) { updates.push('tsumo_points = ?'); values.push(toJson(round.tsumo_points)) }
+    if (round.tenpai !== undefined) { updates.push('tenpai = ?'); values.push(toJson(round.tenpai)) }
+    if (round.override !== undefined) { updates.push('override = ?'); values.push(toJson(round.override)) }
+    if (updates.length === 0) return json({ ok: true })
+    values.push(gameId, order)
     await env.DB.prepare(
-      `update rounds set win_type = ?1, riichi = ?2, ron_winner = ?3, ron_loser = ?4,
-       ron_points = ?5, tsumo_winner = ?6, tsumo_points = ?7, tenpai = ?8, override = ?9
-       where game_id = ?10 and "order" = ?11`,
+      `update rounds set ${updates.join(', ')} where game_id = ? and "order" = ?`,
     )
-      .bind(
-        winType,
-        riichi,
-        round.ron_winner ?? null,
-        round.ron_loser ?? null,
-        round.ron_points ?? null,
-        round.tsumo_winner ?? null,
-        tsumoPoints,
-        tenpai,
-        override,
-        gameId,
-        order,
-      )
+      .bind(...values)
       .run()
   } else {
+    const id = round.id || newId()
+    const winType = round.win_type ?? null
+    const riichi = toJson(round.riichi ?? [false, false, false, false])
+    const tsumoPoints = toJson(round.tsumo_points ?? null)
+    const tenpai = toJson(round.tenpai ?? null)
+    const override = toJson(round.override ?? null)
     await env.DB.prepare(
       `insert into rounds (id, game_id, "order", win_type, riichi, ron_winner, ron_loser,
        ron_points, tsumo_winner, tsumo_points, tenpai, override)
