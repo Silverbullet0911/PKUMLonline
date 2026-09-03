@@ -1,5 +1,5 @@
 # Cloudflare Pages + D1 configuration.
-name = "pkuml-mleague"
+name = "pkumlonline"
 pages_build_output_dir = "dist"
 compatibility_date = "2025-06-01"
 

@@ -126,7 +126,7 @@ npm run user:create -- --email referee@example.com --password '你的密码' --r
 - `CLOUDFLARE_API_TOKEN`：有 `Workers Scripts:Edit` / `Pages:Edit` / `D1:Edit` 权限的 Token。
 - `CLOUDFLARE_ACCOUNT_ID`：Cloudflare 账户 ID。
 
-并先在 Cloudflare 创建 Pages 项目 `pkuml-mleague`；D1 数据库 `pkuml-d1` 已创建并写入 `wrangler.toml`。首次可手动执行 `npm run db:migrate:remote`。
+并先在 Cloudflare 创建 Pages 项目 `pkumlonline`；D1 数据库 `pkuml-d1` 已创建并写入 `wrangler.toml`。首次可手动执行 `npm run db:migrate:remote`。
 
 ## 测试
 
