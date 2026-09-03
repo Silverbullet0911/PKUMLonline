@@ -116,8 +116,13 @@ const finishedMonths = finishedGroups.map((mg) => mg.month)
         grid-template-columns: 1fr;
       }
       .unarranged-card {
-        overflow-x: auto;
-        justify-content: flex-start;
+        width: 100%;
+        padding: 5px 12px;
+        justify-content: center;
+      }
+      /* 手机端队伍卡片缩小为电脑端的 3/4，整体仍居中 */
+      .unarranged-seat {
+        zoom: 0.75;
       }
     }
   </style>
