@@ -31,7 +31,7 @@ const base = import.meta.env.BASE_URL
           stage="常规赛"
           rows={teamRows}
           teams={teams.teams}
-          totalGames={regStage?.totalGames ?? 24}
+          totalGames={regStage?.totalGames ?? 48}
         />
       ) : (
         <p class="empty">本赛季尚未开始，排名将在第一场比赛后更新。</p>
@@ -164,7 +164,7 @@ const base = import.meta.env.BASE_URL
       const box = document.getElementById('home-board')
       if (box) {
         box.innerHTML =
-          renderTeamTable('常规赛', board, teams.teams, stage?.totalGames ?? 24) +
+          renderTeamTable('常规赛', board, teams.teams, stage?.totalGames ?? 48) +
           `<p class="as-of as-of-team">${standingsAsOf(regGames) ?? ''}</p>`
       }
     })()
