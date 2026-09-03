@@ -60,13 +60,11 @@ npm run pages:dev
    ```bash
    npm install
    ```
-2. 创建远程数据库并应用本地 migration：
+2. `wrangler.toml` 已配置 D1 binding（`DB` → `pkuml-d1`）。应用本地 migration：
    ```bash
-   npx wrangler d1 create pkuml-d1          # 远程首次需要；本地可以先跳过
    npm run db:migrate:local
    ```
-   远程数据库需把 `wrangler.toml` 中的 `database_id` 替换为 `wrangler d1 create` 返回的真实 ID。
-   > 本地 `pages:dev` 命令里也带了一个相同的占位 `database_id`；如果你改了 `wrangler.toml`，请同步修改 `package.json` 的 `pages:dev`，保证本地 D1 和 migration 指向同一个库。
+   `package.json` 的 `pages:dev` 使用与 `wrangler.toml` 相同的 `database_id`，保证本地 D1 与 migration 指向同一个库。
 3. 本地跑 Pages（构建 + Functions + D1）：
    ```bash
    npm run build
@@ -128,7 +126,7 @@ npm run user:create -- --email referee@example.com --password '你的密码' --r
 - `CLOUDFLARE_API_TOKEN`：有 `Workers Scripts:Edit` / `Pages:Edit` / `D1:Edit` 权限的 Token。
 - `CLOUDFLARE_ACCOUNT_ID`：Cloudflare 账户 ID。
 
-并先在 Cloudflare 创建 Pages 项目 `pkuml-mleague`、创建 D1 数据库 `pkuml-d1`，把 `wrangler.toml` 的 `database_id` 换成真实 ID。首次可手动执行 `npm run db:migrate:remote`。
+并先在 Cloudflare 创建 Pages 项目 `pkuml-mleague`；D1 数据库 `pkuml-d1` 已创建并写入 `wrangler.toml`。首次可手动执行 `npm run db:migrate:remote`。
 
 ## 测试
 

@@ -7,7 +7,7 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "pages:dev": "wrangler pages dev dist --d1 DB=00000000-0000-0000-0000-000000000000",
+    "pages:dev": "wrangler pages dev dist --d1 DB=53f2c3f2-b957-4677-9cf9-8d3d40ecc2c1",
     "test": "vitest run",
     "db:migrate:local": "wrangler d1 migrations apply pkuml-d1 --local",
     "db:migrate:remote": "wrangler d1 migrations apply pkuml-d1 --remote",

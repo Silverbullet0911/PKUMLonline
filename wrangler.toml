@@ -1,5 +1,4 @@
 # Cloudflare Pages + D1 configuration.
-# Replace `database_id` with the id from `wrangler d1 create pkuml-d1` for remote deploys.
 name = "pkuml-mleague"
 pages_build_output_dir = "dist"
 compatibility_date = "2025-06-01"
@@ -7,4 +6,4 @@ compatibility_date = "2025-06-01"
 [[d1_databases]]
 binding = "DB"
 database_name = "pkuml-d1"
-database_id = "00000000-0000-0000-0000-000000000000"
+database_id = "53f2c3f2-b957-4677-9cf9-8d3d40ecc2c1"
