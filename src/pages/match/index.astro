@@ -1,0 +1,172 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro'
+---
+<BaseLayout title="对局详情">
+  <h1>对局详情</h1>
+  <p id="match-err" class="admin-err"></p>
+  <div id="match-root">
+    <p class="empty">加载中…</p>
+  </div>
+  <style is:global>
+    .md-stats { overflow-x: auto; margin: 12px auto; }
+    .md-stats td { padding: 8px 12px; }
+    .md-stats th { padding: 8px 12px; }
+    .md-stats td.team-col { font-weight: 700; }
+    /* 总表宽度约 2/3，居中；阶段表约 95% 居中 */
+    .md-summary { max-width: 67%; }
+    .md-summary th, .md-summary td { padding: 6px 10px; font-size: 15px; }
+    .md-stage { max-width: 95%; }
+    /* 手机端：总表宽度与页面宽度一致，电脑端保持 67% */
+    @media (max-width: 720px) {
+      .md-summary { max-width: 100%; }
+    }
+  </style>
+  <script>
+    import { supabase } from '../../lib/supabase'
+    import { replayGame, roundLabel, seatLabel, riichiText } from '../../lib/replay'
+    import { rawScoreOf, rankPointsForScores } from '../../lib/aggregate'
+    import type { RoundResult } from '../../lib/scoring'
+    import teamsRaw from '../../../data/teams.json'
+
+    const base = import.meta.env.BASE_URL
+    const errEl = document.getElementById('match-err')!
+    const root = document.getElementById('match-root')!
+    const showErr = (m: string) => { errEl.textContent = m }
+
+    const params = new URLSearchParams(location.search)
+    const gameId = params.get('id')
+    if (!gameId) {
+      root.innerHTML = '<p class="empty">缺少对局 id（?id=…）</p>'
+    }
+
+    function el(tag: string, cls = '', text = ''): HTMLElement {
+      const n = document.createElement(tag)
+      if (cls) n.className = cls
+      if (text) n.textContent = text
+      return n
+    }
+
+    const teamColor = (name: string) => teamsRaw.teams.find((t: any) => t.name === name)?.color ?? '#9ca3af'
+    const lightTeam = new Set(['樱花', '雷电', '赤坂'])
+    const teamTextOf = (name: string) => (lightTeam.has(name) ? '#1f2328' : '#fff')
+
+    ;(async () => {
+      if (!gameId) return
+      const { data: game, error } = await supabase.from('games').select('*').eq('id', gameId).single()
+      if (error || !game) { showErr('加载对局失败：' + (error?.message ?? 'not found')); root.innerHTML = '<p class="empty">对局不存在。</p>'; return }
+      if (game.status !== 'finished') {
+        root.innerHTML = '<p class="empty">该半庄尚未开始/未提交赛果。</p>'
+        return
+      }
+      const { data: rs } = await supabase.from('rounds').select('*').eq('game_id', gameId).order('order', { ascending: true })
+      const rounds = (rs ?? []).map((r: any) => ({
+        order: r.order,
+        win_type: r.win_type,
+        riichi: r.riichi ?? [false, false, false, false],
+        ron_winner: r.ron_winner,
+        ron_loser: r.ron_loser,
+        ron_points: r.ron_points,
+        tsumo_winner: r.tsumo_winner,
+        tsumo_points: r.tsumo_points,
+        tenpai: r.tenpai,
+        override: r.override,
+      }))
+      const rep = replayGame(rounds)
+      const seats = game.seats ?? []
+
+      root.innerHTML = ''
+      const h = el('h2', '', `${game.stage}${game.round ? ' ' + game.round : ''} · ${game.date}${game.time ? ' ' + game.time : ''}`)
+      root.appendChild(h)
+
+      // 总表（8 行 × 5 列，宽度 2/3）
+      const stats = el('div', 'table-wrap md-stats md-summary')
+      const table = el('table')
+      const trHead = el('tr')
+      trHead.appendChild(el('th', '', ''))
+      seats.forEach((s: any) => trHead.appendChild(el('th', '', s.seat)))
+      table.appendChild(trHead)
+
+      // 队伍行：队伍色为单元格底色，白/黑加粗字
+      const trTeam = el('tr')
+      trTeam.appendChild(el('td', '', '队伍'))
+      seats.forEach((s: any) => {
+        const td = el('td', 'team-col')
+        td.style.background = teamColor(s.team)
+        td.style.color = teamTextOf(s.team)
+        td.textContent = s.team
+        trTeam.appendChild(td)
+      })
+      table.appendChild(trTeam)
+
+      const row = (label: string, fn: (s: any, i: number) => string) => {
+        const tr = el('tr')
+        tr.appendChild(el('td', '', label))
+        seats.forEach((s: any, i: number) => tr.appendChild(el('td', 'num', fn(s, i))))
+        table.appendChild(tr)
+      }
+      row('选手', (s: any, i: number) => s.player ?? '')
+      row('立直', (_: any, i: number) => String(rounds.filter((r: any) => r.riichi?.[i]).length))
+      row('荣和', (_: any, i: number) => String(rounds.filter((r: any) => r.win_type === 'ron' && seatIndexOf(r.ron_winner) === i).length))
+      row('自摸', (_: any, i: number) => String(rounds.filter((r: any) => r.win_type === 'tsumo' && seatIndexOf(r.tsumo_winner) === i).length))
+      row('放铳', (_: any, i: number) => String(rounds.filter((r: any) => r.win_type === 'ron' && seatIndexOf(r.ron_loser) === i).length))
+      row('积分', (s: any, i: number) => String(s.points ?? rep.current.scores[i]))
+      row('pt', (s: any, i: number) => {
+        const auto = Math.round((rawScoreOf(rep.current.scores[i]) + rankPointsForScores(rep.current.scores)[i]) * 10) / 10
+        return String(s.pt != null ? s.pt : auto)
+      })
+      row('判罚', (s: any) => (s.penalty ? String(s.penalty) : '-'))
+      row('顺位', (s: any) => (s.rank ? s.rank + '位' : '-'))
+      stats.appendChild(table)
+      root.appendChild(stats)
+
+      // 阶段表（无小局记录时隐藏，如直接按最终分数提交的赛果）
+      if (rep.history.length > 0) {
+        const stageBox = el('div', 'table-wrap md-stats md-stage')
+        const st = el('table')
+        const sh = el('tr')
+        sh.appendChild(el('th', '', '局'))
+        sh.appendChild(el('th', '', '立直家'))
+        seats.forEach((s: any, i: number) => sh.appendChild(el('th', '', `${s.seat} ${s.player ?? ''}`)))
+        sh.appendChild(el('th', '', '结果'))
+        sh.appendChild(el('th', '', '打点'))
+        sh.appendChild(el('th', '', '供托'))
+        st.appendChild(sh)
+        rep.history.forEach((h) => {
+          const tr = el('tr')
+          tr.appendChild(el('td', '', h.override?.roundLabel ?? roundLabel(h.round)))
+          tr.appendChild(el('td', '', riichiText(h.result.riichi)))
+          h.scores.forEach((v) => tr.appendChild(el('td', 'num', String(v))))
+          tr.appendChild(el('td', '', h.override?.result ?? resultText(h.result)))
+          tr.appendChild(el('td', 'num', h.override?.points != null ? String(h.override.points) : pointsText(h.result)))
+          tr.appendChild(el('td', 'num', String(h.pool * 1000)))
+          st.appendChild(tr)
+        })
+        stageBox.appendChild(st)
+        root.appendChild(stageBox)
+      } else {
+        root.appendChild(el('p', 'empty', '本场赛果为直接录入最终分数，无逐局详细信息。'))
+      }
+    })()
+
+    function seatIndexOf(s: string | null): number {
+      if (s == null) return -1
+      return ['东', '南', '西', '北'].indexOf(s)
+    }
+
+    function resultText(r: RoundResult): string {
+      if (r.winType === 'ron') return `${seatLabel(r.winner!)}荣和${seatLabel(r.loser!)}`
+      if (r.winType === 'tsumo') return `${seatLabel(r.winner!)}自摸`
+      if (r.winType === 'draw') {
+        const n = (r.tenpai ?? []).filter(Boolean).length
+        return n === 0 ? '流局(无人听)' : `流局(听牌${n})`
+      }
+      return '?'
+    }
+
+    function pointsText(r: RoundResult): string {
+      if (r.winType === 'ron') return String(r.ronPoints)
+      if (r.winType === 'tsumo') return (r.tsumoPayments ?? []).filter((x) => x > 0).join('/')
+      return ''
+    }
+  </script>
+</BaseLayout>

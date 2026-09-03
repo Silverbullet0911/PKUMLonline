@@ -103,8 +103,8 @@ import AdminShell from '../../../../components/admin/AdminShell.astro'
         } else {
           root.innerHTML = ''
           root.appendChild(el('p', 'sel-info', '该半庄已提交为赛果（裁判不可修改，仅管理员可改）。'))
-          const link = el('a', '', '返回赛程')
-          link.href = base + 'admin/schedule/'
+          const link = el('a', '', '查看赛果详情')
+          link.href = base + 'match/?id=' + encodeURIComponent(gameId)
           root.appendChild(link)
         }
         return
@@ -397,7 +397,15 @@ import AdminShell from '../../../../components/admin/AdminShell.astro'
       })
       const submitBtn = el('button', 'primary', game.status === 'finished' ? '修改并重新提交' : '提交为赛果')
       submitBtn.addEventListener('click', () => submit(submitBtn))
-      actions.append(backBtn, submitBtn)
+      actions.append(backBtn)
+      if (game.status !== 'finished') {
+        const roundBtn = el('button', '', '逐局录入')
+        roundBtn.addEventListener('click', () => {
+          location.href = base + 'admin/match/?id=' + encodeURIComponent(gameId!)
+        })
+        actions.append(roundBtn)
+      }
+      actions.append(submitBtn)
       root.appendChild(actions)
     }
 

@@ -151,6 +151,8 @@ const finishedMonths = finishedGroups.map((mg) => mg.month)
     import { compareUpcoming, compareFinished } from '../lib/schedule'
     import { mapDbGame, splitGames, monthGroupsOf, teamStyle, escHtml } from '../lib/renderSchedule'
 
+    const base = import.meta.env.BASE_URL
+
     function unarrangedCardHtml(g: any): string {
       const chips = (g.seats ?? []).map((s: any) =>
         `<span class="unarranged-seat" style="${teamStyle(s.team)}">` +
@@ -217,7 +219,7 @@ const finishedMonths = finishedGroups.map((mg) => mg.month)
             <section id="res-${mg.month}" class="month-group">
               <h2>${escHtml(mg.month)}</h2>
               ${mg.games.map((g) => `
-                <section class="game-card">
+                <a class="game-card game-card-link" style="text-decoration:none;color:inherit;display:block" href="${escHtml(base)}match/?id=${encodeURIComponent(g.id)}">
                   <h2>${escHtml(g.stage)}${g.round ? ' ' + escHtml(g.round) : ''} · ${escHtml(g.date)}</h2>
                   <div class="game-players">
                     ${g.seats.map((s) => `
@@ -229,7 +231,7 @@ const finishedMonths = finishedGroups.map((mg) => mg.month)
                         <span class="gp-rank">${escHtml(String(s.rank ?? ''))}位</span>
                       </div>`).join('')}
                   </div>
-                </section>`).join('')}
+                </a>`).join('')}
             </section>`).join('')
         }
       }
