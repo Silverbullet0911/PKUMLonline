@@ -3,6 +3,8 @@ import { defineConfig } from 'astro/config'
 
 export default defineConfig({
   output: 'static',
-  site: 'https://Silverbullet0911.github.io',
-  base: '/PKUMLonline/',
+  // Cloudflare Pages serves from the root domain. The old GitHub Pages
+  // `/PKUMLonline/` path is intentionally not carried over.
+  site: 'https://pkuml-mleague.pages.dev',
+  base: '/',
 })

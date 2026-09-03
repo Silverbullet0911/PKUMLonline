@@ -5,6 +5,9 @@ dist/
 .claude/
 .superpowers/
 .env
+.npm-cache/
+.wrangler/
 PL指名.xlsx
 ~$PL指名.xlsx
 data/local/
+data/supabase-export/
