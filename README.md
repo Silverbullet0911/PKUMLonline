@@ -66,6 +66,7 @@ npm run pages:dev
    npm run db:migrate:local
    ```
    远程数据库需把 `wrangler.toml` 中的 `database_id` 替换为 `wrangler d1 create` 返回的真实 ID。
+   > 本地 `pages:dev` 命令里也带了一个相同的占位 `database_id`；如果你改了 `wrangler.toml`，请同步修改 `package.json` 的 `pages:dev`，保证本地 D1 和 migration 指向同一个库。
 3. 本地跑 Pages（构建 + Functions + D1）：
    ```bash
    npm run build
