@@ -120,6 +120,5 @@ insert into public.unarranged_games (season, stage, seq, seats) values
 ('26-27','常规赛',117,'[{"seat": "东", "team": "野兽"}, {"seat": "南", "team": "地球"}, {"seat": "西", "team": "凤凰"}, {"seat": "北", "team": "雷电"}]'::jsonb),
 ('26-27','常规赛',118,'[{"seat": "东", "team": "雷电"}, {"seat": "南", "team": "凤凰"}, {"seat": "西", "team": "地球"}, {"seat": "北", "team": "野兽"}]'::jsonb),
 ('26-27','常规赛',119,'[{"seat": "东", "team": "樱花"}, {"seat": "南", "team": "火山"}, {"seat": "西", "team": "海盗"}, {"seat": "北", "team": "格斗"}]'::jsonb),
-('26-27','常规赛',120,'[{"seat": "东", "team": "火山"}, {"seat": "南", "team": "樱花"}, {"seat": "西", "team": "格斗"}, {"seat": "北", "team": "海盗"}]'::jsonb);
-
+('26-27','常规赛',120,'[{"seat": "东", "team": "火山"}, {"seat": "南", "team": "樱花"}, {"seat": "西", "team": "格斗"}, {"seat": "北", "team": "海盗"}]'::jsonb)
 on conflict (season, stage, seq) do update set seats = excluded.seats;
