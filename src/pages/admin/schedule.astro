@@ -38,6 +38,7 @@ import StageTabs from '../../components/StageTabs.astro'
         <thead><tr><th>日期</th><th>阶段</th><th>半庄</th><th>对阵</th><th>操作</th></tr></thead>
         <tbody id="game-list-up"></tbody>
       </table>
+      <div id="fill-panel"></div>
       <div class="unarranged-admin-head">
         <h2>未安排</h2>
         <button type="button" id="unarranged-add-toggle">新增未安排</button>
@@ -70,7 +71,6 @@ import StageTabs from '../../components/StageTabs.astro'
         <tbody id="game-list-fin"></tbody>
       </table>
     </section>
-    <div id="fill-panel"></div>
   </AdminShell>
   <style is:global>
     .unarranged-admin-head { display: flex; align-items: center; justify-content: space-between; margin: 24px 0 10px; }
@@ -191,13 +191,14 @@ import StageTabs from '../../components/StageTabs.astro'
         td(g.date); td(g.stage); td(g.round ?? '')
         td((g.seats ?? []).map((s: { team: string }) => s.team).join(' / '))
         const ops = document.createElement('td')
+        const canOperate = role === 'admin' || role === 'referee'
         // 管理员专属操作：改 / 删（裁判不可改赛程，RLS 也会拒绝）
         if (role === 'admin') {
           const eb = document.createElement('button'); eb.textContent = '改'; eb.dataset.edit = g.id
           const db = document.createElement('button'); db.textContent = '删'; db.dataset.del = g.id
           ops.append(eb, db)
         }
-        if (g.status === 'upcoming') {
+        if (canOperate && g.status === 'upcoming') {
           // 填选手：admin 与裁判均可（裁判拥有所有队长填人权限之和）
           const fb = document.createElement('button'); fb.textContent = '填选手'; fb.dataset.fill = g.id
           fb.style.marginLeft = '8px'
@@ -213,7 +214,7 @@ import StageTabs from '../../components/StageTabs.astro'
           rl.textContent = '逐局录入'
           rl.style.marginLeft = '8px'
           ops.appendChild(rl)
-        } else {
+        } else if (canOperate) {
           const link = document.createElement('a')
           link.href = base + 'match/?id=' + encodeURIComponent(g.id)
           link.textContent = '赛果'
@@ -365,7 +366,7 @@ import StageTabs from '../../components/StageTabs.astro'
       actions.append(saveBtn, cancelBtn)
       box.appendChild(actions)
       fillPanel.appendChild(box)
-      window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' })
+      window.scrollTo({ top: fillPanel.offsetTop - 80, behavior: 'smooth' })
     }
     function closeFill() {
       fillGame = null
