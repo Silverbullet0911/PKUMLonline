@@ -442,6 +442,8 @@ import StageTabs from '../../components/StageTabs.astro'
       }
       form.reset(); load()
     })
+    upList.addEventListener('click', onListClick)
+    finList.addEventListener('click', onListClick)
     const onUnarrangedListClick = async (e: Event) => {
       const el = e.target as HTMLElement
       const id = el.dataset.arrange ?? el.dataset.editU ?? el.dataset.delU ?? ''
