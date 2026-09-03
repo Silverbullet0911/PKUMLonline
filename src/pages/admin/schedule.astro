@@ -28,13 +28,40 @@ import StageTabs from '../../components/StageTabs.astro'
         <select name="seat3" data-seat="北"></select>
       </div>
       <button type="submit" id="game-submit">新增</button>
+      <button type="button" id="cancel-arrange" style="display:none">取消安排</button>
     </form>
+    <p id="arrange-hint" class="arrange-hint" style="display:none"></p>
     <p id="game-err" class="admin-err"></p>
     <StageTabs stages={[{ name: '赛程' }, { name: '赛果' }]} />
     <section id="stage-0" class="stage-panel active">
       <table class="ann-table">
         <thead><tr><th>日期</th><th>阶段</th><th>半庄</th><th>对阵</th><th>操作</th></tr></thead>
         <tbody id="game-list-up"></tbody>
+      </table>
+      <div class="unarranged-admin-head">
+        <h2>未安排</h2>
+        <button type="button" id="unarranged-add-toggle">新增未安排</button>
+      </div>
+      <form id="unarranged-form" class="game-form" style="display:none">
+        <input name="useason" value="26-27" title="赛季（默认 26-27）">
+        <select name="ustage">
+          <option value="常规赛">常规赛</option>
+          <option value="半决赛">半决赛</option>
+          <option value="决赛">决赛</option>
+        </select>
+        <div class="game-seat-inputs">
+          <select name="useat0" data-seat="东"></select>
+          <select name="useat1" data-seat="南"></select>
+          <select name="useat2" data-seat="西"></select>
+          <select name="useat3" data-seat="北"></select>
+        </div>
+        <button type="submit" id="unarranged-submit">新增未安排</button>
+        <button type="button" id="unarranged-cancel">取消</button>
+      </form>
+      <p id="unarranged-err" class="admin-err"></p>
+      <table class="ann-table">
+        <thead><tr><th>序号</th><th>阶段</th><th>对阵</th><th>操作</th></tr></thead>
+        <tbody id="unarranged-list"></tbody>
       </table>
     </section>
     <section id="stage-1" class="stage-panel">
@@ -46,6 +73,9 @@ import StageTabs from '../../components/StageTabs.astro'
     <div id="fill-panel"></div>
   </AdminShell>
   <style is:global>
+    .unarranged-admin-head { display: flex; align-items: center; justify-content: space-between; margin: 24px 0 10px; }
+    .unarranged-admin-head h2 { margin: 0; }
+    .arrange-hint { color: var(--accent); margin: 0 0 12px; }
     .fill-panel { margin-top: 16px; padding: 14px; border: 1px solid var(--line); border-radius: 8px; background: var(--card); }
     .fill-panel h3 { margin: 0 0 10px; font-size: 18px; }
     .fill-seat { display: flex; align-items: center; gap: 10px; margin: 8px 0; font-size: 16px; }
@@ -67,33 +97,48 @@ import StageTabs from '../../components/StageTabs.astro'
     const form = document.getElementById('game-form') as HTMLFormElement
     const submitBtn = document.getElementById('game-submit') as HTMLButtonElement
     const errEl = document.getElementById('game-err')!
+    const cancelArrangeBtn = document.getElementById('cancel-arrange') as HTMLButtonElement
+    const arrangeHint = document.getElementById('arrange-hint')!
     const fillPanel = document.getElementById('fill-panel')!
+    const unarrangedList = document.getElementById('unarranged-list')!
+    const unarrangedForm = document.getElementById('unarranged-form') as HTMLFormElement
+    const unarrangedSubmit = document.getElementById('unarranged-submit') as HTMLButtonElement
+    const unarrangedErr = document.getElementById('unarranged-err')!
+    const unarrangedToggle = document.getElementById('unarranged-add-toggle') as HTMLButtonElement
+    const unarrangedCancel = document.getElementById('unarranged-cancel') as HTMLButtonElement
     const base = import.meta.env.BASE_URL
     let editingId: string | null = null
+    let arrangeUnarrangedId: string | null = null
+    let unarrangedEditingId: string | null = null
     let role: string | null = null
     let teamsCache: string[] = []
     let gamesCache: any[] = []
+    let unarrangedCache: any[] = []
     let fillGame: any = null
     let fillSelects: HTMLSelectElement[] = []
     // 赛季__队伍名 -> roster
     const rosters = new Map<string, string[]>()
     const teamColorOf = (name: string) => teamsRaw.teams.find((t: any) => t.name === name)?.color ?? '#9ca3af'
     const showErr = (m: string) => { errEl.textContent = m }
+    const showUnarrangedErr = (m: string) => { unarrangedErr.textContent = m }
     const seatSelects = () => [form.seat0, form.seat1, form.seat2, form.seat3]
+    const unarrangedSeatSelects = () => [unarrangedForm.useat0, unarrangedForm.useat1, unarrangedForm.useat2, unarrangedForm.useat3]
 
+    function fillTeamSelect(sel: HTMLSelectElement) {
+      sel.innerHTML = ''
+      const opt = document.createElement('option')
+      opt.value = ''; opt.textContent = '选择队伍'
+      sel.appendChild(opt)
+      for (const n of teamsCache) {
+        const o = document.createElement('option'); o.value = n; o.textContent = n
+        sel.appendChild(o)
+      }
+    }
     async function loadTeams() {
       // 队伍名来自静态 teams.json（名单真源 current_roster.json）
       teamsCache = teamsRaw.teams.map((t: any) => t.name)
-      for (const s of seatSelects()) {
-        s.innerHTML = ''
-        const opt = document.createElement('option')
-        opt.value = ''; opt.textContent = '选择队伍'
-        s.appendChild(opt)
-        for (const n of teamsCache) {
-          const o = document.createElement('option'); o.value = n; o.textContent = n
-          s.appendChild(o)
-        }
-      }
+      for (const s of seatSelects()) fillTeamSelect(s)
+      for (const s of unarrangedSeatSelects()) fillTeamSelect(s)
     }
     function loadRosters() {
       // 名单真源：data/current_roster.json（静态），按 赛季__队伍 缓存
@@ -103,7 +148,7 @@ import StageTabs from '../../components/StageTabs.astro'
     function rosterOf(season: string, team: string): string[] {
       return rosters.get(`${season}__${team}`) ?? []
     }
-    async function load() {
+    async function loadGames() {
       const { data, error } = await supabase.from('games').select('*').order('date', { ascending: true })
       if (error) return showErr('加载失败：' + error.message)
       errEl.textContent = ''
@@ -113,6 +158,19 @@ import StageTabs from '../../components/StageTabs.astro'
       const finished = (data ?? []).filter((g: any) => g.status === 'finished').sort(compareFinished)
       renderRows(upList, upcoming, '暂无赛程。')
       renderRows(finList, finished, '暂无赛果。')
+    }
+
+    async function loadUnarranged() {
+      const { data, error } = await supabase
+        .from('unarranged_games').select('*').order('seq', { ascending: true })
+      if (error) return showUnarrangedErr('加载失败：' + error.message)
+      unarrangedErr.textContent = ''
+      unarrangedCache = data ?? []
+      renderUnarrangedRows()
+    }
+
+    async function load() {
+      await Promise.all([loadGames(), loadUnarranged()])
     }
 
     function renderRows(tbody: HTMLElement, games: any[], emptyText: string) {
@@ -163,6 +221,91 @@ import StageTabs from '../../components/StageTabs.astro'
         tr.appendChild(ops)
         tbody.appendChild(tr)
       }
+    }
+
+    // ---------- 未安排赛程 ----------
+    function renderUnarrangedRows() {
+      unarrangedList.innerHTML = ''
+      if (unarrangedCache.length === 0) {
+        const tr = document.createElement('tr')
+        const td = document.createElement('td')
+        td.colSpan = 4
+        td.textContent = '暂无未安排赛程。'
+        td.style.color = 'var(--muted)'
+        tr.appendChild(td)
+        unarrangedList.appendChild(tr)
+        return
+      }
+      for (const u of unarrangedCache) {
+        const tr = document.createElement('tr')
+        const td = (s: string) => { const x = document.createElement('td'); x.textContent = s; tr.appendChild(x) }
+        td(String(u.seq)); td(u.stage)
+        td((u.seats ?? []).map((s: any) => s.team).join(' / '))
+        const ops = document.createElement('td')
+        if (role === 'admin') {
+          const ab = document.createElement('button'); ab.textContent = '安排'; ab.dataset.arrange = u.id
+          const eb = document.createElement('button'); eb.textContent = '改'; eb.dataset.editU = u.id
+          const db = document.createElement('button'); db.textContent = '删'; db.dataset.delU = u.id
+          ops.append(ab, eb, db)
+        }
+        tr.appendChild(ops)
+        unarrangedList.appendChild(tr)
+      }
+    }
+
+    function openUnarrangedForm(u?: any) {
+      unarrangedForm.style.display = 'flex'
+      unarrangedToggle.textContent = '收起新增'
+      unarrangedErr.textContent = ''
+      if (u) {
+        unarrangedEditingId = u.id
+        unarrangedForm.useason.value = u.season
+        unarrangedForm.ustage.value = u.stage
+        const seats = u.seats ?? []
+        unarrangedSeatSelects().forEach((s, i) => { s.value = seats[i]?.team ?? '' })
+        unarrangedSubmit.textContent = '保存未安排'
+      } else {
+        unarrangedEditingId = null
+        unarrangedForm.reset()
+        unarrangedForm.useason.value = '26-27'
+        unarrangedSubmit.textContent = '新增未安排'
+      }
+      window.scrollTo({ top: unarrangedForm.offsetTop - 80, behavior: 'smooth' })
+    }
+
+    function closeUnarrangedForm() {
+      unarrangedForm.style.display = 'none'
+      unarrangedEditingId = null
+      unarrangedToggle.textContent = '新增未安排'
+      unarrangedErr.textContent = ''
+    }
+
+    function startArrange(u: any) {
+      editingId = null
+      arrangeUnarrangedId = u.id
+      form.season.value = u.season
+      form.stage.value = u.stage
+      form.date.value = ''
+      form.time.value = ''
+      form.round.value = ''
+      form.live.value = ''
+      const seats = u.seats ?? []
+      seatSelects().forEach((s, i) => { s.value = seats[i]?.team ?? '' })
+      submitBtn.textContent = '保存并安排'
+      cancelArrangeBtn.style.display = 'inline-block'
+      arrangeHint.textContent = `正在安排未安排 #${u.seq}（${(seats || []).map((s: any) => s.team).join(' / ')}），请填写日期、时间、半庄号、直播状态后提交。`
+      arrangeHint.style.display = ''
+      window.scrollTo({ top: form.offsetTop - 80, behavior: 'smooth' })
+    }
+
+    function cancelArrange() {
+      arrangeUnarrangedId = null
+      editingId = null
+      submitBtn.textContent = '新增'
+      cancelArrangeBtn.style.display = 'none'
+      arrangeHint.style.display = 'none'
+      form.reset()
+      form.season.value = '26-27'
     }
 
     // ---------- 管理员代填选手 ----------
@@ -246,6 +389,9 @@ import StageTabs from '../../components/StageTabs.astro'
         if (error) return showErr('加载失败：' + error.message)
         if (data) {
           editingId = data.id
+          arrangeUnarrangedId = null
+          cancelArrangeBtn.style.display = 'none'
+          arrangeHint.style.display = 'none'
           form.season.value = data.season
           form.stage.value = data.stage
           form.date.value = data.date
@@ -262,6 +408,21 @@ import StageTabs from '../../components/StageTabs.astro'
       e.preventDefault()
       const teams = seatSelects().map((s) => s.value)
       if (teams.some((t) => !t)) return showErr('请为每个座位选择队伍')
+      if (arrangeUnarrangedId) {
+        if (!form.date.value) return showErr('请填写日期')
+        const { error } = await supabase.rpc('arrange_unarranged', {
+          p_unarranged_id: arrangeUnarrangedId,
+          p_date: form.date.value,
+          p_time: form.time.value.trim() || null,
+          p_round: form.round.value.trim() ? `第${form.round.value.trim()}半庄` : null,
+          p_live_status: form.live.value.trim() || null,
+        })
+        if (error) return showErr('安排失败：' + error.message)
+        cancelArrange()
+        form.reset(); form.season.value = '26-27'
+        load()
+        return
+      }
       const payload = {
         season: form.season.value.trim(),
         stage: form.stage.value,
@@ -281,8 +442,49 @@ import StageTabs from '../../components/StageTabs.astro'
       }
       form.reset(); load()
     })
-    upList.addEventListener('click', onListClick)
-    finList.addEventListener('click', onListClick)
+    const onUnarrangedListClick = async (e: Event) => {
+      const el = e.target as HTMLElement
+      const id = el.dataset.arrange ?? el.dataset.editU ?? el.dataset.delU ?? ''
+      const u = unarrangedCache.find((x) => x.id === id)
+      if (el.dataset.arrange && u) {
+        startArrange(u)
+      } else if (el.dataset.editU && u) {
+        openUnarrangedForm(u)
+      } else if (el.dataset.delU) {
+        const { error } = await supabase.from('unarranged_games').delete().eq('id', id)
+        if (error) return showUnarrangedErr('删除失败：' + error.message)
+        load()
+      }
+    }
+    unarrangedList.addEventListener('click', onUnarrangedListClick)
+    unarrangedToggle.addEventListener('click', () => {
+      if (unarrangedForm.style.display === 'none') openUnarrangedForm()
+      else closeUnarrangedForm()
+    })
+    unarrangedCancel.addEventListener('click', closeUnarrangedForm)
+    cancelArrangeBtn.addEventListener('click', cancelArrange)
+    unarrangedForm.addEventListener('submit', async (e) => {
+      e.preventDefault()
+      const teams = unarrangedSeatSelects().map((s) => s.value)
+      if (teams.some((t) => !t)) return showUnarrangedErr('请为每个座位选择队伍')
+      const maxSeq = unarrangedCache.reduce((m: number, x: any) => Math.max(m, Number(x.seq) || 0), 0)
+      const existing = unarrangedEditingId ? unarrangedCache.find((x) => x.id === unarrangedEditingId) : null
+      const payload = {
+        season: unarrangedForm.useason.value.trim(),
+        stage: unarrangedForm.ustage.value,
+        seq: existing ? Number(existing.seq) : maxSeq + 1,
+        seats: buildSeats(teams),
+      }
+      if (existing) {
+        const { error } = await supabase.from('unarranged_games').update(payload).eq('id', existing.id)
+        if (error) return showUnarrangedErr('保存失败：' + error.message)
+      } else {
+        const { error } = await supabase.from('unarranged_games').insert([payload])
+        if (error) return showUnarrangedErr('新增失败：' + error.message)
+      }
+      closeUnarrangedForm()
+      load()
+    })
     // 赛程/赛果标签切换（默认显示赛程）
     document.querySelectorAll('.stage-tab').forEach((tab) => {
       tab.addEventListener('click', () => {
@@ -297,9 +499,11 @@ import StageTabs from '../../components/StageTabs.astro'
       if (!session) return
       const { data: profile } = await supabase.from('profiles').select('role').eq('id', session.user.id).single()
       role = profile?.role ?? null
-      // 裁判只能查看赛程并进入录入，不能新增/编辑/删除赛程
+      // 裁判只能查看赛程并进入录入，不能新增/编辑/删除赛程/安排未安排
       if (role !== 'admin') {
         form.style.display = 'none'
+        unarrangedToggle.style.display = 'none'
+        unarrangedForm.style.display = 'none'
       }
       loadTeams(); loadRosters(); load()
     })()
