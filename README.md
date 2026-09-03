@@ -116,3 +116,5 @@ npm run user:create -- --email referee@example.com --password '你的密码' --r
 ## 测试
 
 `npm test`（vitest）。覆盖：榜单计算、聚合、对局引擎、回放、点数表结构、客户端榜单渲染等纯函数。
+
+另外可用 `npm run smoke:api` 在本地用 Node 内置 SQLite 对 Pages Functions API 做冒烟验证（登录、角色权限、公告/赛程/rounds/提交赛果），不依赖 Wrangler/Cloudflare 账号。

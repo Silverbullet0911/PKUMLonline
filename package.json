@@ -12,6 +12,7 @@
     "db:migrate:local": "wrangler d1 migrations apply pkuml-d1 --local",
     "db:migrate:remote": "wrangler d1 migrations apply pkuml-d1 --remote",
     "user:create": "node scripts/create-user.mjs",
+    "smoke:api": "node --experimental-strip-types --no-warnings scripts/smoke-api.mjs",
     "db:export:supabase": "node scripts/export-supabase.mjs",
     "db:import:d1": "node scripts/import-d1.mjs"
   },
