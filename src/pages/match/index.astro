@@ -13,20 +13,21 @@ import BaseLayout from '../../layouts/BaseLayout.astro'
     .md-stats th { padding: 8px 12px; }
     .md-stats td.team-col { font-weight: 700; }
     /* 总表宽度约 2/3，居中；阶段表约 95% 居中 */
-    .md-summary { max-width: 67%; }
+    .md-summary { max-width: 67%; width: 100%; table-layout: fixed; }
     .md-summary th, .md-summary td { padding: 6px 10px; font-size: 15px; }
+    .md-summary th:first-child, .md-summary td:first-child { width: 90px; }
     .md-stage { max-width: 95%; }
     .score-chart-section { max-width: 95%; margin: 24px auto 0; }
     .score-chart-layout { display: flex; gap: 16px; align-items: stretch; }
-    .score-chart-box { flex: 1; min-width: 0; height: 360px; padding: 12px; background: #fff; border: 1px solid var(--line); border-radius: var(--radius); }
+    .score-chart-box { flex: 1; min-width: 0; height: 400px; padding: 12px; background: #fff; border: 1px solid var(--line); border-radius: var(--radius); }
     .score-rank-cards { flex: none; width: 130px; display: flex; flex-direction: column; justify-content: space-between; gap: 8px; }
-    .score-rank-card { border-radius: 12px; min-height: 64px; display: flex; align-items: center; justify-content: center; text-align: center; padding: 8px; font-weight: 700; box-shadow: var(--shadow); }
+    .score-rank-card { border-radius: 0; width: 100%; aspect-ratio: 1.618; display: flex; align-items: center; justify-content: center; text-align: center; padding: 8px; font-weight: 700; box-shadow: var(--shadow); }
     /* 手机端：总表宽度与页面宽度一致，电脑端保持 67% */
     @media (max-width: 720px) {
       .md-summary { max-width: 100%; }
       .score-chart-layout { flex-direction: column; }
       .score-rank-cards { width: auto; flex-direction: row; }
-      .score-rank-card { flex: 1; min-height: 52px; }
+      .score-rank-card { flex: 1; aspect-ratio: auto; height: 56px; }
     }
   </style>
   <script>
@@ -232,7 +233,8 @@ import BaseLayout from '../../layouts/BaseLayout.astro'
           .sort((a: any, b: any) => a.rank - b.rank || b.score - a.score)
           .forEach((r: any) => {
             const card = el('div', 'score-rank-card', r.name)
-            card.style.background = teamColor(r.team)
+            const color = teamColor(r.team)
+            card.style.background = `linear-gradient(to right, ${color} 0%, ${color} 55%, rgba(255,255,255,0) 100%)`
             card.style.color = teamTextOf(r.team)
             rankCards.appendChild(card)
           })
