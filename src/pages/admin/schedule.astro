@@ -50,6 +50,7 @@ import StageTabs from '../../components/StageTabs.astro'
           <option value="半决赛">半决赛</option>
           <option value="决赛">决赛</option>
         </select>
+        <input name="useq" type="number" min="1" step="1" required title="序号（可手动填写，需唯一）" placeholder="序号">
         <div class="game-seat-inputs">
           <select name="useat0" data-seat="东"></select>
           <select name="useat1" data-seat="南"></select>
@@ -262,6 +263,7 @@ import StageTabs from '../../components/StageTabs.astro'
         unarrangedEditingId = u.id
         unarrangedForm.useason.value = u.season
         unarrangedForm.ustage.value = u.stage
+        unarrangedForm.useq.value = String(u.seq ?? '')
         const seats = u.seats ?? []
         unarrangedSeatSelects().forEach((s, i) => { s.value = seats[i]?.team ?? '' })
         unarrangedSubmit.textContent = '保存未安排'
@@ -269,6 +271,8 @@ import StageTabs from '../../components/StageTabs.astro'
         unarrangedEditingId = null
         unarrangedForm.reset()
         unarrangedForm.useason.value = '26-27'
+        const maxSeq = unarrangedCache.reduce((m: number, x: any) => Math.max(m, Number(x.seq) || 0), 0)
+        unarrangedForm.useq.value = String(maxSeq + 1)
         unarrangedSubmit.textContent = '新增未安排'
       }
       window.scrollTo({ top: unarrangedForm.offsetTop - 80, behavior: 'smooth' })
@@ -470,12 +474,19 @@ import StageTabs from '../../components/StageTabs.astro'
       e.preventDefault()
       const teams = unarrangedSeatSelects().map((s) => s.value)
       if (teams.some((t) => !t)) return showUnarrangedErr('请为每个座位选择队伍')
-      const maxSeq = unarrangedCache.reduce((m: number, x: any) => Math.max(m, Number(x.seq) || 0), 0)
+      const seq = Number(unarrangedForm.useq.value)
+      if (!Number.isInteger(seq) || seq < 1) return showUnarrangedErr('序号须为正整数')
       const existing = unarrangedEditingId ? unarrangedCache.find((x) => x.id === unarrangedEditingId) : null
+      const season = unarrangedForm.useason.value.trim()
+      const stage = unarrangedForm.ustage.value
+      const duplicate = unarrangedCache.some(
+        (x) => x.id !== existing?.id && x.season === season && x.stage === stage && Number(x.seq) === seq,
+      )
+      if (duplicate) return showUnarrangedErr('该赛季该阶段序号已存在，请换一个序号')
       const payload = {
-        season: unarrangedForm.useason.value.trim(),
-        stage: unarrangedForm.ustage.value,
-        seq: existing ? Number(existing.seq) : maxSeq + 1,
+        season,
+        stage,
+        seq,
         seats: buildSeats(teams),
       }
       if (existing) {

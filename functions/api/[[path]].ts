@@ -400,7 +400,13 @@ async function createUnarranged(env, request) {
   const stage = String(body.stage || '常规赛')
   const seq = Number(body.seq)
   const seats = Array.isArray(body.seats) ? body.seats : []
-  if (!season || !stage || !Number.isInteger(seq) || seats.length !== 4) return error('invalid unarranged payload')
+  if (!season || !stage || !Number.isInteger(seq) || seq < 1 || seats.length !== 4) return error('invalid unarranged payload')
+  const duplicate = await env.DB.prepare(
+    'select id from unarranged_games where season = ?1 and stage = ?2 and seq = ?3',
+  )
+    .bind(season, stage, seq)
+    .first()
+  if (duplicate) return error('该赛季该阶段序号已存在', 400)
   const id = newId()
   await env.DB.prepare(
     'insert into unarranged_games (id, season, stage, seq, seats) values (?1, ?2, ?3, ?4, ?5)',
@@ -419,7 +425,14 @@ async function updateUnarranged(env, request, id) {
   const season = body.season !== undefined ? String(body.season) : existing.season
   const stage = body.stage !== undefined ? String(body.stage) : existing.stage
   const seq = body.seq !== undefined ? Number(body.seq) : existing.seq
+  if (!Number.isInteger(seq) || seq < 1) return error('序号须为正整数')
   const seats = body.seats !== undefined ? toJson(body.seats) : existing.seats
+  const duplicate = await env.DB.prepare(
+    'select id from unarranged_games where season = ?1 and stage = ?2 and seq = ?3 and id <> ?4',
+  )
+    .bind(season, stage, seq, id)
+    .first()
+  if (duplicate) return error('该赛季该阶段序号已存在', 400)
   await env.DB.prepare(
     'update unarranged_games set season = ?1, stage = ?2, seq = ?3, seats = ?4 where id = ?5',
   )
