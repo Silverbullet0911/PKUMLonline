@@ -16,12 +16,21 @@ import BaseLayout from '../../layouts/BaseLayout.astro'
     .md-summary { max-width: 67%; }
     .md-summary th, .md-summary td { padding: 6px 10px; font-size: 15px; }
     .md-stage { max-width: 95%; }
+    .score-chart-section { max-width: 95%; margin: 24px auto 0; }
+    .score-chart-layout { display: flex; gap: 16px; align-items: stretch; }
+    .score-chart-box { flex: 1; min-width: 0; height: 360px; padding: 12px; background: #fff; border: 1px solid var(--line); border-radius: var(--radius); }
+    .score-rank-cards { flex: none; width: 130px; display: flex; flex-direction: column; justify-content: space-between; gap: 8px; }
+    .score-rank-card { border-radius: 12px; min-height: 64px; display: flex; align-items: center; justify-content: center; text-align: center; padding: 8px; font-weight: 700; box-shadow: var(--shadow); }
     /* 手机端：总表宽度与页面宽度一致，电脑端保持 67% */
     @media (max-width: 720px) {
       .md-summary { max-width: 100%; }
+      .score-chart-layout { flex-direction: column; }
+      .score-rank-cards { width: auto; flex-direction: row; }
+      .score-rank-card { flex: 1; min-height: 52px; }
     }
   </style>
   <script>
+    import Chart from 'chart.js/auto'
     import { supabase } from '../../lib/supabase'
     import { replayGame, roundLabel, seatLabel, riichiText } from '../../lib/replay'
     import { rawScoreOf, rankPointsForScores } from '../../lib/aggregate'
@@ -47,8 +56,14 @@ import BaseLayout from '../../layouts/BaseLayout.astro'
     }
 
     const teamColor = (name: string) => teamsRaw.teams.find((t: any) => t.name === name)?.color ?? '#9ca3af'
-    const lightTeam = new Set(['樱花', '雷电', '赤坂'])
-    const teamTextOf = (name: string) => (lightTeam.has(name) ? '#1f2328' : '#fff')
+    function textOnColor(hex: string): string {
+      const c = hex.replace('#', '')
+      const r = parseInt(c.slice(0, 2), 16)
+      const g = parseInt(c.slice(2, 4), 16)
+      const b = parseInt(c.slice(4, 6), 16)
+      return (0.299 * r + 0.587 * g + 0.114 * b) > 150 ? '#1f2328' : '#fff'
+    }
+    const teamTextOf = (name: string) => textOnColor(teamColor(name))
 
     ;(async () => {
       if (!gameId) return
@@ -143,6 +158,68 @@ import BaseLayout from '../../layouts/BaseLayout.astro'
         })
         stageBox.appendChild(st)
         root.appendChild(stageBox)
+
+        // 分数走势折线图 + 右侧顺位选手卡片
+        const chartSection = el('div', 'score-chart-section')
+        chartSection.appendChild(el('h3', '', '分数走势'))
+        const chartLayout = el('div', 'score-chart-layout')
+        const chartBox = el('div', 'score-chart-box')
+        const canvas = document.createElement('canvas')
+        canvas.id = 'scoreChart'
+        chartBox.appendChild(canvas)
+        chartLayout.appendChild(chartBox)
+
+        const labels = ['Start', ...rep.history.map((h) => h.override?.roundLabel ?? roundLabel(h.round))]
+        const datasets = seats.map((s: any, i: number) => ({
+          label: s.player ?? s.team,
+          data: [25000, ...rep.history.map((h) => h.scores[i])],
+          borderColor: teamColor(s.team),
+          backgroundColor: teamColor(s.team),
+          borderWidth: 2,
+          pointRadius: 3,
+          pointBackgroundColor: teamColor(s.team),
+          tension: 0.1,
+        }))
+        new Chart(canvas, {
+          type: 'line',
+          data: { labels, datasets },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { display: false },
+              tooltip: {
+                callbacks: {
+                  label: (ctx: any) => `${ctx.dataset.label}: ${Number(ctx.parsed.y).toLocaleString()}`,
+                },
+              },
+            },
+            scales: {
+              x: { grid: { color: '#eee' } },
+              y: { grid: { color: '#eee' } },
+            },
+          },
+        })
+
+        const rankCards = el('div', 'score-rank-cards')
+        seats
+          .map((s: any, i: number) => ({
+            i,
+            name: s.player ?? s.team,
+            team: s.team,
+            rank: s.rank != null ? Number(s.rank) : 99,
+            score: rep.current.scores[i],
+          }))
+          .sort((a: any, b: any) => a.rank - b.rank || b.score - a.score)
+          .forEach((r: any) => {
+            const card = el('div', 'score-rank-card', r.name)
+            card.style.background = teamColor(r.team)
+            card.style.color = teamTextOf(r.team)
+            rankCards.appendChild(card)
+          })
+        chartLayout.appendChild(rankCards)
+        chartSection.appendChild(chartLayout)
+        root.appendChild(chartSection)
       } else {
         root.appendChild(el('p', 'empty', '本场赛果为直接录入最终分数，无逐局详细信息。'))
       }
