@@ -90,11 +90,11 @@ const finishedMonths = finishedGroups.map((mg) => mg.month)
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 4px;
+      gap: 0;
       flex: none;
-      width: 94px;
+      width: 95px;
       height: 41px;
-      padding: 3.5px 14px;
+      padding: 3.5px 12px;
       border-radius: 6px;
       font-size: 21px;
       line-height: 1.6;
@@ -103,6 +103,10 @@ const finishedMonths = finishedGroups.map((mg) => mg.month)
     .unarranged-seat .us-seat {
       opacity: 0.85;
       font-size: 19.25px;
+    }
+    .unarranged-seat .us-seat::after {
+      content: '  ';
+      white-space: pre;
     }
     .unarranged-seat .us-team {
       font-weight: 700;
