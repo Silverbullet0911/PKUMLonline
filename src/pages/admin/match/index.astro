@@ -268,6 +268,7 @@ import AdminShell from '../../../components/admin/AdminShell.astro'
           cb.addEventListener('change', () => {
             form.tenpai = form.tenpai ?? [false, false, false, false]
             form.tenpai[i] = cb.checked
+            renderForm(container)
           })
           label.append(cb, document.createTextNode(seatLabelOf(i)))
           row.appendChild(label)
