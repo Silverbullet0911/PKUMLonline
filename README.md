@@ -73,6 +73,22 @@ npm run pages:dev
    npm run pages:dev
    ```
 
+## 预置演示数据
+
+想快速看到前台/后台效果，可以写入一批本地演示数据：
+
+```bash
+npm run seed:demo
+```
+
+这会向本地 D1 写入公告、未安排赛程、3 场未来赛程、3 场已完赛赛果，以及三个演示账号：
+
+- `admin@demo.com` / `admin123`：管理员
+- `referee@demo.com` / `referee123`：裁判
+- `captain@demo.com` / `captain123`：队长（樱花）
+
+然后刷新 `http://127.0.0.1:8788/` 查看动态数据。
+
 ## 创建用户 / 角色
 
 旧 Supabase Auth 的密码哈希无法迁移；Route B 下用脚本重建用户。该脚本会执行：
