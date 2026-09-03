@@ -113,24 +113,43 @@ import BaseLayout from '../../layouts/BaseLayout.astro'
       })
       table.appendChild(trTeam)
 
-      const row = (label: string, fn: (s: any, i: number) => string) => {
+      const finalScoreOf = (s: any, i: number) => s.points ?? rep.current.scores[i]
+      const ptOf = (s: any, i: number) => {
+        const finalScores = seats.map((x: any, j: number) => x.points ?? rep.current.scores[j])
+        const auto = Math.round((rawScoreOf(finalScores[i]) + rankPointsForScores(finalScores)[i]) * 10) / 10
+        const pen = s.penalty ?? 0
+        return Math.round((Number(s.pt ?? auto) + pen) * 10) / 10
+      }
+      const row = (label: string, fn: (s: any, i: number) => string, styleFn?: (td: HTMLElement, s: any) => void) => {
         const tr = el('tr')
         tr.appendChild(el('td', '', label))
-        seats.forEach((s: any, i: number) => tr.appendChild(el('td', 'num', fn(s, i))))
+        seats.forEach((s: any, i: number) => {
+          const td = el('td', 'num', fn(s, i))
+          styleFn?.(td, s)
+          tr.appendChild(td)
+        })
         table.appendChild(tr)
       }
-      row('选手', (s: any, i: number) => s.player ?? '')
-      row('立直', (_: any, i: number) => String(rounds.filter((r: any) => r.riichi?.[i]).length))
-      row('荣和', (_: any, i: number) => String(rounds.filter((r: any) => r.win_type === 'ron' && seatIndexOf(r.ron_winner) === i).length))
-      row('自摸', (_: any, i: number) => String(rounds.filter((r: any) => r.win_type === 'tsumo' && seatIndexOf(r.tsumo_winner) === i).length))
-      row('放铳', (_: any, i: number) => String(rounds.filter((r: any) => r.win_type === 'ron' && seatIndexOf(r.ron_loser) === i).length))
-      row('积分', (s: any, i: number) => String(s.points ?? rep.current.scores[i]))
-      row('pt', (s: any, i: number) => {
-        const auto = Math.round((rawScoreOf(rep.current.scores[i]) + rankPointsForScores(rep.current.scores)[i]) * 10) / 10
-        return String(s.pt != null ? s.pt : auto)
-      })
-      row('判罚', (s: any) => (s.penalty ? String(s.penalty) : '-'))
+      row('选手', (s: any) => s.player ?? '')
+      if (rep.history.length > 0) {
+        row('立直', (_: any, i: number) => String(rounds.filter((r: any) => r.riichi?.[i]).length))
+        row('荣和', (_: any, i: number) => String(rounds.filter((r: any) => r.win_type === 'ron' && seatIndexOf(r.ron_winner) === i).length))
+        row('自摸', (_: any, i: number) => String(rounds.filter((r: any) => r.win_type === 'tsumo' && seatIndexOf(r.tsumo_winner) === i).length))
+        row('放铳', (_: any, i: number) => String(rounds.filter((r: any) => r.win_type === 'ron' && seatIndexOf(r.ron_loser) === i).length))
+      }
+      row('分数', (s: any, i: number) => String(finalScoreOf(s, i)))
       row('顺位', (s: any) => (s.rank ? s.rank + '位' : '-'))
+      row(
+        '判罚',
+        (s: any) => (s.penalty ? String(s.penalty) : '-'),
+        (td, s) => {
+          if (s.penalty) {
+            td.style.color = '#b91c1c'
+            td.style.fontWeight = 'bold'
+          }
+        },
+      )
+      row('pt', (s: any, i: number) => String(ptOf(s, i)))
       stats.appendChild(table)
       root.appendChild(stats)
 
