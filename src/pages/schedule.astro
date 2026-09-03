@@ -53,6 +53,74 @@ const finishedMonths = finishedGroups.map((mg) => mg.month)
   </section>
 
   <button class="nav-toggle" aria-label="导引">☰</button>
+  <style is:global>
+    .unarranged-divider {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 28px 0 14px;
+      color: var(--muted);
+    }
+    .unarranged-divider::before,
+    .unarranged-divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--line);
+    }
+    .unarranged-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+    .unarranged-card {
+      display: flex;
+      flex-wrap: nowrap;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      box-sizing: border-box;
+      padding: 7px 12px;
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+    }
+    /* 未安排队伍卡片统一为“东 海盗”卡片放大后的尺寸 */
+    .unarranged-seat {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0;
+      flex: none;
+      width: 95px;
+      height: 41px;
+      padding: 3.5px 12px;
+      border-radius: 6px;
+      font-size: 21px;
+      line-height: 1.6;
+      white-space: nowrap;
+    }
+    .unarranged-seat .us-seat {
+      opacity: 0.85;
+      font-size: 19.25px;
+    }
+    .unarranged-seat .us-seat::after {
+      content: '  ';
+      white-space: pre;
+    }
+    .unarranged-seat .us-team {
+      font-weight: 700;
+    }
+    @media (max-width: 720px) {
+      .unarranged-grid {
+        grid-template-columns: 1fr;
+      }
+      .unarranged-card {
+        overflow-x: auto;
+        justify-content: flex-start;
+      }
+    }
+  </style>
   <script>
     document.querySelectorAll('.stage-tab').forEach((tab) => {
       tab.addEventListener('click', () => {
@@ -78,38 +146,60 @@ const finishedMonths = finishedGroups.map((mg) => mg.month)
     import { compareUpcoming, compareFinished } from '../lib/schedule'
     import { mapDbGame, splitGames, monthGroupsOf, teamStyle, escHtml } from '../lib/renderSchedule'
 
+    function unarrangedCardHtml(g: any): string {
+      const chips = (g.seats ?? []).map((s: any) =>
+        `<span class="unarranged-seat" style="${teamStyle(s.team)}">` +
+        `<span class="us-seat">${escHtml(String(s.seat ?? ''))}</span>` +
+        `<span class="us-team">${escHtml(String(s.team ?? ''))}</span>` +
+        `</span>`
+      ).join('')
+      return `<div class="unarranged-card">${chips}</div>`
+    }
+
     ;(async () => {
       const base = import.meta.env.BASE_URL
-      const { data, error } = await supabase.from('games').select('*').order('date', { ascending: true })
-      if (error || !data || data.length === 0) return
-      const games = (data as any[]).filter((g: any) => g.season === season.season).map(mapDbGame)
+      const [{ data, error }, { data: unarranged, error: unarrangedError }] = await Promise.all([
+        supabase.from('games').select('*').order('date', { ascending: true }),
+        supabase.from('unarranged_games').select('*').eq('season', season.season).order('seq', { ascending: true }),
+      ])
+      if (error) return
+      const games = ((data ?? []) as any[]).filter((g: any) => g.season === season.season).map(mapDbGame)
       const { upcoming, finished } = splitGames(games)
 
       const up = document.querySelector('#stage-0')
       if (up) {
-        if (upcoming.length === 0) {
+        const arrangedHtml = upcoming.length === 0
+          ? ''
+          : monthGroupsOf(upcoming, 'asc', compareUpcoming).map((mg) => `
+              <section id="sch-${mg.month}" class="month-group">
+                <h2>${escHtml(mg.month)}</h2>
+                ${mg.games.map((g) => `
+                  <div class="future-row">
+                    <div class="future-meta">
+                      <div><span class="fm-date">${escHtml(g.date)}</span><span class="fm-rest"> · ${escHtml(g.stage)}${g.round ? ' ' + escHtml(g.round) : ''}</span></div>
+                      ${(g.time || g.liveStatus) ? `<div class="fm-subrow"><div class="fm-time">${g.time ? escHtml(g.time) : ''}</div>${g.liveStatus ? `<span class="fm-live">${escHtml(g.liveStatus)}</span>` : ''}</div>` : ''}
+                    </div>
+                    <div class="future-seats">
+                      ${g.seats.map((s) => `
+                        <div class="future-seat" style="${teamStyle(s.team)}">
+                          <span class="fs-seat">${escHtml(String(s.seat ?? ''))}</span>
+                          <span class="fs-team">${escHtml(String(s.team ?? ''))}</span>
+                          ${s.name ? `<span class="fs-player">${escHtml(s.name)}</span>` : ''}
+                        </div>`).join('')}
+                    </div>
+                  </div>`).join('')}
+              </section>`).join('')
+
+        const unarrangedRows = unarrangedError || !unarranged || unarranged.length === 0 ? [] : unarranged
+        const unarrangedHtml = unarrangedRows.length === 0
+          ? ''
+          : `<div class="unarranged-divider"><h2>未安排</h2></div>` +
+            `<div class="unarranged-grid">${unarrangedRows.map(unarrangedCardHtml).join('')}</div>`
+
+        if (!arrangedHtml && !unarrangedHtml) {
           up.innerHTML = '<p class="empty">暂无赛程。</p>'
         } else {
-          const groups = monthGroupsOf(upcoming, 'asc', compareUpcoming)
-          up.innerHTML = groups.map((mg) => `
-            <section id="sch-${mg.month}" class="month-group">
-              <h2>${escHtml(mg.month)}</h2>
-              ${mg.games.map((g) => `
-                <div class="future-row">
-                  <div class="future-meta">
-                    <div><span class="fm-date">${escHtml(g.date)}</span><span class="fm-rest"> · ${escHtml(g.stage)}${g.round ? ' ' + escHtml(g.round) : ''}</span></div>
-                    ${(g.time || g.liveStatus) ? `<div class="fm-subrow"><div class="fm-time">${g.time ? escHtml(g.time) : ''}</div>${g.liveStatus ? `<span class="fm-live">${escHtml(g.liveStatus)}</span>` : ''}</div>` : ''}
-                  </div>
-                  <div class="future-seats">
-                    ${g.seats.map((s) => `
-                      <div class="future-seat" style="${teamStyle(s.team)}">
-                        <span class="fs-seat">${escHtml(String(s.seat ?? ''))}</span>
-                        <span class="fs-team">${escHtml(String(s.team ?? ''))}</span>
-                        ${s.name ? `<span class="fs-player">${escHtml(s.name)}</span>` : ''}
-                      </div>`).join('')}
-                  </div>
-                </div>`).join('')}
-            </section>`).join('')
+          up.innerHTML = arrangedHtml + unarrangedHtml
         }
       }
 
