@@ -7,3 +7,4 @@ dist/
 .env
 PL指名.xlsx
 ~$PL指名.xlsx
+data/local/
