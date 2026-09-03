@@ -57,6 +57,20 @@ import BaseLayout from '../../layouts/BaseLayout.astro'
     }
 
     const teamColor = (name: string) => teamsRaw.teams.find((t: any) => t.name === name)?.color ?? '#9ca3af'
+    // 折线图与选手卡片专用配色；不影响总表等其他队伍色展示
+    const CHART_TEAM_COLORS: Record<string, string> = {
+      格斗: '#D93829',
+      火山: '#1C1C1C',
+      野兽: '#212F9A',
+      凤凰: '#F08C36',
+      赤坂: '#8CD24B',
+      雷电: '#F5C71A',
+      海盗: '#14BAFC',
+      AB: '#C6AE6E',
+      樱花: '#F895B4',
+      地球: '#016934',
+    }
+    const chartColor = (name: string) => CHART_TEAM_COLORS[name] ?? teamColor(name)
     function textOnColor(hex: string): string {
       const c = hex.replace('#', '')
       const r = parseInt(c.slice(0, 2), 16)
@@ -193,11 +207,11 @@ import BaseLayout from '../../layouts/BaseLayout.astro'
         const datasets = seats.map((s: any, i: number) => ({
           label: s.player ?? s.team,
           data: [25000, ...rep.history.map((h) => h.scores[i])],
-          borderColor: teamColor(s.team),
-          backgroundColor: teamColor(s.team),
+          borderColor: chartColor(s.team),
+          backgroundColor: chartColor(s.team),
           borderWidth: 2,
           pointRadius: 3,
-          pointBackgroundColor: teamColor(s.team),
+          pointBackgroundColor: chartColor(s.team),
           tension: 0.1,
         }))
         new Chart(canvas, {
@@ -233,9 +247,9 @@ import BaseLayout from '../../layouts/BaseLayout.astro'
           .sort((a: any, b: any) => a.rank - b.rank || b.score - a.score)
           .forEach((r: any) => {
             const card = el('div', 'score-rank-card', r.name)
-            const color = teamColor(r.team)
+            const color = chartColor(r.team)
             card.style.background = `linear-gradient(to right, ${color} 0%, ${color} 55%, rgba(255,255,255,0) 100%)`
-            card.style.color = teamTextOf(r.team)
+            card.style.color = textOnColor(color)
             rankCards.appendChild(card)
           })
         chartLayout.appendChild(rankCards)
