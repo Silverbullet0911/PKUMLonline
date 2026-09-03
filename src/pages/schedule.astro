@@ -70,28 +70,30 @@ const finishedMonths = finishedGroups.map((mg) => mg.month)
     }
     .unarranged-grid {
       display: grid;
-      grid-template-columns: repeat(2, max-content);
-      justify-content: start;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 12px;
     }
     .unarranged-card {
       display: flex;
-      flex-wrap: wrap;
+      flex-wrap: nowrap;
       align-items: center;
-      align-content: center;
-      gap: 6px 8px;
+      justify-content: center;
+      gap: 8px;
       box-sizing: border-box;
-      padding: 10px 12px;
-      width: max-content;
+      padding: 7px 12px;
       background: var(--card);
       border: 1px solid var(--line);
       border-radius: var(--radius);
     }
-    /* 未安排队伍卡片：相对原来的 12px 字号/内边距整体放大到 7/4 倍 */
+    /* 未安排队伍卡片统一为“东 海盗”卡片放大后的尺寸 */
     .unarranged-seat {
-      display: inline-flex;
+      display: flex;
       align-items: center;
+      justify-content: center;
       gap: 4px;
+      flex: none;
+      width: 94px;
+      height: 41px;
       padding: 3.5px 14px;
       border-radius: 999px;
       font-size: 21px;
@@ -107,7 +109,8 @@ const finishedMonths = finishedGroups.map((mg) => mg.month)
         grid-template-columns: 1fr;
       }
       .unarranged-card {
-        width: auto;
+        overflow-x: auto;
+        justify-content: flex-start;
       }
     }
   </style>
